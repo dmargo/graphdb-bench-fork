@@ -6,6 +6,8 @@ import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.TransactionalGraph;
 import com.tinkerpop.blueprints.pgm.TransactionalGraph.Mode;
 
+import java.io.File;
+
 public class GraphDescriptor {
 
 	private Class<?> graphType = null;
@@ -46,6 +48,9 @@ public class GraphDescriptor {
 	public Graph openGraph() throws Exception {
 		if (null != graph)
 			return graph;
+
+        if (null != graphDir)
+            (new File(graphDir)).mkdirs();
 
 		Object[] args = (null == graphPath) ? new Object[] {}
 				: new Object[] { graphPath };

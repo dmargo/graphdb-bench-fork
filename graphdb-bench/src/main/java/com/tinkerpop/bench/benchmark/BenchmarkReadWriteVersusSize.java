@@ -12,6 +12,7 @@ import com.tinkerpop.bench.operation.operations.OperationLoadGraphML;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
 import com.tinkerpop.bench.operationFactory.factories.OperationFactoryIndexGetElements;
+import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 import com.tinkerpop.blueprints.pgm.impls.orientdb.OrientGraph;
 import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph;
@@ -38,25 +39,31 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 		GraphDescriptor graphDescriptor = null;
 
 		String[] graphmlFiles = new String[] {
-				dirGraphML + "barabasi_1000_5000.graphml",
-				dirGraphML + "barabasi_10000_50000.graphml",
-				dirGraphML + "barabasi_100000_500000.graphml",
-				dirGraphML + "barabasi_1000000_5000000.graphml" };
+				dirGraphML + "barabasi_1000_5000.graphml"};
+		//		dirGraphML + "barabasi_10000_50000.graphml",
+		//		dirGraphML + "barabasi_100000_500000.graphml",
+		//		dirGraphML + "barabasi_1000000_5000000.graphml" };
 
 		Benchmark benchmark = new BenchmarkReadWriteVersusSize(dirResults
 				+ "load_graphml.csv", graphmlFiles);
 
-		// // Load operation logs with Orient
-		// graphDescriptor = new GraphDescriptor(OrientGraph.class, dirResults
-		// + "orient/", "local:" + dirResults + "orient/");
-		// benchmark.loadOperationLogs(graphDescriptor, dirResults
-		// + "load_graphml_orient.csv");
+        //XXX dmargo: Load operation logs with Dex
+        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults,
+                dirResults + "graph.dex");
+        benchmark.loadOperationLogs(graphDescriptor, dirResults
+                + "load_graphml_dex.csv");
 
 		// Load operation logs with Neo4j
 		graphDescriptor = new GraphDescriptor(Neo4jGraph.class, dirResults
 				+ "neo4j/", dirResults + "neo4j/");
 		benchmark.loadOperationLogs(graphDescriptor, dirResults
 				+ "load_graphml_neo4j.csv");
+
+		// // Load operation logs with Orient
+		// graphDescriptor = new GraphDescriptor(OrientGraph.class, dirResults
+		// + "orient/", "local:" + dirResults + "orient/");
+		// benchmark.loadOperationLogs(graphDescriptor, dirResults
+		// + "load_graphml_orient.csv");
 
 		// Load operation logs with TinkerGraph
 		graphDescriptor = new GraphDescriptor(TinkerGraph.class);
@@ -65,6 +72,7 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 
 		// Create file with summarized results from all databases and operations
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
+        resultFiles.put("Dex", dirResults + "load_graphml_dex.csv");
 		resultFiles.put("Neo4j", dirResults + "load_graphml_neo4j.csv");
 		// resultFiles.put("OrientDB", dirResults + "load_graphml_orient.csv");
 		resultFiles.put("TinkerGraph", dirResults + "load_graphml_tinker.csv");

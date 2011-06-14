@@ -14,6 +14,7 @@ import com.tinkerpop.bench.operation.operations.OperationPipesEchoLazy;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
 import com.tinkerpop.bench.operationFactory.factories.OperationFactoryPipesEcho;
+import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 import com.tinkerpop.blueprints.pgm.impls.orientdb.OrientGraph;
 import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph;
@@ -40,13 +41,19 @@ public class BenchmarkEchoVersusDepth extends Benchmark {
 		GraphDescriptor graphDescriptor = null;
 
 		Benchmark benchmark = new BenchmarkEchoVersusDepth(dirResults
-				+ "echo.csv", dirGraphML + "barabasi_1000000_5000000.graphml");
+				+ "echo.csv", dirGraphML + "barabasi_1000_5000.graphml");
+
+        //XXX dmargo: Load operation logs with Dex
+        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults,
+                dirResults + "graph.dex");
+        benchmark.loadOperationLogs(graphDescriptor, dirResults
+                + "echo_dex.csv");
 
 		// Load operation logs with Orient
-		graphDescriptor = new GraphDescriptor(OrientGraph.class, dirResults
-				+ "orient/", "local:" + dirResults + "orient/");
-		benchmark.loadOperationLogs(graphDescriptor, dirResults
-				+ "echo_orient.csv");
+		//graphDescriptor = new GraphDescriptor(OrientGraph.class, dirResults
+		//		+ "orient/", "local:" + dirResults + "orient/");
+		//benchmark.loadOperationLogs(graphDescriptor, dirResults
+		//		+ "echo_orient.csv");
 
 		// Load operation logs with Neo4j
 		graphDescriptor = new GraphDescriptor(Neo4jGraph.class, dirResults
@@ -61,8 +68,9 @@ public class BenchmarkEchoVersusDepth extends Benchmark {
 
 		// Create file with summarized results from all databases and operations
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
-		resultFiles.put("Neo4j", dirResults + "echo_neo4j.csv");
-		resultFiles.put("OrientDB", dirResults + "echo_orient.csv");
+        resultFiles.put("Dex", dirResults + "load_graphml_dex.csv");		
+        resultFiles.put("Neo4j", dirResults + "echo_neo4j.csv");
+		//resultFiles.put("OrientDB", dirResults + "echo_orient.csv");
 		resultFiles.put("TinkerGraph", dirResults + "echo_tinker.csv");
 		LogUtils.makeResultsSummary(dirResults + "echo_summary.csv",
 				resultFiles);

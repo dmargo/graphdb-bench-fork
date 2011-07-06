@@ -10,9 +10,9 @@
 	<url>http://graphdb-bench.tinkerpop.com</url>
 	<name>GraphDB-Bench: A Benchmark Suite for GraphDBs</name>
 	<description>GraphDB-Bench is an extensible benchmarking framework for graph databases
-        Benchmarks are composed of a sequence of operations that can be evaluated over any Blueprints-enabled graph database.
-        Statistics and visualization tools are provided to support the analysis and representation of benchmark results.
-    </description>
+		Benchmarks are composed of a sequence of operations that can be evaluated over any Blueprints-enabled graph database.
+		Statistics and visualization tools are provided to support the analysis and representation of benchmark results.
+	</description>
 	<developers>
 		<developer> 
 			<name>Marko A. Rodriguez</name>
@@ -44,7 +44,7 @@
 			<version>0.4-SNAPSHOT</version>
 		</dependency>
 
-        <!-- TINKERPOP - DEX SUPPORT -->
+		<!-- TINKERPOP - DEX SUPPORT -->
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-dex-graph</artifactId>
@@ -65,12 +65,19 @@
 			<version>0.8</version>
 		</dependency>
 
-        <!-- TINKERPOP - SAIL SUPPORT -->
-        <dependency>
-           <groupId>com.tinkerpop.blueprints</groupId>
-           <artifactId>blueprints-sail-graph</artifactId>
-           <version>0.8</version>
-        </dependency>
+		<!-- TINKERPOP - SAIL SUPPORT -->
+		<dependency>
+		   <groupId>com.tinkerpop.blueprints</groupId>
+		   <artifactId>blueprints-sail-graph</artifactId>
+		   <version>0.8</version>
+		</dependency>
+
+        <!-- DMARGO - BDBGRAPH -->
+		<dependency>
+		   <groupId>com.tinkerpop.blueprints</groupId>
+		   <artifactId>blueprints-bdb-graph</artifactId>
+		   <version>0.8-SNAPSHOT</version>
+		</dependency>
 
 		<!-- TESTING -->
 		<dependency>
@@ -86,6 +93,7 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.14</version>
 		</dependency>
+
 	</dependencies>
 	<repositories>
 		<repository>
@@ -104,25 +112,25 @@
 	<build>
 		<directory>${basedir}/target</directory>
 		<finalName>${artifactId}-${version}
-        </finalName>
+		</finalName>
 		<sourceDirectory>${basedir}/src/main/java
-        </sourceDirectory>
+		</sourceDirectory>
 		<testSourceDirectory>${basedir}/src/test/java
-        </testSourceDirectory>
+		</testSourceDirectory>
 		<outputDirectory>${basedir}/target/classes
-        </outputDirectory>
+		</outputDirectory>
 		<testOutputDirectory>${basedir}/target/test-classes
-        </testOutputDirectory>
+		</testOutputDirectory>
 		<resources>
 			<resource>
 				<directory>${basedir}/src/main/resources
-                </directory>
+				</directory>
 			</resource>
 		</resources>
 		<testResources>
 			<testResource>
 				<directory>${basedir}/src/test/resources
-                </directory>
+				</directory>
 			</testResource>
 		</testResources>
 		<plugins>

@@ -16,8 +16,8 @@ public class OperationLoadGraphML extends Operation {
 	// args
 	// -> 0 graphmlDir
 	@Override
-	protected void onInitialize(String[] args) {
-		this.graphmlPath = args[0];
+	protected void onInitialize(Object[] args) {
+		this.graphmlPath = (String) args[0];
 	}
 
 	@Override

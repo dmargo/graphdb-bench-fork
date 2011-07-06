@@ -31,10 +31,10 @@ public class OperationPipesEchoIntensive extends Operation {
 	// -> 1 startVertexIndexValue
 	// -> 2 steps
 	@Override
-	protected void onInitialize(String[] args) {
-		this.startVertexIndexKey = args[0];
-		this.startVertexIndexValue = args[1];
-		this.steps = Integer.parseInt(args[2]);
+	protected void onInitialize(Object[] args) {
+		this.startVertexIndexKey = (String) args[0];
+		this.startVertexIndexValue = (String) args[1];
+		this.steps = Integer.parseInt((String) args[2]);
 		this.pipeline = createPipeline(steps);
 
 		if (getGraph() instanceof IndexableGraph) {

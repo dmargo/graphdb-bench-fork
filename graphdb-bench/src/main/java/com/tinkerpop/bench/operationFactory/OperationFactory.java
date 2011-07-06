@@ -43,7 +43,7 @@ public abstract class OperationFactory implements Iterator<Operation>,
 	// Helper methods
 	//
 	protected final Operation loadOperation(int opId, String type,
-			String[] args, String name) throws Exception {
+			Object[] args, String name) throws Exception {
 		Constructor<?> operationConstructor = null;
 		Operation operation = null;
 

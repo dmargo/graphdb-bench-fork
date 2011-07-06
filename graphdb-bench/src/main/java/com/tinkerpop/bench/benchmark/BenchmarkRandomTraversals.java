@@ -1,5 +1,6 @@
 package com.tinkerpop.bench.benchmark;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -7,11 +8,11 @@ import com.tinkerpop.bench.Bench;
 import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.LogUtils;
 import com.tinkerpop.bench.operation.OperationDeleteGraph;
-import com.tinkerpop.bench.operation.operations.OperationIndexPutAllElements;
+import com.tinkerpop.bench.operation.operations.OperationGetAllNeighbors;
 import com.tinkerpop.bench.operation.operations.OperationLoadGraphML;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
-import com.tinkerpop.bench.operationFactory.factories.OperationFactoryIndexGetElements;
+import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomVertex;
 import com.tinkerpop.blueprints.pgm.impls.bdb.BdbGraph;
 import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
@@ -22,7 +23,7 @@ import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph;
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
  */
-public class BenchmarkReadWriteVersusSize extends Benchmark {
+public class BenchmarkRandomTraversals extends Benchmark {
 
 	/*
 	 * Static Code
@@ -31,7 +32,7 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 	public static void run() throws Exception {
 		String dirResults = Bench.benchProperties
 				.getProperty(Bench.RESULTS_DIRECTORY)
-				+ "ReadWriteVersusSize/";
+				+ "RandomTraversals/";
 
 		LogUtils.deleteDir(dirResults);
 
@@ -46,25 +47,26 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 		//		dirGraphML + "barabasi_100000_500000.graphml",
 		//		dirGraphML + "barabasi_1000000_5000000.graphml" };
 
-		Benchmark benchmark = new BenchmarkReadWriteVersusSize(dirResults
+		Benchmark benchmark = new BenchmarkRandomTraversals(dirResults
 				+ "load_graphml.csv", graphmlFiles);
 		
+		//XXX dmargo: Load operation logs with Bdb
 		graphDescriptor = new GraphDescriptor(BdbGraph.class, dirResults
 				+ "bdb/", dirResults + "bdb/");
 		benchmark.loadOperationLogs(graphDescriptor, dirResults
 				+ "load_graphml_bdb.csv");
-
+		
         //XXX dmargo: Load operation logs with Dex
-        //graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults,
-        //      dirResults + "graph.dex");
-        //benchmark.loadOperationLogs(graphDescriptor, dirResults
-        //      + "load_graphml_dex.csv");
+        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
+        		+ "dex/", dirResults + "dex/graph.dex");
+        benchmark.loadOperationLogs(graphDescriptor, dirResults
+              + "load_graphml_dex.csv");
 
 		// Load operation logs with Neo4j
-		//graphDescriptor = new GraphDescriptor(Neo4jGraph.class, dirResults
-        //      + "neo4j/", dirResults + "neo4j/");
-		//benchmark.loadOperationLogs(graphDescriptor, dirResults
-		//		+ "load_graphml_neo4j.csv");
+        graphDescriptor = new GraphDescriptor(Neo4jGraph.class, dirResults
+              + "neo4j/", dirResults + "neo4j/");
+		benchmark.loadOperationLogs(graphDescriptor, dirResults
+				+ "load_graphml_neo4j.csv");
 
 		// Load operation logs with Orient
         //graphDescriptor = new GraphDescriptor(OrientGraph.class, dirResults
@@ -73,24 +75,24 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 		//        + "load_graphml_orient.csv");
 
         //XXX dmargo: Load operation logs with Sail
-        //graphDescriptor = new GraphDescriptor(NativeStoreSailGraph.class,
-        //        dirResults, dirResults + "nativestore");
+        //graphDescriptor = new GraphDescriptor(NativeStoreSailGraph.class, dirResults
+        //		+ "sail/", dirResults + "sail/nativestore");
         //benchmark.loadOperationLogs(graphDescriptor, dirResults
         //        + "load_graphml_sail.csv");
 
 		// Load operation logs with TinkerGraph
-		//graphDescriptor = new GraphDescriptor(TinkerGraph.class);
-		//benchmark.loadOperationLogs(graphDescriptor, dirResults
-		//		+ "load_graphml_tinker.csv");
+		graphDescriptor = new GraphDescriptor(TinkerGraph.class);
+		benchmark.loadOperationLogs(graphDescriptor, dirResults
+				+ "load_graphml_tinker.csv");
 
 		// Create file with summarized results from all databases and operations
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
 		resultFiles.put("Bdb", dirResults + "load_graphml_bdb.csv");
-        //resultFiles.put("Dex", dirResults + "load_graphml_dex.csv");
-		//resultFiles.put("Neo4j", dirResults + "load_graphml_neo4j.csv");
+        resultFiles.put("Dex", dirResults + "load_graphml_dex.csv");
+		resultFiles.put("Neo4j", dirResults + "load_graphml_neo4j.csv");
 		//resultFiles.put("OrientDB", dirResults + "load_graphml_orient.csv");
         //resultFiles.put("Sail", dirResults + "load_graphml_sail.csv");
-		//resultFiles.put("TinkerGraph", dirResults + "load_graphml_tinker.csv");
+		resultFiles.put("TinkerGraph", dirResults + "load_graphml_tinker.csv");
 		LogUtils.makeResultsSummary(dirResults + "load_graphml_summary.csv",
 				resultFiles);
 	}
@@ -101,13 +103,9 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 
 	private String[] graphmlFilenames = null;
 
-	private final String idPropertyKey = Bench.benchProperties
-			.getProperty(Bench.GRAPH_PROPERTY_ID);
+	private final int OP_COUNT = 1000;
 
-	private final int GET_OP_COUNT = 1000;
-	private final int GET_LOOKUPS_PER_OP = 100;
-
-	public BenchmarkReadWriteVersusSize(String log, String[] graphmlFilenames) {
+	public BenchmarkRandomTraversals(String log, String[] graphmlFilenames) {
 		super(log);
 		this.graphmlFilenames = graphmlFilenames;
 	}
@@ -125,19 +123,9 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 					new String[] { graphmlFilename }, LogUtils
 							.pathToName(graphmlFilename)));
 
-			operationFactories.add(new OperationFactoryGeneric(
-					OperationIndexPutAllElements.class, 1,
-					new String[] { idPropertyKey }, LogUtils
-							.pathToName(graphmlFilename)));
-
-			operationFactories.add(new OperationFactoryIndexGetElements(
-					GET_OP_COUNT, idPropertyKey, GET_LOOKUPS_PER_OP, LogUtils
-							.pathToName(graphmlFilename)));
+			operationFactories.add(new OperationFactoryRandomVertex(
+					OperationGetAllNeighbors.class, OP_COUNT));
 		}
-
-		// NOTE Keep largest graph for use in other Benchmarks
-		// operationFactories.add(new OperationFactoryGeneric(
-		// OperationDeleteGraph.class, 1));
 
 		return operationFactories;
 	}

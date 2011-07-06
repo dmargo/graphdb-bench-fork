@@ -15,8 +15,8 @@ public class OperationGremlin extends Operation {
 	// args
 	// -> 0 gremlinScript
 	@Override
-	protected void onInitialize(String[] args) {
-		this.gremlinScript = args[0];
+	protected void onInitialize(Object[] args) {
+		this.gremlinScript = (String) args[0];
 		this.compiledScript = Gremlin.compile(this.gremlinScript);
 		// compiledScript.setStarts(graph.getVertex(1)); // FIXME necessary?
 	}

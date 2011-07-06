@@ -20,9 +20,9 @@ public class OperationIndexGetElements extends Operation {
 	// -> 0 property keys
 	// -> 1 property values
 	@Override
-	protected void onInitialize(String[] args) {
-		this.propertyKeys = args[0].split(",");
-		this.propertyValues = args[1].split(",");
+	protected void onInitialize(Object[] args) {
+		this.propertyKeys = ((String) args[0]).split(",");
+		this.propertyValues = ((String) args[1]).split(",");
 	}
 
 	@Override

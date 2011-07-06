@@ -5,22 +5,22 @@ package com.tinkerpop.bench.operationFactory;
  */
 public class OperationArgs {
 
-	private String[] args = null;
+	private Object[] args = null;
 	private Class<?> type = null;
 	private String tag = null;
 
-	public OperationArgs(String[] args, Class<?> type) {
+	public OperationArgs(Object[] args, Class<?> type) {
 		this(args, type, "");
 	}
 
-	public OperationArgs(String[] args, Class<?> type, String tag) {
+	public OperationArgs(Object[] args, Class<?> type, String tag) {
 		super();
 		this.args = args;
 		this.type = type;
 		this.tag = tag;
 	}
 
-	public String[] getArgs() {
+	public Object[] getArgs() {
 		return args;
 	}
 

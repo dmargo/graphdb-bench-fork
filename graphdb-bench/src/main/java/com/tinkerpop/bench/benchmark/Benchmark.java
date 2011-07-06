@@ -37,6 +37,7 @@ public abstract class Benchmark {
 
 	public final void loadOperationLogs(GraphDescriptor graphDescriptor,
 			String logOut) throws Exception {
+		/*XXX dmargo: Temporary change to allow nonString args.
 		if (new File(log).exists() == false)
 			createOperationLogs();
 
@@ -46,7 +47,15 @@ public abstract class Benchmark {
 		BenchRunner benchRunner = new BenchRunner(graphDescriptor, new File(
 				logOut), operationFactory);
 
-		benchRunner.startBench();
+		benchRunner.startBench();*/
+		try {
+			BenchRunner benchRunner = new BenchRunner(graphDescriptor,
+					new File(logOut), getOperationFactories());
+
+			benchRunner.startBench();
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 
 }

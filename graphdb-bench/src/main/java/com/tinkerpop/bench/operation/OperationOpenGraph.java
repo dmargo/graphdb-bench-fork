@@ -6,7 +6,7 @@ package com.tinkerpop.bench.operation;
 public class OperationOpenGraph extends Operation {
 
 	@Override
-	protected void onInitialize(String[] args) {
+	protected void onInitialize(Object[] args) {
 	}
 
 	@Override

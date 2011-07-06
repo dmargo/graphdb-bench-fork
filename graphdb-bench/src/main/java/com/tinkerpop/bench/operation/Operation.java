@@ -11,7 +11,7 @@ import com.tinkerpop.blueprints.pgm.Graph;
 public abstract class Operation {
 
 	private int opId = -1;
-	private String[] args = null;
+	private Object[] args = null;
 	private long time = -1;
 	private Object result = null;
 	private GraphDescriptor graphDescriptor = null;
@@ -25,7 +25,7 @@ public abstract class Operation {
 		this.opId = opId;
 	}
 
-	public final void setArgs(String[] args) {
+	public final void setArgs(Object[] args) {
 		this.args = args;
 	}
 
@@ -45,7 +45,7 @@ public abstract class Operation {
 		return opId;
 	}
 
-	public final String[] getArgs() {
+	public final Object[] getArgs() {
 		return args;
 	}
 
@@ -88,7 +88,7 @@ public abstract class Operation {
 		time = StatisticsHelper.stopWatch();
 	}
 
-	protected abstract void onInitialize(String[] args);
+	protected abstract void onInitialize(Object[] args);
 
 	protected abstract void onExecute() throws Exception;
 }

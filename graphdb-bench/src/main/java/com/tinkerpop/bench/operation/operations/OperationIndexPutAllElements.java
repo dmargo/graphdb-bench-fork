@@ -20,8 +20,8 @@ public class OperationIndexPutAllElements extends Operation {
 	// args
 	// -> 0 property key
 	@Override
-	protected void onInitialize(String[] args) {
-		this.propertyKey = args[0];
+	protected void onInitialize(Object[] args) {
+		this.propertyKey = (String) args[0];
 	}
 
 	@Override

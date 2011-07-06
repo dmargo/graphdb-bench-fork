@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-core</artifactId>
-			<version>0.7</version>
+			<version>0.8</version>
 		</dependency>
 		<dependency>
 			<groupId>com.tinkerpop</groupId>
@@ -48,22 +48,29 @@
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-dex-graph</artifactId>
-			<version>0.7</version>
+			<version>0.8</version>
 		</dependency>
 
 		<!-- TINKERPOP - NEO4J SUPPORT -->
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-neo4j-graph</artifactId>
-			<version>0.7</version>
+			<version>0.8</version>
 		</dependency>
 
 		<!-- TINKERPOP - ORIENTDB SUPPORT -->
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-orient-graph</artifactId>
-			<version>0.7</version>
+			<version>0.8</version>
 		</dependency>
+
+        <!-- TINKERPOP - SAIL SUPPORT -->
+        <dependency>
+           <groupId>com.tinkerpop.blueprints</groupId>
+           <artifactId>blueprints-sail-graph</artifactId>
+           <version>0.8</version>
+        </dependency>
 
 		<!-- TESTING -->
 		<dependency>

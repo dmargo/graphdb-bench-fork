@@ -21,8 +21,8 @@ public class OperationGetKRandomNeighbors extends Operation {
 	protected void onExecute() throws Exception {
 		try {
 			Vertex curr = startVertex;
-			ArrayList<Edge> next = new ArrayList<Edge>();
-			ArrayList<Vertex> result = new ArrayList<Vertex>();
+			final ArrayList<Edge> next = new ArrayList<Edge>();
+			final ArrayList<Vertex> result = new ArrayList<Vertex>();
 						
 			for(int i = 0; i < k; i++) {
 				for (Edge e : curr.getOutEdges())
@@ -35,7 +35,7 @@ public class OperationGetKRandomNeighbors extends Operation {
 					break;
 			}
 		
-			setResult(result);	
+			setResult(result.size());	
 		} catch (Exception e) {
 			throw e;
 		}

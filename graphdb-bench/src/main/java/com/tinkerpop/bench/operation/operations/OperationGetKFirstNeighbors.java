@@ -21,7 +21,7 @@ public class OperationGetKFirstNeighbors extends Operation {
 	protected void onExecute() throws Exception {
 		try {
 			Vertex curr = startVertex;
-			ArrayList<Vertex> result = new ArrayList<Vertex>();
+			final ArrayList<Vertex> result = new ArrayList<Vertex>();
 			
 			for(int i = 0; i < k; i++) {
 				Iterator<Edge> iter = curr.getOutEdges().iterator();
@@ -32,7 +32,7 @@ public class OperationGetKFirstNeighbors extends Operation {
 					break;
 			}
 			
-			setResult(result);
+			setResult(result.size());
 		} catch (Exception e) {
 			throw e;
 		}

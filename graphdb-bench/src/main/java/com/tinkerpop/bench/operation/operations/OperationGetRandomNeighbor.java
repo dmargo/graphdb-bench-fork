@@ -21,13 +21,13 @@ public class OperationGetRandomNeighbor extends Operation {
 		try {
 			Vertex result = null;
 			
-			ArrayList<Edge> edges = new ArrayList<Edge>();
+			final ArrayList<Edge> edges = new ArrayList<Edge>();
 			for (Edge e : startVertex.getOutEdges())
 				edges.add(e);
 			if (edges.size() > 0)
 				result = edges.get((new Random()).nextInt(edges.size())).getInVertex();
 			
-			setResult(result == null ? "null" : result);
+			setResult(result == null ? 0 : 1);
 			} catch (Exception e) {
 			throw e;
 		}

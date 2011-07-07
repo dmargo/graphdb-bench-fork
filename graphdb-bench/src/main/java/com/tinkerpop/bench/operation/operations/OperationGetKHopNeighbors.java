@@ -21,7 +21,7 @@ public class OperationGetKHopNeighbors extends Operation {
 		try {
 			ArrayList<Vertex> curr = new ArrayList<Vertex>();
 			ArrayList<Vertex> next = new ArrayList<Vertex>();
-			ArrayList<Vertex> result = new ArrayList<Vertex>();
+			final ArrayList<Vertex> result = new ArrayList<Vertex>();
 			
 			curr.add(startVertex);
 			
@@ -39,7 +39,7 @@ public class OperationGetKHopNeighbors extends Operation {
 				next = tmp;
 			}
 			
-			setResult(result);
+			setResult(result.size());
 		} catch (Exception e) {
 			throw e;
 		}

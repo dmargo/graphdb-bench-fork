@@ -24,7 +24,7 @@ public class OperationGetFirstNeighbor extends Operation {
 			if (iter.hasNext())
 				result = iter.next().getInVertex();
 			
-			setResult(result == null ? "null" : result);
+			setResult(result == null ? 0 : 1);
 		} catch (Exception e) {
 			throw e;
 		}

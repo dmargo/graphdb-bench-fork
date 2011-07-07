@@ -13,10 +13,12 @@ import com.tinkerpop.bench.operation.operations.OperationGetKFirstNeighbors;
 import com.tinkerpop.bench.operation.operations.OperationGetKHopNeighbors;
 import com.tinkerpop.bench.operation.operations.OperationGetKRandomNeighbors;
 import com.tinkerpop.bench.operation.operations.OperationGetRandomNeighbor;
+import com.tinkerpop.bench.operation.operations.OperationGetShortestPath;
 import com.tinkerpop.bench.operation.operations.OperationLoadGraphML;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
 import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomVertex;
+import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomVertexPair;
 import com.tinkerpop.blueprints.pgm.impls.bdb.BdbGraph;
 import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
@@ -46,10 +48,10 @@ public class BenchmarkRandomTraversals extends Benchmark {
 		GraphDescriptor graphDescriptor = null;
 
 		String[] graphmlFiles = new String[] {
-				dirGraphML + "barabasi_1000_5000.graphml",
-				dirGraphML + "barabasi_10000_50000.graphml",
-				dirGraphML + "barabasi_100000_500000.graphml",
-				dirGraphML + "barabasi_1000000_5000000.graphml" };
+				dirGraphML + "barabasi_1000_5000.graphml" };
+		//		dirGraphML + "barabasi_10000_50000.graphml",
+		//		dirGraphML + "barabasi_100000_500000.graphml",
+		//		dirGraphML + "barabasi_1000000_5000000.graphml" };
 
 		Benchmark benchmark = new BenchmarkRandomTraversals(dirResults
 				+ "load_graphml.csv", graphmlFiles);
@@ -144,6 +146,9 @@ public class BenchmarkRandomTraversals extends Benchmark {
 			
 			operationFactories.add(new OperationFactoryRandomVertex(
 					OperationGetKHopNeighbors.class, OP_COUNT));
+			
+			operationFactories.add(new OperationFactoryRandomVertexPair(
+					OperationGetShortestPath.class, OP_COUNT / 2));
 		}
 
 		return operationFactories;

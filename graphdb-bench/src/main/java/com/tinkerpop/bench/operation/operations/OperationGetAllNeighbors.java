@@ -18,10 +18,10 @@ public class OperationGetAllNeighbors extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			ArrayList<Vertex> neighbors = new ArrayList<Vertex>();
+			final ArrayList<Vertex> neighbors = new ArrayList<Vertex>();
 			for (Edge e : startVertex.getOutEdges())
 				neighbors.add(e.getInVertex());
-			setResult(neighbors);
+			setResult(neighbors.size());
 		} catch (Exception e) {
 			throw e;
 		}

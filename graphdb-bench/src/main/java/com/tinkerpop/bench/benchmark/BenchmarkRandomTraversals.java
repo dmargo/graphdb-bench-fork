@@ -1,6 +1,5 @@
 package com.tinkerpop.bench.benchmark;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -9,6 +8,11 @@ import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.LogUtils;
 import com.tinkerpop.bench.operation.OperationDeleteGraph;
 import com.tinkerpop.bench.operation.operations.OperationGetAllNeighbors;
+import com.tinkerpop.bench.operation.operations.OperationGetFirstNeighbor;
+import com.tinkerpop.bench.operation.operations.OperationGetKFirstNeighbors;
+import com.tinkerpop.bench.operation.operations.OperationGetKHopNeighbors;
+import com.tinkerpop.bench.operation.operations.OperationGetKRandomNeighbors;
+import com.tinkerpop.bench.operation.operations.OperationGetRandomNeighbor;
 import com.tinkerpop.bench.operation.operations.OperationLoadGraphML;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
@@ -42,10 +46,10 @@ public class BenchmarkRandomTraversals extends Benchmark {
 		GraphDescriptor graphDescriptor = null;
 
 		String[] graphmlFiles = new String[] {
-				dirGraphML + "barabasi_1000_5000.graphml"};
-		//		dirGraphML + "barabasi_10000_50000.graphml",
-		//		dirGraphML + "barabasi_100000_500000.graphml",
-		//		dirGraphML + "barabasi_1000000_5000000.graphml" };
+				dirGraphML + "barabasi_1000_5000.graphml",
+				dirGraphML + "barabasi_10000_50000.graphml",
+				dirGraphML + "barabasi_100000_500000.graphml",
+				dirGraphML + "barabasi_1000000_5000000.graphml" };
 
 		Benchmark benchmark = new BenchmarkRandomTraversals(dirResults
 				+ "load_graphml.csv", graphmlFiles);
@@ -57,10 +61,10 @@ public class BenchmarkRandomTraversals extends Benchmark {
 				+ "load_graphml_bdb.csv");
 		
         //XXX dmargo: Load operation logs with Dex
-        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
-        		+ "dex/", dirResults + "dex/graph.dex");
-        benchmark.loadOperationLogs(graphDescriptor, dirResults
-              + "load_graphml_dex.csv");
+        //graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
+        //		+ "dex/", dirResults + "dex/graph.dex");
+        //benchmark.loadOperationLogs(graphDescriptor, dirResults
+        //      + "load_graphml_dex.csv");
 
 		// Load operation logs with Neo4j
         graphDescriptor = new GraphDescriptor(Neo4jGraph.class, dirResults
@@ -88,7 +92,7 @@ public class BenchmarkRandomTraversals extends Benchmark {
 		// Create file with summarized results from all databases and operations
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
 		resultFiles.put("Bdb", dirResults + "load_graphml_bdb.csv");
-        resultFiles.put("Dex", dirResults + "load_graphml_dex.csv");
+        //resultFiles.put("Dex", dirResults + "load_graphml_dex.csv");
 		resultFiles.put("Neo4j", dirResults + "load_graphml_neo4j.csv");
 		//resultFiles.put("OrientDB", dirResults + "load_graphml_orient.csv");
         //resultFiles.put("Sail", dirResults + "load_graphml_sail.csv");
@@ -124,7 +128,22 @@ public class BenchmarkRandomTraversals extends Benchmark {
 							.pathToName(graphmlFilename)));
 
 			operationFactories.add(new OperationFactoryRandomVertex(
+					OperationGetFirstNeighbor.class, OP_COUNT));
+			
+			operationFactories.add(new OperationFactoryRandomVertex(
+					OperationGetRandomNeighbor.class, OP_COUNT));
+			
+			operationFactories.add(new OperationFactoryRandomVertex(
 					OperationGetAllNeighbors.class, OP_COUNT));
+			
+			operationFactories.add(new OperationFactoryRandomVertex(
+					OperationGetKFirstNeighbors.class, OP_COUNT));
+			
+			operationFactories.add(new OperationFactoryRandomVertex(
+					OperationGetKRandomNeighbors.class, OP_COUNT));
+			
+			operationFactories.add(new OperationFactoryRandomVertex(
+					OperationGetKHopNeighbors.class, OP_COUNT));
 		}
 
 		return operationFactories;

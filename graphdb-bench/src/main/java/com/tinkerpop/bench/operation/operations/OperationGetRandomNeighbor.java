@@ -19,10 +19,15 @@ public class OperationGetRandomNeighbor extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
+			Vertex result = null;
+			
 			ArrayList<Edge> edges = new ArrayList<Edge>();
 			for (Edge e : startVertex.getOutEdges())
 				edges.add(e);
-			setResult(edges.get((new Random()).nextInt(edges.size())).getInVertex());
+			if (edges.size() > 0)
+				result = edges.get((new Random()).nextInt(edges.size())).getInVertex();
+			
+			setResult(result == null ? "null" : result);
 			} catch (Exception e) {
 			throw e;
 		}

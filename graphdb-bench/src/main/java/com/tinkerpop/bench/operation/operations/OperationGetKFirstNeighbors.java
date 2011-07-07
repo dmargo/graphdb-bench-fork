@@ -1,14 +1,16 @@
 package com.tinkerpop.bench.operation.operations;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
-public class OperationGetFirstNeighbor extends Operation {
+public class OperationGetKFirstNeighbors extends Operation {
 
 	private Vertex startVertex;
+	private final int k = 2;
 	
 	@Override
 	protected void onInitialize(Object[] args) {
@@ -18,13 +20,19 @@ public class OperationGetFirstNeighbor extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			Vertex result = null;
+			Vertex curr = startVertex;
+			ArrayList<Vertex> result = new ArrayList<Vertex>();
 			
-			Iterator<Edge> iter = startVertex.getOutEdges().iterator();
-			if (iter.hasNext())
-				result = iter.next().getInVertex();
+			for(int i = 0; i < k; i++) {
+				Iterator<Edge> iter = curr.getOutEdges().iterator();
+				if (iter.hasNext()) {
+					curr = iter.next().getInVertex();
+					result.add(curr);
+				} else
+					break;
+			}
 			
-			setResult(result == null ? "null" : result);
+			setResult(result);
 		} catch (Exception e) {
 			throw e;
 		}

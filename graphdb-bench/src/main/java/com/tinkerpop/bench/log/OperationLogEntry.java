@@ -8,9 +8,10 @@ public class OperationLogEntry {
 	private String[] args = null;
 	private long time = -1;
 	private String result = null;
+	private long memory = -1;
 
 	public OperationLogEntry(int opId, String name, String type, String[] args,
-			long time, String result) {
+			long time, String result, long memory) {
 		super();
 		this.opId = opId;
 		this.name = name;
@@ -18,6 +19,7 @@ public class OperationLogEntry {
 		this.args = args;
 		this.time = time;
 		this.result = result;
+		this.memory = memory;
 	}
 
 	public int getOpId() {
@@ -44,4 +46,7 @@ public class OperationLogEntry {
 		return result;
 	}
 
+	public long getMemory() {
+		return memory;
+	}
 }

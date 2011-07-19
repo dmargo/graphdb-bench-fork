@@ -86,6 +86,7 @@ public class OperationLogReader implements Iterable<OperationLogEntry> {
 			String[] args = null;
 			long time = -1;
 			String result = null;
+			long memory = -1;
 
 			int index = -1;
 			String token = null;
@@ -110,15 +111,19 @@ public class OperationLogReader implements Iterable<OperationLogEntry> {
 					args = extractArgs(token);
 					break;
 				case 4:
-					time = Integer.parseInt(token);
+					//XXX dmargo: was Integer.parseInt(); looked like a bug to me.
+					time = Long.parseLong(token);
 					break;
 				case 5:
 					result = token;
 					break;
+				case 6:
+					memory = Long.parseLong(token);
+					break;
 				}
 			}
 
-			return new OperationLogEntry(opId, name, type, args, time, result);
+			return new OperationLogEntry(opId, name, type, args, time, result, memory);
 		}
 
 		private String[] extractArgs(String argsStr) {

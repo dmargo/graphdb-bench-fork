@@ -39,6 +39,9 @@ public class OperationLogWriter {
 
 		bufferedLogWriter.write("result");
 		bufferedLogWriter.write(logDelim);
+		
+		bufferedLogWriter.write("memory");
+		bufferedLogWriter.write(logDelim);
 
 		bufferedLogWriter.newLine();
 	}
@@ -61,6 +64,9 @@ public class OperationLogWriter {
 		bufferedLogWriter.write(logDelim);
 
 		bufferedLogWriter.write(op.getResult().toString());
+		bufferedLogWriter.write(logDelim);
+		
+		bufferedLogWriter.write(Long.toString(op.getMemory()));
 		bufferedLogWriter.write(logDelim);
 
 		bufferedLogWriter.newLine();

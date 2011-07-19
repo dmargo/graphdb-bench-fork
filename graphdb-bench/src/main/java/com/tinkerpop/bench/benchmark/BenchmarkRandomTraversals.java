@@ -48,10 +48,10 @@ public class BenchmarkRandomTraversals extends Benchmark {
 		GraphDescriptor graphDescriptor = null;
 
 		String[] graphmlFiles = new String[] {
-				dirGraphML + "barabasi_1000_5000.graphml" };
-		//		dirGraphML + "barabasi_10000_50000.graphml",
-		//		dirGraphML + "barabasi_100000_500000.graphml",
-		//		dirGraphML + "barabasi_1000000_5000000.graphml" };
+				dirGraphML + "barabasi_1000_5000.graphml",
+				dirGraphML + "barabasi_10000_50000.graphml",
+				dirGraphML + "barabasi_100000_500000.graphml",
+				dirGraphML + "barabasi_1000000_5000000.graphml" };
 
 		Benchmark benchmark = new BenchmarkRandomTraversals(dirResults
 				+ "load_graphml.csv", graphmlFiles);

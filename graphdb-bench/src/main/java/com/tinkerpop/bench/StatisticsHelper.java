@@ -15,6 +15,7 @@ public class StatisticsHelper {
 
 	private static Random rand = new Random(42);
 	private static long time = -1l;
+	private static long memory = -1l;
 
 	public static Object[] getSampleVertexIds(Graph db, Evaluator evaluator,
 			int sampleSize) {
@@ -64,5 +65,16 @@ public class StatisticsHelper {
 			return temp;
 		}
 	}
-
+	
+	public static long stopMemory() {
+		Runtime rt = Runtime.getRuntime();
+		if (memory == -1) {
+			memory = rt.totalMemory() - rt.freeMemory();
+			return memory;
+		} else {
+			long temp = rt.totalMemory() - rt.freeMemory() - memory;
+			memory = 1l;
+			return temp;
+		}
+	}
 }

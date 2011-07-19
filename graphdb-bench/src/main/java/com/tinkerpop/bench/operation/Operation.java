@@ -16,6 +16,7 @@ public abstract class Operation {
 	private Object result = null;
 	private GraphDescriptor graphDescriptor = null;
 	private String name = null;
+	private long memory = -1;
 
 	/*
 	 * Setter Methods
@@ -72,7 +73,11 @@ public abstract class Operation {
 	public final String getType() {
 		return getClass().getName();
 	}
-
+	
+	public final long getMemory() {
+		return memory;
+	}
+	
 	/*
 	 * Event Methods
 	 */
@@ -83,9 +88,11 @@ public abstract class Operation {
 	}
 
 	public final void execute() throws Exception {
+		StatisticsHelper.stopMemory();
 		StatisticsHelper.stopWatch();
 		onExecute();
 		time = StatisticsHelper.stopWatch();
+		memory = StatisticsHelper.stopMemory();
 	}
 
 	protected abstract void onInitialize(Object[] args);

@@ -13,7 +13,7 @@ public class OperationGetKHopNeighbors extends Operation {
 	
 	@Override
 	protected void onInitialize(Object[] args) {
-		startVertex = (Vertex) args[0];
+		startVertex = getGraph().getVertex(args[0]);
 	}
 	
 	@Override

@@ -16,8 +16,8 @@ public class OperationGetShortestPath extends Operation {
 	
 	@Override
 	protected void onInitialize(Object[] args) {
-		source = (Vertex) args[0];
-		target = (Vertex) args[1];
+		source = getGraph().getVertex(args[0]);
+		target = getGraph().getVertex(args[1]);
 	}
 	
 	@Override

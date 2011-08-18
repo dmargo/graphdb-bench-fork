@@ -7,7 +7,6 @@ import com.tinkerpop.bench.StatisticsHelper;
 import com.tinkerpop.bench.evaluators.EvaluatorUniform;
 import com.tinkerpop.bench.operationFactory.OperationArgs;
 import com.tinkerpop.bench.operationFactory.OperationFactoryBase;
-import com.tinkerpop.blueprints.pgm.Vertex;
 
 public class OperationFactoryRandomVertexPair extends OperationFactoryBase {
 	
@@ -34,10 +33,9 @@ public class OperationFactoryRandomVertexPair extends OperationFactoryBase {
 	
 	@Override
 	protected OperationArgs onCreateOperation() throws Exception {
-		Vertex u = getGraph().getVertex(vertexSamples.remove(0));
-		Vertex v = getGraph().getVertex(vertexSamples.remove(0));
-		Object[] args = {u, v};
-		return new OperationArgs(args, opType);
+		return new OperationArgs(
+				new Object[] { vertexSamples.remove(0), vertexSamples.remove(0) },
+				opType);
 	}
 
 }

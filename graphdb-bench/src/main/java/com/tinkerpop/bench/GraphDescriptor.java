@@ -6,6 +6,7 @@ import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.TransactionalGraph;
 import com.tinkerpop.blueprints.pgm.TransactionalGraph.Mode;
 import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
+import com.tinkerpop.blueprints.pgm.impls.sql.SqlGraph;
 
 import java.io.File;
 
@@ -51,7 +52,7 @@ public class GraphDescriptor {
 			return graph;
 		
 		//XXX dmargo: TOTAL kludge for Dex but I don't see a nontrivial "right" way to do this
-		if (graphType == DexGraph.class)
+		if (graphType == DexGraph.class || graphType == SqlGraph.class)
 			(new File(graphDir)).mkdirs();
 		
 		Object[] args = (null == graphPath) ? new Object[] {}

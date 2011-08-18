@@ -7,24 +7,24 @@ public class OperationFactoryGeneric extends OperationFactoryBase {
 
 	private Class<?> operationType = null;
 	private int opCount = -1;
-	private String[] args = null;
+	private Object[] args = null;
 	private String tag = null;
 
 	public OperationFactoryGeneric(Class<?> operationType) {
-		this(operationType, -1, new String[] {});
+		this(operationType, -1, new Object[] {});
 	}
 
 	public OperationFactoryGeneric(Class<?> operationType, int opCount) {
-		this(operationType, opCount, new String[] {});
+		this(operationType, opCount, new Object[] {});
 	}
 
 	public OperationFactoryGeneric(Class<?> operationType, int opCount,
-			String[] args) {
+			Object[] args) {
 		this(operationType, opCount, args, "");
 	}
 
 	public OperationFactoryGeneric(Class<?> operationType, int opCount,
-			String[] args, String tag) {
+			Object[] args, String tag) {
 		this.operationType = operationType;
 		this.opCount = opCount;
 		this.args = args;

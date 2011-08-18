@@ -2,7 +2,9 @@ package com.tinkerpop.bench;
 
 import java.util.Random;
 
+import com.tinkerpop.bench.evaluators.EdgeEvaluator;
 import com.tinkerpop.bench.evaluators.Evaluator;
+import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
@@ -43,6 +45,44 @@ public class StatisticsHelper {
 					sampleVals[i] -= currentVal;
 					if (sampleVals[i] <= 0)
 						samples[i] = currentVertex.getId();
+					else
+						finished = false;
+				}
+			}
+
+			if (finished == true)
+				break;
+		}
+
+		return samples;
+	}
+	
+	public static Object[] getSampleEdgeIds(Graph db, EdgeEvaluator evaluator,
+			int sampleSize) {
+
+		Object[] samples = new Object[sampleSize];
+		Double[] sampleVals = new Double[sampleSize];
+
+		double totalVal = evaluator.evaluateTotal(db);
+
+		for (int i = 0; i < sampleVals.length; i++) {
+			sampleVals[i] = rand.nextDouble() * totalVal;
+			samples[i] = null;
+		}
+
+		boolean finished = true;
+
+		for (Edge currentEdge : db.getEdges()) {
+
+			double currentVal = evaluator.evaluate(currentEdge);
+
+			finished = true;
+
+			for (int i = 0; i < sampleVals.length; i++) {
+				if (samples[i] == null) {
+					sampleVals[i] -= currentVal;
+					if (sampleVals[i] <= 0)
+						samples[i] = currentEdge.getId();
 					else
 						finished = false;
 				}

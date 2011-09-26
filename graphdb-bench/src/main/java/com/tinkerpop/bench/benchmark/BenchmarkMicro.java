@@ -15,6 +15,7 @@ import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomVert
 import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomVertexPair;
 import com.tinkerpop.blueprints.pgm.impls.bdb.BdbGraph;
 import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
+import com.tinkerpop.blueprints.pgm.impls.dup.DupGraph;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 import com.tinkerpop.blueprints.pgm.impls.orientdb.OrientGraph;
 import com.tinkerpop.blueprints.pgm.impls.rdf.impls.NativeStoreRdfGraph;
@@ -38,10 +39,10 @@ public class BenchmarkMicro extends Benchmark {
 		String dirGraphML = Bench.benchProperties
 				.getProperty(Bench.DATASETS_DIRECTORY);
 		String[] graphmlFiles = new String[] {
-				dirGraphML + "barabasi_1000_5000.graphml",
-				dirGraphML + "barabasi_10000_50000.graphml",
-				dirGraphML + "barabasi_100000_500000.graphml",
-				dirGraphML + "barabasi_1000000_5000000.graphml" };
+				dirGraphML + "barabasi_1000_5000.graphml"};
+				//dirGraphML + "barabasi_10000_50000.graphml",
+				//dirGraphML + "barabasi_100000_500000.graphml"};
+				//dirGraphML + "barabasi_1000000_5000000.graphml"};
 		Benchmark benchmark = new BenchmarkMicro(
 				dirResults + "benchmark_micro.csv", graphmlFiles);
 		
@@ -56,10 +57,18 @@ public class BenchmarkMicro extends Benchmark {
 		resultFiles.put("Bdb", dirResults + "benchmark_micro_bdb.csv");
 		
         //XXX dmargo: Load operation logs with Dex
-        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
-        		+ "dex/", dirResults + "dex/graph.dex");
-        benchmark.loadOperationLogs(graphDescriptor, dirResults
-              + "benchmark_micro_dex.csv");
+        //graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
+        //		+ "dex/", dirResults + "dex/graph.dex");
+        //benchmark.loadOperationLogs(graphDescriptor, dirResults
+        //      + "benchmark_micro_dex.csv");
+        //resultFiles.put("Dex", dirResults + "benchmark_micro_dex.csv");
+        
+        //XXX dmargo: Load operation logs with Dup
+		graphDescriptor = new GraphDescriptor(DupGraph.class,
+				dirResults + "dup/", dirResults + "dup/");
+		benchmark.loadOperationLogs(graphDescriptor,
+				dirResults + "benchmark_micro_dup.csv");
+		resultFiles.put("Dup", dirResults + "benchmark_micro_dup.csv");
 
 		// Load operation logs with Neo4j
         graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
@@ -73,7 +82,9 @@ public class BenchmarkMicro extends Benchmark {
 		//        + "orient/", "local:" + dirResults + "orient/");
 		//benchmark.loadOperationLogs(graphDescriptor, dirResults
 		//        + "benchmark_micro_orient.csv");
+		//resultFiles.put("OrientDB", dirResults + "benchmark_micro_orient.csv");
 		
+		//XXX dmargo: Load operation logs with RDF
 		graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
 				dirResults + "rdf/", dirResults + "rdf/nativestore");
 		benchmark.loadOperationLogs(graphDescriptor,
@@ -85,23 +96,22 @@ public class BenchmarkMicro extends Benchmark {
         //		+ "sail/", dirResults + "sail/nativestore");
         //benchmark.loadOperationLogs(graphDescriptor, dirResults
         //        + "benchmark_micro_sail.csv");
+        //resultFiles.put("Sail", dirResults + "benchmark_micro_sail.csv");
 
-		//graphDescriptor = new GraphDescriptor(SqlGraph.class,
-		//		dirResults + "sql/", dirResults + "sql/sqlite");
-		//benchmark.loadOperationLogs(graphDescriptor,
-		//		dirResults + "benchmark_micro_sql.csv");
-		//resultFiles.put("TinkerGraph", dirResults + "benchmark_micro_sql.csv");
+		//XXX dmargo: Load operation logs with SQL
+		graphDescriptor = new GraphDescriptor(SqlGraph.class,
+				null, "//localhost/graphdb?user=dmargo&password=kitsune");
+		benchmark.loadOperationLogs(graphDescriptor,
+				dirResults + "benchmark_micro_sql.csv");
+		resultFiles.put("Sql", dirResults + "benchmark_micro_sql.csv");
 		
 		// Load operation logs with TinkerGraph
-		graphDescriptor = new GraphDescriptor(TinkerGraph.class);
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_tinker.csv");
-		resultFiles.put("TinkerGraph", dirResults + "benchmark_micro_tinker.csv");
+		//graphDescriptor = new GraphDescriptor(TinkerGraph.class);
+		//benchmark.loadOperationLogs(graphDescriptor,
+		//		dirResults + "benchmark_micro_tinker.csv");
+		//resultFiles.put("TinkerGraph", dirResults + "benchmark_micro_tinker.csv");
 
 		// Create file with summarized results from all databases and operations
-        //resultFiles.put("Dex", dirResults + "benchmark_micro_dex.csv");
-		//resultFiles.put("OrientDB", dirResults + "benchmark_micro_orient.csv");
-        //resultFiles.put("Sail", dirResults + "benchmark_micro_sail.csv");
 		LogUtils.makeResultsSummary(
 				dirResults + "benchmark_micro_summary.csv", resultFiles);
 	}
@@ -111,7 +121,7 @@ public class BenchmarkMicro extends Benchmark {
 	 */
 	
 	private final int OP_COUNT = 1000;
-	private final String PROPERTY_KEY = "key";
+	private final String PROPERTY_KEY = "_id";
 
 	private String[] graphmlFilenames = null;	
 
@@ -168,6 +178,9 @@ public class BenchmarkMicro extends Benchmark {
 			// SHORTEST PATH (Djikstra's algorithm)
 			operationFactories.add(new OperationFactoryRandomVertexPair(
 					OperationGetShortestPath.class, OP_COUNT / 2));
+			
+			operationFactories.add(new OperationFactoryRandomVertexPair(
+					OperationGetShortestPathProperty.class, OP_COUNT / 2));
 			
 			// ADD/SET microbenchmarks
 			operationFactories.add(new OperationFactoryGeneric(

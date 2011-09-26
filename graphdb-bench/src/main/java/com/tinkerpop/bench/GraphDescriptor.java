@@ -52,7 +52,7 @@ public class GraphDescriptor {
 			return graph;
 		
 		//XXX dmargo: TOTAL kludge for Dex but I don't see a nontrivial "right" way to do this
-		if (graphType == DexGraph.class || graphType == SqlGraph.class)
+		if (graphType == DexGraph.class)
 			(new File(graphDir)).mkdirs();
 		
 		Object[] args = (null == graphPath) ? new Object[] {}
@@ -82,9 +82,16 @@ public class GraphDescriptor {
 	}
 
 	public void deleteGraph() {
-		shutdownGraph();
-		if (true == getPersistent()) {
-			deleteDir(graphDir);
+		//XXX dmargo: Again, total kludge but the API is just not uniform.
+		if (graphType == SqlGraph.class) {
+			((SqlGraph) graph).delete();
+			graph = null;
+		} else {
+			shutdownGraph();
+			
+			if (true == getPersistent()) {
+				deleteDir(graphDir);
+			}
 		}
 	}
 

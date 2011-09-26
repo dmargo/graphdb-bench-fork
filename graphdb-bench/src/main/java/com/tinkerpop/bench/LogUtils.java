@@ -30,6 +30,7 @@ public class LogUtils {
 
 	// FIXME (new File(pathStr)).mkdirs(); seems to cause problems with Neo4j
 	// for some reason...
+	//XXX dmargo: This is because neo4j assumes an extant dir is an extant db.
 	// public static void cleanDir(String pathStr) {
 	// deleteDir(pathStr);
 	// (new File(pathStr)).mkdirs();

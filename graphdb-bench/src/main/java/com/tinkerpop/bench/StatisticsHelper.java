@@ -107,7 +107,7 @@ public class StatisticsHelper {
 	}
 	
 	public static long stopMemory() {
-		Runtime rt = Runtime.getRuntime();
+		final Runtime rt = Runtime.getRuntime();
 		if (memory == -1) {
 			memory = rt.totalMemory() - rt.freeMemory();
 			return memory;

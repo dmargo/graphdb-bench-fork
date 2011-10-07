@@ -39,15 +39,21 @@ public class BenchmarkMicro extends Benchmark {
 		String dirGraphML = Bench.benchProperties
 				.getProperty(Bench.DATASETS_DIRECTORY);
 		String[] graphmlFiles = new String[] {
-				dirGraphML + "barabasi_1000_5000.graphml"};
-				//dirGraphML + "barabasi_10000_50000.graphml",
-				//dirGraphML + "barabasi_100000_500000.graphml"};
+				//dirGraphML + "barabasi_1000_5000.graphml"};
+				//dirGraphML + "barabasi_10000_50000.graphml"};
+				dirGraphML + "barabasi_100000_500000.graphml"};
 				//dirGraphML + "barabasi_1000000_5000000.graphml"};
 		Benchmark benchmark = new BenchmarkMicro(
 				dirResults + "benchmark_micro.csv", graphmlFiles);
 		
 		GraphDescriptor graphDescriptor = null;
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
+		
+		// Load operation logs with TinkerGraph
+		//graphDescriptor = new GraphDescriptor(TinkerGraph.class);
+		//benchmark.loadOperationLogs(graphDescriptor,
+		//		dirResults + "benchmark_micro_tinker.csv");
+		//resultFiles.put("TinkerGraph", dirResults + "benchmark_micro_tinker.csv");
 		
 		//XXX dmargo: Load operation logs with Bdb
 		graphDescriptor = new GraphDescriptor(BdbGraph.class,
@@ -57,11 +63,11 @@ public class BenchmarkMicro extends Benchmark {
 		resultFiles.put("Bdb", dirResults + "benchmark_micro_bdb.csv");
 		
         //XXX dmargo: Load operation logs with Dex
-        //graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
-        //		+ "dex/", dirResults + "dex/graph.dex");
-        //benchmark.loadOperationLogs(graphDescriptor, dirResults
-        //      + "benchmark_micro_dex.csv");
-        //resultFiles.put("Dex", dirResults + "benchmark_micro_dex.csv");
+        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
+        		+ "dex/", dirResults + "dex/graph.dex");
+        benchmark.loadOperationLogs(graphDescriptor, dirResults
+              + "benchmark_micro_dex.csv");
+        resultFiles.put("Dex", dirResults + "benchmark_micro_dex.csv");
         
         //XXX dmargo: Load operation logs with Dup
 		graphDescriptor = new GraphDescriptor(DupGraph.class,
@@ -104,12 +110,6 @@ public class BenchmarkMicro extends Benchmark {
 		benchmark.loadOperationLogs(graphDescriptor,
 				dirResults + "benchmark_micro_sql.csv");
 		resultFiles.put("Sql", dirResults + "benchmark_micro_sql.csv");
-		
-		// Load operation logs with TinkerGraph
-		//graphDescriptor = new GraphDescriptor(TinkerGraph.class);
-		//benchmark.loadOperationLogs(graphDescriptor,
-		//		dirResults + "benchmark_micro_tinker.csv");
-		//resultFiles.put("TinkerGraph", dirResults + "benchmark_micro_tinker.csv");
 
 		// Create file with summarized results from all databases and operations
 		LogUtils.makeResultsSummary(
@@ -179,8 +179,8 @@ public class BenchmarkMicro extends Benchmark {
 			operationFactories.add(new OperationFactoryRandomVertexPair(
 					OperationGetShortestPath.class, OP_COUNT / 2));
 			
-			operationFactories.add(new OperationFactoryRandomVertexPair(
-					OperationGetShortestPathProperty.class, OP_COUNT / 2));
+			//operationFactories.add(new OperationFactoryRandomVertexPair(
+			//		OperationGetShortestPathProperty.class, OP_COUNT / 2));
 			
 			// ADD/SET microbenchmarks
 			operationFactories.add(new OperationFactoryGeneric(

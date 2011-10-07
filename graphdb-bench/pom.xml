@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-core</artifactId>
-			<version>0.8</version>
+			<version>1.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.tinkerpop</groupId>
@@ -48,35 +48,56 @@
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-dex-graph</artifactId>
-			<version>0.8</version>
+			<version>1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- TINKERPOP - NEO4J SUPPORT -->
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-neo4j-graph</artifactId>
-			<version>0.8</version>
+			<version>1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- TINKERPOP - ORIENTDB SUPPORT -->
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
 			<artifactId>blueprints-orient-graph</artifactId>
-			<version>0.8</version>
+			<version>1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- TINKERPOP - SAIL SUPPORT -->
 		<dependency>
 		   <groupId>com.tinkerpop.blueprints</groupId>
 		   <artifactId>blueprints-sail-graph</artifactId>
-		   <version>0.8</version>
+		   <version>1.1-SNAPSHOT</version>
 		</dependency>
 
         <!-- DMARGO - BDBGRAPH -->
 		<dependency>
 		   <groupId>com.tinkerpop.blueprints</groupId>
 		   <artifactId>blueprints-bdb-graph</artifactId>
-		   <version>0.8-SNAPSHOT</version>
+		   <version>1.1-SNAPSHOT</version>
+		</dependency>
+
+        <!-- DMARGO - DUPGRAPH -->
+        <dependency>
+          <groupId>com.tinkerpop.blueprints</groupId>
+          <artifactId>blueprints-dup-graph</artifactId>
+          <version>1.1-SNAPSHOT</version>
+        </dependency>
+
+        <!-- DMARGO - RDFGRAPH -->
+		<dependency>
+		   <groupId>com.tinkerpop.blueprints</groupId>
+		   <artifactId>blueprints-rdf-graph</artifactId>
+		   <version>1.1-SNAPSHOT</version>
+		</dependency>
+
+        <!-- DMARGO - SQLGRAPH -->
+		<dependency>
+		   <groupId>com.tinkerpop.blueprints</groupId>
+		   <artifactId>blueprints-sql-graph</artifactId>
+		   <version>1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- TESTING -->

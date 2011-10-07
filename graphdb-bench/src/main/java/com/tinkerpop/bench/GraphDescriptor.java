@@ -3,8 +3,6 @@ package com.tinkerpop.bench;
 import java.lang.reflect.Constructor;
 
 import com.tinkerpop.blueprints.pgm.Graph;
-import com.tinkerpop.blueprints.pgm.TransactionalGraph;
-import com.tinkerpop.blueprints.pgm.TransactionalGraph.Mode;
 import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.sql.SqlGraph;
 
@@ -68,8 +66,8 @@ public class GraphDescriptor {
 			throw e;
 		}
 
-		if (TransactionalGraph.class.isAssignableFrom(graphType))
-			((TransactionalGraph) graph).setTransactionMode(Mode.AUTOMATIC);
+		//if (TransactionalGraph.class.isAssignableFrom(graphType))
+		//	((TransactionalGraph) graph).setTransactionMode(TransactionalGraph.Mode.AUTOMATIC);
 
 		return graph;
 	}

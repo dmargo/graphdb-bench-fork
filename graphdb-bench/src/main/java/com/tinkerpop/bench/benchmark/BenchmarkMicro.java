@@ -55,12 +55,33 @@ public class BenchmarkMicro extends Benchmark {
 		//		dirResults + "benchmark_micro_tinker.csv");
 		//resultFiles.put("TinkerGraph", dirResults + "benchmark_micro_tinker.csv");
 		
-		//XXX dmargo: Load operation logs with Bdb
-		graphDescriptor = new GraphDescriptor(BdbGraph.class,
-				dirResults + "bdb/", dirResults + "bdb/");
+		//XXX dmargo: Load operation logs with SQL
+		graphDescriptor = new GraphDescriptor(SqlGraph.class,
+				null, "//localhost/graphdb?user=dmargo&password=kitsune");
 		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_bdb.csv");
-		resultFiles.put("Bdb", dirResults + "benchmark_micro_bdb.csv");
+				dirResults + "benchmark_micro_sql.csv");
+		resultFiles.put("Sql", dirResults + "benchmark_micro_sql.csv");
+
+		//XXX dmargo: Load operation logs with RDF
+		graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
+				dirResults + "rdf/", dirResults + "rdf/nativestore");
+		benchmark.loadOperationLogs(graphDescriptor,
+				dirResults + "benchmark_micro_rdf.csv");
+		resultFiles.put("Rdf", dirResults + "benchmark_micro_rdf.csv");
+		
+		// Load operation logs with Neo4j
+        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
+				dirResults + "neo4j/", dirResults + "neo4j/");
+		benchmark.loadOperationLogs(graphDescriptor,
+				dirResults + "benchmark_micro_neo4j.csv");
+		resultFiles.put("Neo4j", dirResults + "benchmark_micro_neo4j.csv");
+		
+        //XXX dmargo: Load operation logs with Dup
+		graphDescriptor = new GraphDescriptor(DupGraph.class,
+				dirResults + "dup/", dirResults + "dup/");
+		benchmark.loadOperationLogs(graphDescriptor,
+				dirResults + "benchmark_micro_dup.csv");
+		resultFiles.put("Dup", dirResults + "benchmark_micro_dup.csv");
 		
         //XXX dmargo: Load operation logs with Dex
         graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
@@ -68,20 +89,13 @@ public class BenchmarkMicro extends Benchmark {
         benchmark.loadOperationLogs(graphDescriptor, dirResults
               + "benchmark_micro_dex.csv");
         resultFiles.put("Dex", dirResults + "benchmark_micro_dex.csv");
-        
-        //XXX dmargo: Load operation logs with Dup
-		graphDescriptor = new GraphDescriptor(DupGraph.class,
-				dirResults + "dup/", dirResults + "dup/");
+		
+		//XXX dmargo: Load operation logs with Bdb
+		graphDescriptor = new GraphDescriptor(BdbGraph.class,
+				dirResults + "bdb/", dirResults + "bdb/");
 		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_dup.csv");
-		resultFiles.put("Dup", dirResults + "benchmark_micro_dup.csv");
-
-		// Load operation logs with Neo4j
-        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
-				dirResults + "neo4j/", dirResults + "neo4j/");
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_neo4j.csv");
-		resultFiles.put("Neo4j", dirResults + "benchmark_micro_neo4j.csv");
+				dirResults + "benchmark_micro_bdb.csv");
+		resultFiles.put("Bdb", dirResults + "benchmark_micro_bdb.csv");
 
 		// Load operation logs with Orient
         //graphDescriptor = new GraphDescriptor(OrientGraph.class, dirResults
@@ -89,13 +103,6 @@ public class BenchmarkMicro extends Benchmark {
 		//benchmark.loadOperationLogs(graphDescriptor, dirResults
 		//        + "benchmark_micro_orient.csv");
 		//resultFiles.put("OrientDB", dirResults + "benchmark_micro_orient.csv");
-		
-		//XXX dmargo: Load operation logs with RDF
-		graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
-				dirResults + "rdf/", dirResults + "rdf/nativestore");
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_rdf.csv");
-		resultFiles.put("Rdf", dirResults + "benchmark_micro_rdf.csv");
 
         //XXX dmargo: Load operation logs with Sail
         //graphDescriptor = new GraphDescriptor(NativeStoreSailGraph.class, dirResults
@@ -103,13 +110,6 @@ public class BenchmarkMicro extends Benchmark {
         //benchmark.loadOperationLogs(graphDescriptor, dirResults
         //        + "benchmark_micro_sail.csv");
         //resultFiles.put("Sail", dirResults + "benchmark_micro_sail.csv");
-
-		//XXX dmargo: Load operation logs with SQL
-		graphDescriptor = new GraphDescriptor(SqlGraph.class,
-				null, "//localhost/graphdb?user=dmargo&password=kitsune");
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_sql.csv");
-		resultFiles.put("Sql", dirResults + "benchmark_micro_sql.csv");
 
 		// Create file with summarized results from all databases and operations
 		LogUtils.makeResultsSummary(

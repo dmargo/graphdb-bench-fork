@@ -27,7 +27,7 @@ public class OperationGetRandomNeighbor extends Operation {
 			if (edges.size() > 0)
 				result = edges.get((new Random()).nextInt(edges.size())).getInVertex();
 			
-			setResult(result == null ? 0 : 1);
+			setResult(result != null ? result.toString() : "DNE");
 			} catch (Exception e) {
 			throw e;
 		}

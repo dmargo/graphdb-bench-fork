@@ -10,11 +10,12 @@ import com.tinkerpop.blueprints.pgm.Vertex;
 public class OperationGetKRandomNeighbors extends Operation {
 
 	private Vertex startVertex;
-	private final int k = 2;
+	private int k;
 	
 	@Override
 	protected void onInitialize(Object[] args) {
 		startVertex = getGraph().getVertex(args[0]);
+		k = args.length > 1 ? (Integer) args[1] : 2;
 	}
 	
 	@Override

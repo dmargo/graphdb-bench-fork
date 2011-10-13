@@ -17,7 +17,7 @@ public class OperationGetEdgeProperty extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			setResult(edge.getProperty(property_key));
+			setResult(edge.getProperty(property_key).toString());
 		} catch (Exception e) {
 			throw e;
 		}

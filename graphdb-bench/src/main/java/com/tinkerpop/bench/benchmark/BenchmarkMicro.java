@@ -122,6 +122,7 @@ public class BenchmarkMicro extends Benchmark {
 	
 	private final int OP_COUNT = 1000;
 	private final String PROPERTY_KEY = "_id";
+	private final int K_HOPS = 2;
 
 	private String[] graphmlFilenames = null;	
 
@@ -157,13 +158,13 @@ public class BenchmarkMicro extends Benchmark {
 
 			// GET_NEIGHBORS ops and variants
 			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetFirstNeighbor.class, OP_COUNT));
+					OperationGetFirstNeighbor.class, OP_COUNT, new Integer[] { K_HOPS }));
 			
 			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetRandomNeighbor.class, OP_COUNT));
+					OperationGetRandomNeighbor.class, OP_COUNT, new Integer[] { K_HOPS }));
 			
 			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetAllNeighbors.class, OP_COUNT));
+					OperationGetAllNeighbors.class, OP_COUNT, new Integer[] { K_HOPS }));
 			
 			// GET_K_NEIGHBORS ops and variants
 			operationFactories.add(new OperationFactoryRandomVertex(

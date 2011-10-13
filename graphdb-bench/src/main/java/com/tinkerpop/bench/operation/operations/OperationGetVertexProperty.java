@@ -17,7 +17,7 @@ public class OperationGetVertexProperty extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			setResult(vertex.getProperty(property_key));
+			setResult(vertex.getProperty(property_key).toString());
 		} catch (Exception e) {
 			throw e;
 		}

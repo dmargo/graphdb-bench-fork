@@ -14,7 +14,7 @@ public class OperationGetVertex extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			setResult(getGraph().getVertex(id));
+			setResult(getGraph().getVertex(id).toString());
 		} catch (Exception e) {
 			throw e;
 		}

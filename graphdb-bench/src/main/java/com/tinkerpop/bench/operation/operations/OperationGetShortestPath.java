@@ -27,11 +27,16 @@ public class OperationGetShortestPath extends Operation {
 	protected void onExecute() throws Exception {
 		try {
 			ArrayList<Vertex> result = new ArrayList<Vertex>();
+			
 			if (isSQLGraph) {
 				for (Vertex u : ((SqlGraph) getGraph()).getShortestPath(source, target)) {
 					result.add(u);
 				}
+				setResult(result.size());
 			} else {
+				int get_nbrs = 0;
+				int get_vertex = 0;
+				
 				final HashMap<Vertex,Vertex> prev = new HashMap<Vertex,Vertex>();
 				final HashMap<Vertex,Integer> dist = new HashMap<Vertex,Integer>();
 				
@@ -56,7 +61,9 @@ public class OperationGetShortestPath extends Operation {
 					if (u.equals(target))
 						break;
 					
+					get_nbrs++;
 					for (Edge e : u.getOutEdges()) {
+						get_vertex++;
 						Vertex v = e.getInVertex();
 						
 						int alt = dist.get(u) + 1;
@@ -76,8 +83,10 @@ public class OperationGetShortestPath extends Operation {
 					result.add(0, u);
 					u = prev.get(u);
 				}
+				
+				// format path_len:get_nbrs:get_vertex
+				setResult(result.size() + ":" + get_nbrs + ":" + get_vertex);
 			}
-			setResult(result.size());
 		} catch (Exception e) {
 			throw e;
 		}

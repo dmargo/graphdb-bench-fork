@@ -14,7 +14,7 @@ public class OperationGetEdge extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			setResult(getGraph().getEdge(id));
+			setResult(getGraph().getEdge(id).toString());
 		} catch (Exception e) {
 			throw e;
 		}

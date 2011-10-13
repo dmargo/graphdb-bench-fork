@@ -21,7 +21,7 @@ public class OperationAddEdge extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			setResult(getGraph().addEdge(id, out, in, label));
+			setResult(getGraph().addEdge(id, out, in, label).toString());
 		} catch (Exception e) {
 			setResult("DUPLICATE");
 		}

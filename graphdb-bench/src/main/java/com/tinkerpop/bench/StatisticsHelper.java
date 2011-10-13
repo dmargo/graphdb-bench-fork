@@ -97,10 +97,10 @@ public class StatisticsHelper {
 
 	public static long stopWatch() {
 		if (time == -1l) {
-			time = System.currentTimeMillis();
+			time = System.nanoTime();
 			return time;
 		} else {
-			long temp = System.currentTimeMillis() - time;
+			long temp = System.nanoTime() - time;
 			time = -1l;
 			return temp;
 		}

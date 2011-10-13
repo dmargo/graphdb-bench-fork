@@ -41,8 +41,8 @@ public class BenchmarkMicro extends Benchmark {
 		String[] graphmlFiles = new String[] {
 				//dirGraphML + "barabasi_1000_5000.graphml"};
 				//dirGraphML + "barabasi_10000_50000.graphml"};
-				dirGraphML + "barabasi_100000_500000.graphml"};
-				//dirGraphML + "barabasi_1000000_5000000.graphml"};
+				//dirGraphML + "barabasi_100000_500000.graphml"};
+				dirGraphML + "barabasi_1000000_5000000.graphml"};
 		Benchmark benchmark = new BenchmarkMicro(
 				dirResults + "benchmark_micro.csv", graphmlFiles);
 		
@@ -177,11 +177,11 @@ public class BenchmarkMicro extends Benchmark {
 					OperationGetKHopNeighbors.class, OP_COUNT));
 			
 			// SHORTEST PATH (Djikstra's algorithm)
-			operationFactories.add(new OperationFactoryRandomVertexPair(
-					OperationGetShortestPath.class, OP_COUNT / 2));
-			
 			//operationFactories.add(new OperationFactoryRandomVertexPair(
-			//		OperationGetShortestPathProperty.class, OP_COUNT / 2));
+			//		OperationGetShortestPath.class, OP_COUNT / 2));
+			
+			operationFactories.add(new OperationFactoryRandomVertexPair(
+					OperationGetShortestPathProperty.class, OP_COUNT / 2));
 			
 			// ADD/SET microbenchmarks
 			operationFactories.add(new OperationFactoryGeneric(

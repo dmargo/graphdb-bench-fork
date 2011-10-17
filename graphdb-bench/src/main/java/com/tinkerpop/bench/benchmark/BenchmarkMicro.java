@@ -39,10 +39,10 @@ public class BenchmarkMicro extends Benchmark {
 		String dirGraphML = Bench.benchProperties
 				.getProperty(Bench.DATASETS_DIRECTORY);
 		String[] graphmlFiles = new String[] {
-				//dirGraphML + "barabasi_1000_5000.graphml"};
+				dirGraphML + "barabasi_1000_5000.graphml"};
 				//dirGraphML + "barabasi_10000_50000.graphml"};
 				//dirGraphML + "barabasi_100000_500000.graphml"};
-				dirGraphML + "barabasi_1000000_5000000.graphml"};
+				//dirGraphML + "barabasi_1000000_5000000.graphml"};
 		Benchmark benchmark = new BenchmarkMicro(
 				dirResults + "benchmark_micro.csv", graphmlFiles);
 		
@@ -70,11 +70,11 @@ public class BenchmarkMicro extends Benchmark {
 		resultFiles.put("Rdf", dirResults + "benchmark_micro_rdf.csv");
 		
 		// Load operation logs with Neo4j
-        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
-				dirResults + "neo4j/", dirResults + "neo4j/");
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_neo4j.csv");
-		resultFiles.put("Neo4j", dirResults + "benchmark_micro_neo4j.csv");
+//        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
+//				dirResults + "neo4j/", dirResults + "neo4j/");
+//		benchmark.loadOperationLogs(graphDescriptor,
+//				dirResults + "benchmark_micro_neo4j.csv");
+//		resultFiles.put("Neo4j", dirResults + "benchmark_micro_neo4j.csv");
 		
         //XXX dmargo: Load operation logs with Dup
 		graphDescriptor = new GraphDescriptor(DupGraph.class,

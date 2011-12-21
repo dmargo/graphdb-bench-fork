@@ -8,7 +8,7 @@ import com.tinkerpop.bench.benchmark.BenchmarkReadWriteVersusSize;
 public class BenchmarkSuite {
 	public static void main(String[] args) throws Exception {
 		//BenchmarkEchoVersusDepth.run();
-		BenchmarkMicro.run();
+		BenchmarkMicro.run(args);
 		//BenchmarkRandomTraversals.run();
 		//BenchmarkReadWriteVersusSize.run();
 	}

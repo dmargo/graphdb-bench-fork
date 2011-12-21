@@ -10,7 +10,6 @@ import com.tinkerpop.bench.operation.OperationDeleteGraph;
 import com.tinkerpop.bench.operation.operations.*;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
-import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomEdge;
 import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomVertex;
 import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomVertexPair;
 import com.tinkerpop.blueprints.pgm.impls.bdb.BdbGraph;
@@ -31,9 +30,9 @@ public class BenchmarkMicro extends Benchmark {
 	 * Static Code
 	 */
 
-	public static void run() throws Exception {
+	public static void run(String[] args) throws Exception {
 		String dirResults = Bench.benchProperties
-				.getProperty(Bench.RESULTS_DIRECTORY) + "Micro/";
+				.getProperty(Bench.RESULTS_DIRECTORY) + "Micro-" + args[0] + "/";
 		LogUtils.deleteDir(dirResults);
 
 		String dirGraphML = Bench.benchProperties
@@ -56,46 +55,94 @@ public class BenchmarkMicro extends Benchmark {
 		//resultFiles.put("TinkerGraph", dirResults + "benchmark_micro_tinker.csv");
 		
 		//XXX dmargo: Load operation logs with SQL
-		graphDescriptor = new GraphDescriptor(SqlGraph.class,
-				null, "//localhost/graphdb?user=dmargo&password=kitsune");
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_sql.csv");
-		resultFiles.put("Sql", dirResults + "benchmark_micro_sql.csv");
+		if (args[0].equals("sql")) {
+			graphDescriptor = new GraphDescriptor(SqlGraph.class,
+					null, "//localhost/graphdb?user=dmargo&password=kitsune");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_sql_warmup.csv");
+			resultFiles.put("Warmup", dirResults + "benchmark_micro_sql_warmup.csv");
+			
+			graphDescriptor = new GraphDescriptor(SqlGraph.class,
+					null, "//localhost/graphdb?user=dmargo&password=kitsune");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_sql.csv");
+			resultFiles.put("Sql", dirResults + "benchmark_micro_sql.csv");
+		}
 
 		//XXX dmargo: Load operation logs with RDF
-		graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
-				dirResults + "rdf/", dirResults + "rdf/nativestore");
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_rdf.csv");
-		resultFiles.put("Rdf", dirResults + "benchmark_micro_rdf.csv");
+		if (args[0].equals("rdf")) {
+			graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
+					dirResults + "rdf_warmup/", dirResults + "rdf_warmup/nativestore");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_rdf_warmup.csv");
+			resultFiles.put("Warmup", dirResults + "benchmark_micro_rdf_warmup.csv");
+			
+			graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
+					dirResults + "rdf/", dirResults + "rdf/nativestore");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_rdf.csv");
+			resultFiles.put("Rdf", dirResults + "benchmark_micro_rdf.csv");
+		}
 		
 		// Load operation logs with Neo4j
-//        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
-//				dirResults + "neo4j/", dirResults + "neo4j/");
-//		benchmark.loadOperationLogs(graphDescriptor,
-//				dirResults + "benchmark_micro_neo4j.csv");
-//		resultFiles.put("Neo4j", dirResults + "benchmark_micro_neo4j.csv");
+		if (args[0].equals("neo")) {
+	        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
+					dirResults + "neo4j_warmup/", dirResults + "neo4j_warmup/");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_neo4j_warmup.csv");
+			resultFiles.put("Warmup", dirResults + "benchmark_micro_neo4j_warmup.csv");
+			
+	        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
+					dirResults + "neo4j/", dirResults + "neo4j/");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_neo4j.csv");
+			resultFiles.put("Neo4j", dirResults + "benchmark_micro_neo4j.csv");
+		}
 		
         //XXX dmargo: Load operation logs with Dup
-		graphDescriptor = new GraphDescriptor(DupGraph.class,
-				dirResults + "dup/", dirResults + "dup/");
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_dup.csv");
-		resultFiles.put("Dup", dirResults + "benchmark_micro_dup.csv");
+		if (args[0].equals("dup")) {
+			graphDescriptor = new GraphDescriptor(DupGraph.class,
+					dirResults + "dup_warmup/", dirResults + "dup_warmup/");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_dup_warmup.csv");
+			resultFiles.put("Warmup", dirResults + "benchmark_micro_dup_warmup.csv");
+			
+			graphDescriptor = new GraphDescriptor(DupGraph.class,
+					dirResults + "dup/", dirResults + "dup/");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_dup.csv");
+			resultFiles.put("Dup", dirResults + "benchmark_micro_dup.csv");
+		}
 		
         //XXX dmargo: Load operation logs with Dex
-        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
-        		+ "dex/", dirResults + "dex/graph.dex");
-        benchmark.loadOperationLogs(graphDescriptor, dirResults
-              + "benchmark_micro_dex.csv");
-        resultFiles.put("Dex", dirResults + "benchmark_micro_dex.csv");
+		if (args[0].equals("dex")) {
+	        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
+	        		+ "dex_warmup/", dirResults + "dex_warmup/graph.dex");
+	        benchmark.loadOperationLogs(graphDescriptor, dirResults
+	              + "benchmark_micro_dex_warmup.csv");
+	        resultFiles.put("Warmup", dirResults + "benchmark_micro_dex_warmup.csv");
+			
+	        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
+	        		+ "dex/", dirResults + "dex/graph.dex");
+	        benchmark.loadOperationLogs(graphDescriptor, dirResults
+	              + "benchmark_micro_dex.csv");
+	        resultFiles.put("Dex", dirResults + "benchmark_micro_dex.csv");
+		}
 		
 		//XXX dmargo: Load operation logs with Bdb
-		graphDescriptor = new GraphDescriptor(BdbGraph.class,
-				dirResults + "bdb/", dirResults + "bdb/");
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + "benchmark_micro_bdb.csv");
-		resultFiles.put("Bdb", dirResults + "benchmark_micro_bdb.csv");
+		if (args[0].equals("bdb")) {
+			graphDescriptor = new GraphDescriptor(BdbGraph.class,
+					dirResults + "bdb_warmup/", dirResults + "bdb_warmup/");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_bdb_warmup.csv");
+			resultFiles.put("Warmup", dirResults + "benchmark_micro_bdb_warmup.csv");	
+			
+			graphDescriptor = new GraphDescriptor(BdbGraph.class,
+					dirResults + "bdb/", dirResults + "bdb/");
+			benchmark.loadOperationLogs(graphDescriptor,
+					dirResults + "benchmark_micro_bdb.csv");
+			resultFiles.put("Bdb", dirResults + "benchmark_micro_bdb.csv");
+		}
 
 		// Load operation logs with Orient
         //graphDescriptor = new GraphDescriptor(OrientGraph.class, dirResults
@@ -143,18 +190,31 @@ public class BenchmarkMicro extends Benchmark {
 					OperationLoadGraphML.class, 1,
 					new String[] { graphmlFilename }, LogUtils.pathToName(graphmlFilename)));
 			
+			/*
 			// GET microbenchmarks
-			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetVertex.class, OP_COUNT));
+			operationFactories.add(new OperationFactoryGeneric(
+					OperationGetManyVertices.class, 1,
+					new Integer[] { OP_COUNT }));
+			//operationFactories.add(new OperationFactoryRandomVertex(
+			//		OperationGetVertex.class, OP_COUNT));
 			
-			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
+			operationFactories.add(new OperationFactoryGeneric(
+					OperationGetManyVertexProperties.class, 1,
+					new Object[] { PROPERTY_KEY, OP_COUNT }));
+			//operationFactories.add(new OperationFactoryRandomVertex(
+			//		OperationGetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
 			
-			operationFactories.add(new OperationFactoryRandomEdge(
-					OperationGetEdge.class, OP_COUNT));
+			operationFactories.add(new OperationFactoryGeneric(
+					OperationGetManyEdges.class, 1,
+					new Integer[] { OP_COUNT }));
+			//operationFactories.add(new OperationFactoryRandomEdge(
+			//		OperationGetEdge.class, OP_COUNT));
 			
-			operationFactories.add(new OperationFactoryRandomEdge(
-					OperationGetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
+			operationFactories.add(new OperationFactoryGeneric(
+					OperationGetManyEdgeProperties.class, 1,
+					new Object[] { PROPERTY_KEY, OP_COUNT }));
+			//operationFactories.add(new OperationFactoryRandomEdge(
+			//		OperationGetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
 
 			// GET_NEIGHBORS ops and variants
 			operationFactories.add(new OperationFactoryRandomVertex(
@@ -176,25 +236,40 @@ public class BenchmarkMicro extends Benchmark {
 			operationFactories.add(new OperationFactoryRandomVertex(
 					OperationGetKHopNeighbors.class, OP_COUNT));
 			
+			
 			// SHORTEST PATH (Djikstra's algorithm)
-			//operationFactories.add(new OperationFactoryRandomVertexPair(
-			//		OperationGetShortestPath.class, OP_COUNT / 2));
+			operationFactories.add(new OperationFactoryRandomVertexPair(
+					OperationGetShortestPath.class, OP_COUNT / 2));
 			
 			operationFactories.add(new OperationFactoryRandomVertexPair(
 					OperationGetShortestPathProperty.class, OP_COUNT / 2));
+			*/
 			
 			// ADD/SET microbenchmarks
 			operationFactories.add(new OperationFactoryGeneric(
-					OperationAddVertex.class, OP_COUNT));
+					OperationAddManyVertices.class, 1,
+					new Integer[] { OP_COUNT }));
+			//operationFactories.add(new OperationFactoryGeneric(
+			//		OperationAddVertex.class, OP_COUNT));
 			
-			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationSetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
+			operationFactories.add(new OperationFactoryGeneric(
+					OperationSetManyVertexProperties.class, 1,
+					new Object[] { PROPERTY_KEY, OP_COUNT }));
+			//operationFactories.add(new OperationFactoryRandomVertex(
+			//		OperationSetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
 			
-			operationFactories.add(new OperationFactoryRandomVertexPair(
-					OperationAddEdge.class, OP_COUNT));
+			operationFactories.add(new OperationFactoryGeneric(
+					OperationAddManyEdges.class, 1,
+					new Integer[] { OP_COUNT }));
+			//operationFactories.add(new OperationFactoryRandomVertexPair(
+			//		OperationAddEdge.class, OP_COUNT));
 			
-			operationFactories.add(new OperationFactoryRandomEdge(
-					OperationSetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY}));
+			operationFactories.add(new OperationFactoryGeneric(
+					OperationSetManyEdgeProperties.class, 1,
+					new Object[] { PROPERTY_KEY, OP_COUNT }));
+			//operationFactories.add(new OperationFactoryRandomEdge(
+			//		OperationSetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY}));
+					
 		}
 
 		return operationFactories;

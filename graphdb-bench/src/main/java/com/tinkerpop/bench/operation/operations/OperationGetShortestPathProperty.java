@@ -21,8 +21,8 @@ public class OperationGetShortestPathProperty extends Operation {
 	protected void onInitialize(Object[] args) {
 		source = getGraph().getVertex(args[0]);
 		target = getGraph().getVertex(args[1]);
-		isRDFGraph = getGraph().getClass() == RdfGraph.class;
-		isSQLGraph = getGraph().getClass() == SqlGraph.class;
+		isRDFGraph = getGraph() instanceof RdfGraph;
+		isSQLGraph = getGraph() instanceof SqlGraph;
 	}
 	
 	@Override

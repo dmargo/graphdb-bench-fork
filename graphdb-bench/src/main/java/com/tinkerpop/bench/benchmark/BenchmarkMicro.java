@@ -33,7 +33,16 @@ public class BenchmarkMicro extends Benchmark {
 	 * Static Code
 	 */
 
-	public static void run(String[] args) throws Exception {
+	public static void run(String[] args) throws Exception {		
+		String dirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY) + "Micro/";
+		
+		String dirGraphML = Bench.benchProperties.getProperty(Bench.DATASETS_DIRECTORY);
+		String[] graphmlFiles = new String[] {
+				//dirGraphML + "barabasi_1000_5000.graphml"};
+				//dirGraphML + "barabasi_10000_50000.graphml"};
+				//dirGraphML + "barabasi_100000_500000.graphml"};
+				dirGraphML + "barabasi_1000000_5000000.graphml"};
+		
 		OptionParser parser = new OptionParser();
 		parser.accepts("bdb");
 		parser.accepts("dex");
@@ -43,116 +52,138 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("sql");
 		
 		parser.accepts("ingest");
+		parser.accepts("dijkstra");
 		parser.accepts("add");
 		OptionSet options = parser.parse(args);
 		
-		StringBuilder sb = new StringBuilder();
-		for (String s : args)
-			sb.append(s);
-		String dirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY) +
-				"Micro-" + sb.toString() + "/";
-		LogUtils.deleteDir(dirResults);
-
-		String dirGraphML = Bench.benchProperties.getProperty(Bench.DATASETS_DIRECTORY);
-		String[] graphmlFiles = new String[] {
-				//dirGraphML + "barabasi_1000_5000.graphml"};
-				//dirGraphML + "barabasi_10000_50000.graphml"};
-				//dirGraphML + "barabasi_100000_500000.graphml"};
-				dirGraphML + "barabasi_1000000_5000000.graphml"};
-		
 		Benchmark benchmark = new BenchmarkMicro(dirResults + "benchmark_micro.csv", graphmlFiles, options);
 		
+		
 		GraphDescriptor graphDescriptor = null;
+		
+		StringBuilder sb = new StringBuilder();
+		for (String s : args) {
+			sb.append(s.substring(2));
+			sb.append('-');
+		}
+		sb.append(Runtime.getRuntime().maxMemory());
+		String argString = sb.toString();
+		
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
+		
 		
 		//XXX dmargo: Load operation logs with Bdb
 		if (options.has("bdb")) {
 			graphDescriptor = new GraphDescriptor(BdbGraph.class,
-					dirResults + "bdb_warmup/", dirResults + "bdb_warmup/");
+					dirResults + "bdb/warmup/", dirResults + "bdb/warmup/");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_bdb_warmup.csv");
-			resultFiles.put("Bdb-Warmup", dirResults + "benchmark_micro_bdb_warmup.csv");	
+					dirResults + "bdb/bdb-warmup-" + argString + ".csv");
+			resultFiles.put("Bdb-Warmup", dirResults + "bdb/bdb-warmup-" + argString + ".csv");	
 			
 			graphDescriptor = new GraphDescriptor(BdbGraph.class,
-					dirResults + "bdb/", dirResults + "bdb/");
+					dirResults + "bdb/db", dirResults + "bdb/db");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_bdb.csv");
-			resultFiles.put("Bdb", dirResults + "benchmark_micro_bdb.csv");
+					dirResults + "bdb/bdb-" + argString + ".csv");
+			resultFiles.put("Bdb", dirResults + "bdb/bdb-" + argString + ".csv");
+			
+			// Create file with summarized results from all databases and operations
+			LogUtils.makeResultsSummary(
+					dirResults + "bdb/summary-" + argString + ".csv", resultFiles);
 		}
 		
         //XXX dmargo: Load operation logs with Dex
-		if (options.has("dex")) {
-	        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
-	        		+ "dex_warmup/", dirResults + "dex_warmup/graph.dex");
-	        benchmark.loadOperationLogs(graphDescriptor, dirResults
-	              + "benchmark_micro_dex_warmup.csv");
-	        resultFiles.put("Dex-Warmup", dirResults + "benchmark_micro_dex_warmup.csv");
+		else if (options.has("dex")) {
+	        graphDescriptor = new GraphDescriptor(DexGraph.class,
+	        		dirResults + "dex/", dirResults + "dex/warmup.dex");
+	        benchmark.loadOperationLogs(graphDescriptor,
+	        		dirResults + "dex/dex-warmup-" + argString + ".csv");
+	        resultFiles.put("Dex-Warmup", dirResults + "dex/dex-warmup-" + argString + ".csv");
 			
-	        graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults
-	        		+ "dex/", dirResults + "dex/graph.dex");
-	        benchmark.loadOperationLogs(graphDescriptor, dirResults
-	              + "benchmark_micro_dex.csv");
-	        resultFiles.put("Dex", dirResults + "benchmark_micro_dex.csv");
+	        graphDescriptor = new GraphDescriptor(DexGraph.class,
+	        		dirResults + "dex/", dirResults + "dex/db.dex");
+	        benchmark.loadOperationLogs(graphDescriptor,
+	        		dirResults + "dex/dex-" + argString + ".csv");
+	        resultFiles.put("Dex", dirResults + "dex/dex-" + argString + ".csv");
+	        
+			// Create file with summarized results from all databases and operations
+			LogUtils.makeResultsSummary(
+					dirResults + "dex/summary-" + argString + ".csv", resultFiles);
 		}
 		
         //XXX dmargo: Load operation logs with Dup
-		if (options.has("dup")) {
+		else if (options.has("dup")) {
 			graphDescriptor = new GraphDescriptor(DupGraph.class,
-					dirResults + "dup_warmup/", dirResults + "dup_warmup/");
+					dirResults + "dup/warmup/", dirResults + "dup/warmup/");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_dup_warmup.csv");
-			resultFiles.put("Dup-Warmup", dirResults + "benchmark_micro_dup_warmup.csv");
+					dirResults + "dup/dup-warmup-" + argString + ".csv");
+			resultFiles.put("Dup-Warmup", dirResults + "dup/dup-warmup-" + argString + ".csv");
 			
 			graphDescriptor = new GraphDescriptor(DupGraph.class,
-					dirResults + "dup/", dirResults + "dup/");
+					dirResults + "dup/db/", dirResults + "dup/db/");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_dup.csv");
-			resultFiles.put("Dup", dirResults + "benchmark_micro_dup.csv");
+					dirResults + "dup/dup-" + argString + ".csv");
+			resultFiles.put("Dup", dirResults + "dup/dup-" + argString + ".csv");
+			
+			// Create file with summarized results from all databases and operations
+			LogUtils.makeResultsSummary(
+					dirResults + "dup/summary-" + argString + ".csv", resultFiles);
 		}
 		
 		// Load operation logs with Neo4j
-		if (options.has("neo")) {
+		else if (options.has("neo")) {
 	        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
-					dirResults + "neo4j_warmup/", dirResults + "neo4j_warmup/");
+					dirResults + "neo4j/warmup/", dirResults + "neo4j/warmup/");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_neo4j_warmup.csv");
-			resultFiles.put("Neo4j-Warmup", dirResults + "benchmark_micro_neo4j_warmup.csv");
+					dirResults + "neo4j/neo4j-warmup-" + argString + ".csv");
+			resultFiles.put("Neo4j-Warmup", dirResults + "neo4j/neo4j-warmup-" + argString + ".csv");
 			
 	        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
-					dirResults + "neo4j/", dirResults + "neo4j/");
+					dirResults + "neo4j/db", dirResults + "neo4j/db");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_neo4j.csv");
-			resultFiles.put("Neo4j", dirResults + "benchmark_micro_neo4j.csv");
+					dirResults + "neo4j/neo4j-" + argString + ".csv");
+			resultFiles.put("Neo4j", dirResults + "neo4j/neo4j-" + argString + ".csv");
+			
+			// Create file with summarized results from all databases and operations
+			LogUtils.makeResultsSummary(
+					dirResults + "neo4j/summary-" + argString + ".csv", resultFiles);
 		}
 		
 		//XXX dmargo: Load operation logs with RDF
-		if (options.has("rdf")) {
+		else if (options.has("rdf")) {
 			graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
-					dirResults + "rdf_warmup/", dirResults + "rdf_warmup/nativestore");
+					dirResults + "rdf/warmup/", dirResults + "rdf/warmup/");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_rdf_warmup.csv");
-			resultFiles.put("Rdf-Warmup", dirResults + "benchmark_micro_rdf_warmup.csv");
+					dirResults + "rdf/rdf-warmup-" + argString + ".csv");
+			resultFiles.put("Rdf-Warmup", dirResults + "rdf/rdf-warmup-" + argString + ".csv");
 			
 			graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
-					dirResults + "rdf/", dirResults + "rdf/nativestore");
+					dirResults + "rdf/db/", dirResults + "rdf/db/");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_rdf.csv");
-			resultFiles.put("Rdf", dirResults + "benchmark_micro_rdf.csv");
+					dirResults + "rdf/rdf-" + argString + ".csv");
+			resultFiles.put("Rdf", dirResults + "rdf/rdf-" + argString + ".csv");
+			
+			// Create file with summarized results from all databases and operations
+			LogUtils.makeResultsSummary(
+					dirResults + "rdf/summary-" + argString + ".csv", resultFiles);
 		}
 		
 		//XXX dmargo: Load operation logs with SQL
-		if (options.has("sql")) {
+		else if (options.has("sql")) {
 			graphDescriptor = new GraphDescriptor(SqlGraph.class,
 					null, "//localhost/graphdb?user=dmargo&password=kitsune");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_sql_warmup.csv");
-			resultFiles.put("Sql-Warmup", dirResults + "benchmark_micro_sql_warmup.csv");
+					dirResults + "sql/sql-warmup-" + argString + ".csv");
+			resultFiles.put("Sql-Warmup", dirResults + "sql/sql-warmup-" + argString + ".csv");
 			
 			graphDescriptor = new GraphDescriptor(SqlGraph.class,
 					null, "//localhost/graphdb?user=dmargo&password=kitsune");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "benchmark_micro_sql.csv");
-			resultFiles.put("Sql", dirResults + "benchmark_micro_sql.csv");
+					dirResults + "sql/sql-" + argString + ".csv");
+			resultFiles.put("Sql", dirResults + "sql/sql-" + argString + ".csv");
+			
+			// Create file with summarized results from all databases and operations
+			LogUtils.makeResultsSummary(
+					dirResults + "sql/summary-" + argString + ".csv", resultFiles);
 		}
 
 		// Load operation logs with Orient
@@ -174,10 +205,6 @@ public class BenchmarkMicro extends Benchmark {
 		//benchmark.loadOperationLogs(graphDescriptor,
 		//		dirResults + "benchmark_micro_tinker.csv");
 		//resultFiles.put("TinkerGraph", dirResults + "benchmark_micro_tinker.csv");
-
-		// Create file with summarized results from all databases and operations
-		LogUtils.makeResultsSummary(
-				dirResults + "benchmark_micro_summary.csv", resultFiles);
 	}
 
 	/*
@@ -259,11 +286,13 @@ public class BenchmarkMicro extends Benchmark {
 			
 			
 			// SHORTEST PATH (Djikstra's algorithm)
-			operationFactories.add(new OperationFactoryRandomVertexPair(
-					OperationGetShortestPath.class, OP_COUNT / 2));
-			
-			operationFactories.add(new OperationFactoryRandomVertexPair(
-					OperationGetShortestPathProperty.class, OP_COUNT / 2));
+			if (options.has("dijkstra")) {
+				operationFactories.add(new OperationFactoryRandomVertexPair(
+						OperationGetShortestPath.class, OP_COUNT / 2));
+				
+				operationFactories.add(new OperationFactoryRandomVertexPair(
+						OperationGetShortestPathProperty.class, OP_COUNT / 2));
+			}
 			
 			// ADD/SET microbenchmarks
 			if (options.has("add")) {

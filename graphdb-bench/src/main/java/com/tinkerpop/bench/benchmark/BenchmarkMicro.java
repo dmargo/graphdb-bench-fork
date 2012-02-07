@@ -1,5 +1,6 @@
 package com.tinkerpop.bench.benchmark;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -26,38 +27,169 @@ import joptsimple.OptionSet;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
+ * @author Daniel Margo
+ * @author Peter Macko
  */
 public class BenchmarkMicro extends Benchmark {
-
-	/*
-	 * Static Code
+	
+	/// The default file for ingest
+	private static final String DEFAULT_INGEST_FILE = "barabasi_1000_5000.graphml";
+	
+	/// The list of supported databases
+	private static final String[] DATABASE_SHORT_NAMES = { "bdb", "dex", "dup", "neo", "rdf", "sql" };
+	
+	
+	/**
+	 * Print the help
 	 */
-
-	public static void run(String[] args) throws Exception {		
-		String dirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY) + "Micro/";
+	protected static void help() {
 		
-		String dirGraphML = Bench.benchProperties.getProperty(Bench.DATASETS_DIRECTORY);
-		String[] graphmlFiles = new String[] {
-				//dirGraphML + "barabasi_1000_5000.graphml"};
-				//dirGraphML + "barabasi_10000_50000.graphml"};
-				//dirGraphML + "barabasi_100000_500000.graphml"};
-				dirGraphML + "barabasi_1000000_5000000.graphml"};
+		System.err.println("Usage: runBenchmarkSuite.sh OPTIONS");
+		System.err.println("");
+		System.err.println("General options:");
+		System.err.println("  --help            Print this help message");
+		System.err.println("  --no-warmup       Disable the initial warmup run");
+		System.err.println("");
+		System.err.println("Options to select a database (select one):");
+		System.err.println("  --bdb             Berkeley DB, using massive indexing");
+		System.err.println("  --dex             DEX");
+		System.err.println("  --dup             Berkeley DB with duplicates on edge lookups and properties");
+		System.err.println("  --neo             neo4j");
+		System.err.println("  --rdf             Sesame RDF");
+		System.err.println("  --sql             MySQL");
+		System.err.println("");
+		System.err.println("Options to select a workload (select multiple):");
+		System.err.println("  --add             Adding nodes and edges to the database");
+		System.err.println("  --dijkstra        Dijkstra's shortest path algorithm");
+		System.err.println("  --ingest          Ingest a file to the database");
+		System.err.println("  --get             \"Get\" microbenchmarks");
+		System.err.println("");
+		System.err.println("Ingest options:");
+		System.err.println("  -f, --file FILE   Select the file to ingest");
+	}
+
+	
+	/**
+	 * Run the benchmarking program
+	 * 
+	 * @param args the command-line arguments
+	 * @throws Exception on error
+	 */
+	public static void run(String[] args) throws Exception {		
+
+		/*
+		 * Parse the command-line arguments
+		 */
 		
 		OptionParser parser = new OptionParser();
-		parser.accepts("bdb");
-		parser.accepts("dex");
-		parser.accepts("dup");
-		parser.accepts("neo");
-		parser.accepts("rdf");
-		parser.accepts("sql");
+		
+		parser.accepts("help");
+		parser.accepts("no-warmup");
+		
+		
+		// Databases
+		
+		for (int i = 0; i < DATABASE_SHORT_NAMES.length; i++) {
+			parser.accepts(DATABASE_SHORT_NAMES[i]);
+		}
+		
+		
+		// Workloads
 		
 		parser.accepts("ingest");
 		parser.accepts("dijkstra");
 		parser.accepts("add");
-		OptionSet options = parser.parse(args);
+		parser.accepts("get");
+		
+		
+		// Modifiers
+		
+		parser.accepts("f").withRequiredArg().ofType(String.class);
+		parser.accepts("file").withRequiredArg().ofType(String.class);
+		
+		
+		// Parse the options
+		
+		OptionSet options;
+		
+		try {
+			options = parser.parse(args);
+		}
+		catch (Exception e) {
+			System.err.println("Invalid options (please use --help for a list): " + e.getMessage());
+			return;
+		}
+		
+		
+		// Handle the options
+		
+		if (options.has("help") || !options.hasOptions()) {
+			help();
+			return;
+		}
+		
+		String dbShortName = null;
+		for (int i = 0; i < DATABASE_SHORT_NAMES.length; i++) {
+			if (options.has(DATABASE_SHORT_NAMES[i])) {
+				if (dbShortName != null) {
+					System.err.println("Error: Multiple databases selected.");
+					return;
+				}
+				dbShortName = DATABASE_SHORT_NAMES[i];
+			}
+		}
+		if (dbShortName == null) {
+			System.err.println("Error: No database is selected (please use --help for a list of options).");
+			return;
+		}
+		
+		String ingestFile = DEFAULT_INGEST_FILE;		
+		if (options.has("f") || options.has("file")) {
+			ingestFile = options.valueOf(options.has("f") ? "f" : "file").toString();
+		}
+		
+		boolean warmup = true;
+		if (options.has("no-warmup")) {
+			warmup = false;
+		}
+		
+		
+		/*
+		 * Setup the benchmark
+		 */
+		
+		String propDirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY);
+		if (propDirResults == null) {
+			System.err.println("Error: Property \"" + Bench.RESULTS_DIRECTORY + "\" is not set.");
+			return;
+		}
+		if (!propDirResults.endsWith("/")) propDirResults += "/";
+		String dirResults = propDirResults + "Micro/";
+		
+		if (!(new File(ingestFile)).exists()) {
+			String dirGraphML = Bench.benchProperties.getProperty(Bench.DATASETS_DIRECTORY);
+			if (dirGraphML == null) {
+				System.err.println("Warning: Property \"" + Bench.DATASETS_DIRECTORY + "\" is not set.");
+				System.err.println("Error: File \"" + ingestFile + "\" does not exist.");
+				return;
+			}
+			if (!dirGraphML.endsWith("/")) dirGraphML += "/";
+			if (!(new File(dirGraphML + ingestFile)).exists()) {
+				System.err.println("Error: File \"" + ingestFile + "\" does not exist.");
+				return;
+			}
+			else {
+				ingestFile = dirGraphML + ingestFile;
+			}
+		}
+		String[] graphmlFiles = new String[] { ingestFile };
 		
 		Benchmark benchmark = new BenchmarkMicro(dirResults + "benchmark_micro.csv", graphmlFiles, options);
 		
+		
+		/*
+		 * Setup the database
+		 */
 		
 		GraphDescriptor graphDescriptor = null;
 		
@@ -72,141 +204,30 @@ public class BenchmarkMicro extends Benchmark {
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
 		
 		
-		//XXX dmargo: Load operation logs with Bdb
-		if (options.has("bdb")) {
+		// Load operation logs
+		
+		if (warmup) {
 			graphDescriptor = new GraphDescriptor(BdbGraph.class,
-					dirResults + "bdb/warmup/", dirResults + "bdb/warmup/");
+					dirResults + dbShortName + "/warmup/", dirResults + dbShortName + "/warmup/");
 			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "bdb/bdb-warmup-" + argString + ".csv");
-			resultFiles.put("Bdb-Warmup", dirResults + "bdb/bdb-warmup-" + argString + ".csv");	
-			
-			graphDescriptor = new GraphDescriptor(BdbGraph.class,
-					dirResults + "bdb/db", dirResults + "bdb/db");
-			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "bdb/bdb-" + argString + ".csv");
-			resultFiles.put("Bdb", dirResults + "bdb/bdb-" + argString + ".csv");
-			
-			// Create file with summarized results from all databases and operations
-			LogUtils.makeResultsSummary(
-					dirResults + "bdb/summary-" + argString + ".csv", resultFiles);
+					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
+			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/bdb-warmup-" + argString + ".csv");
 		}
+			
+		graphDescriptor = new GraphDescriptor(BdbGraph.class,
+				dirResults + dbShortName + "/db", dirResults + dbShortName + "/db");
+		benchmark.loadOperationLogs(graphDescriptor,
+				dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
+		resultFiles.put(dbShortName, dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		
-        //XXX dmargo: Load operation logs with Dex
-		else if (options.has("dex")) {
-	        graphDescriptor = new GraphDescriptor(DexGraph.class,
-	        		dirResults + "dex/", dirResults + "dex/warmup.dex");
-	        benchmark.loadOperationLogs(graphDescriptor,
-	        		dirResults + "dex/dex-warmup-" + argString + ".csv");
-	        resultFiles.put("Dex-Warmup", dirResults + "dex/dex-warmup-" + argString + ".csv");
-			
-	        graphDescriptor = new GraphDescriptor(DexGraph.class,
-	        		dirResults + "dex/", dirResults + "dex/db.dex");
-	        benchmark.loadOperationLogs(graphDescriptor,
-	        		dirResults + "dex/dex-" + argString + ".csv");
-	        resultFiles.put("Dex", dirResults + "dex/dex-" + argString + ".csv");
-	        
-			// Create file with summarized results from all databases and operations
-			LogUtils.makeResultsSummary(
-					dirResults + "dex/summary-" + argString + ".csv", resultFiles);
-		}
 		
-        //XXX dmargo: Load operation logs with Dup
-		else if (options.has("dup")) {
-			graphDescriptor = new GraphDescriptor(DupGraph.class,
-					dirResults + "dup/warmup/", dirResults + "dup/warmup/");
-			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "dup/dup-warmup-" + argString + ".csv");
-			resultFiles.put("Dup-Warmup", dirResults + "dup/dup-warmup-" + argString + ".csv");
-			
-			graphDescriptor = new GraphDescriptor(DupGraph.class,
-					dirResults + "dup/db/", dirResults + "dup/db/");
-			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "dup/dup-" + argString + ".csv");
-			resultFiles.put("Dup", dirResults + "dup/dup-" + argString + ".csv");
-			
-			// Create file with summarized results from all databases and operations
-			LogUtils.makeResultsSummary(
-					dirResults + "dup/summary-" + argString + ".csv", resultFiles);
-		}
+		// Create file with summarized results from all databases and operations
 		
-		// Load operation logs with Neo4j
-		else if (options.has("neo")) {
-	        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
-					dirResults + "neo4j/warmup/", dirResults + "neo4j/warmup/");
-			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "neo4j/neo4j-warmup-" + argString + ".csv");
-			resultFiles.put("Neo4j-Warmup", dirResults + "neo4j/neo4j-warmup-" + argString + ".csv");
-			
-	        graphDescriptor = new GraphDescriptor(Neo4jGraph.class,
-					dirResults + "neo4j/db", dirResults + "neo4j/db");
-			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "neo4j/neo4j-" + argString + ".csv");
-			resultFiles.put("Neo4j", dirResults + "neo4j/neo4j-" + argString + ".csv");
-			
-			// Create file with summarized results from all databases and operations
-			LogUtils.makeResultsSummary(
-					dirResults + "neo4j/summary-" + argString + ".csv", resultFiles);
-		}
-		
-		//XXX dmargo: Load operation logs with RDF
-		else if (options.has("rdf")) {
-			graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
-					dirResults + "rdf/warmup/", dirResults + "rdf/warmup/");
-			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "rdf/rdf-warmup-" + argString + ".csv");
-			resultFiles.put("Rdf-Warmup", dirResults + "rdf/rdf-warmup-" + argString + ".csv");
-			
-			graphDescriptor = new GraphDescriptor(NativeStoreRdfGraph.class,
-					dirResults + "rdf/db/", dirResults + "rdf/db/");
-			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "rdf/rdf-" + argString + ".csv");
-			resultFiles.put("Rdf", dirResults + "rdf/rdf-" + argString + ".csv");
-			
-			// Create file with summarized results from all databases and operations
-			LogUtils.makeResultsSummary(
-					dirResults + "rdf/summary-" + argString + ".csv", resultFiles);
-		}
-		
-		//XXX dmargo: Load operation logs with SQL
-		else if (options.has("sql")) {
-			graphDescriptor = new GraphDescriptor(SqlGraph.class,
-					null, "//localhost/graphdb?user=dmargo&password=kitsune");
-			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "sql/sql-warmup-" + argString + ".csv");
-			resultFiles.put("Sql-Warmup", dirResults + "sql/sql-warmup-" + argString + ".csv");
-			
-			graphDescriptor = new GraphDescriptor(SqlGraph.class,
-					null, "//localhost/graphdb?user=dmargo&password=kitsune");
-			benchmark.loadOperationLogs(graphDescriptor,
-					dirResults + "sql/sql-" + argString + ".csv");
-			resultFiles.put("Sql", dirResults + "sql/sql-" + argString + ".csv");
-			
-			// Create file with summarized results from all databases and operations
-			LogUtils.makeResultsSummary(
-					dirResults + "sql/summary-" + argString + ".csv", resultFiles);
-		}
-
-		// Load operation logs with Orient
-        //graphDescriptor = new GraphDescriptor(OrientGraph.class, dirResults
-		//        + "orient/", "local:" + dirResults + "orient/");
-		//benchmark.loadOperationLogs(graphDescriptor, dirResults
-		//        + "benchmark_micro_orient.csv");
-		//resultFiles.put("OrientDB", dirResults + "benchmark_micro_orient.csv");
-
-        //XXX dmargo: Load operation logs with Sail
-        //graphDescriptor = new GraphDescriptor(NativeStoreSailGraph.class, dirResults
-        //		+ "sail/", dirResults + "sail/nativestore");
-        //benchmark.loadOperationLogs(graphDescriptor, dirResults
-        //        + "benchmark_micro_sail.csv");
-        //resultFiles.put("Sail", dirResults + "benchmark_micro_sail.csv");
-		
-		// Load operation logs with TinkerGraph
-		//graphDescriptor = new GraphDescriptor(TinkerGraph.class);
-		//benchmark.loadOperationLogs(graphDescriptor,
-		//		dirResults + "benchmark_micro_tinker.csv");
-		//resultFiles.put("TinkerGraph", dirResults + "benchmark_micro_tinker.csv");
+		LogUtils.makeResultsSummary(
+				dirResults + dbShortName + "/summary-" + argString + ".csv", resultFiles);
 	}
 
+	
 	/*
 	 * Instance Code
 	 */
@@ -240,50 +261,51 @@ public class BenchmarkMicro extends Benchmark {
 			}
 
 			// GET microbenchmarks
-			operationFactories.add(new OperationFactoryGeneric(
-					OperationGetManyVertices.class, 1,
-					new Integer[] { OP_COUNT }));
-			//operationFactories.add(new OperationFactoryRandomVertex(
-			//		OperationGetVertex.class, OP_COUNT));
-			
-			operationFactories.add(new OperationFactoryGeneric(
-					OperationGetManyVertexProperties.class, 1,
-					new Object[] { PROPERTY_KEY, OP_COUNT }));
-			//operationFactories.add(new OperationFactoryRandomVertex(
-			//		OperationGetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
-			
-			operationFactories.add(new OperationFactoryGeneric(
-					OperationGetManyEdges.class, 1,
-					new Integer[] { OP_COUNT }));
-			//operationFactories.add(new OperationFactoryRandomEdge(
-			//		OperationGetEdge.class, OP_COUNT));
-			
-			operationFactories.add(new OperationFactoryGeneric(
-					OperationGetManyEdgeProperties.class, 1,
-					new Object[] { PROPERTY_KEY, OP_COUNT }));
-			//operationFactories.add(new OperationFactoryRandomEdge(
-			//		OperationGetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
-
-			// GET_NEIGHBORS ops and variants
-			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetFirstNeighbor.class, OP_COUNT, new Integer[] { K_HOPS }));
-			
-			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetRandomNeighbor.class, OP_COUNT, new Integer[] { K_HOPS }));
-			
-			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetAllNeighbors.class, OP_COUNT, new Integer[] { K_HOPS }));
-			
-			// GET_K_NEIGHBORS ops and variants
-			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetKFirstNeighbors.class, OP_COUNT));
-			
-			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetKRandomNeighbors.class, OP_COUNT));
-			
-			operationFactories.add(new OperationFactoryRandomVertex(
-					OperationGetKHopNeighbors.class, OP_COUNT));
-			
+			if (options.has("get")) {
+				operationFactories.add(new OperationFactoryGeneric(
+						OperationGetManyVertices.class, 1,
+						new Integer[] { OP_COUNT }));
+				//operationFactories.add(new OperationFactoryRandomVertex(
+				//		OperationGetVertex.class, OP_COUNT));
+				
+				operationFactories.add(new OperationFactoryGeneric(
+						OperationGetManyVertexProperties.class, 1,
+						new Object[] { PROPERTY_KEY, OP_COUNT }));
+				//operationFactories.add(new OperationFactoryRandomVertex(
+				//		OperationGetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
+				
+				operationFactories.add(new OperationFactoryGeneric(
+						OperationGetManyEdges.class, 1,
+						new Integer[] { OP_COUNT }));
+				//operationFactories.add(new OperationFactoryRandomEdge(
+				//		OperationGetEdge.class, OP_COUNT));
+				
+				operationFactories.add(new OperationFactoryGeneric(
+						OperationGetManyEdgeProperties.class, 1,
+						new Object[] { PROPERTY_KEY, OP_COUNT }));
+				//operationFactories.add(new OperationFactoryRandomEdge(
+				//		OperationGetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
+	
+				// GET_NEIGHBORS ops and variants
+				operationFactories.add(new OperationFactoryRandomVertex(
+						OperationGetFirstNeighbor.class, OP_COUNT, new Integer[] { K_HOPS }));
+				
+				operationFactories.add(new OperationFactoryRandomVertex(
+						OperationGetRandomNeighbor.class, OP_COUNT, new Integer[] { K_HOPS }));
+				
+				operationFactories.add(new OperationFactoryRandomVertex(
+						OperationGetAllNeighbors.class, OP_COUNT, new Integer[] { K_HOPS }));
+				
+				// GET_K_NEIGHBORS ops and variants
+				operationFactories.add(new OperationFactoryRandomVertex(
+						OperationGetKFirstNeighbors.class, OP_COUNT));
+				
+				operationFactories.add(new OperationFactoryRandomVertex(
+						OperationGetKRandomNeighbors.class, OP_COUNT));
+				
+				operationFactories.add(new OperationFactoryRandomVertex(
+						OperationGetKHopNeighbors.class, OP_COUNT));
+			}
 			
 			// SHORTEST PATH (Djikstra's algorithm)
 			if (options.has("dijkstra")) {

@@ -36,7 +36,7 @@ public class Bench {
 		try {
 			benchProperties.load(Bench.class
 					.getResourceAsStream("bench.properties"));
-			System.out.println(benchProperties);
+			//System.out.println(benchProperties);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -28,7 +28,7 @@ public class OperationLogReader implements Iterable<OperationLogEntry> {
 			return new OperationLogEntryIterator(logFile);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(
-					"Could not create OperationLogEntryIterator", e.getCause());
+					"Could not create OperationLogEntryIterator: Cannot open '" + logFile + "'", e.getCause());
 		}
 	}
 

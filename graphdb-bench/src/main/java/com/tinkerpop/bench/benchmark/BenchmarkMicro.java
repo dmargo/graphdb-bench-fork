@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import com.tinkerpop.bench.Bench;
 import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.LogUtils;
+import com.tinkerpop.bench.generator.GraphGenerator;
+import com.tinkerpop.bench.generator.SimpleBarabasiGenerator;
 import com.tinkerpop.bench.operation.OperationDeleteGraph;
 import com.tinkerpop.bench.operation.operations.*;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
@@ -18,6 +20,7 @@ import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.dup.DupGraph;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 import com.tinkerpop.blueprints.pgm.impls.orientdb.OrientGraph;
+import com.tinkerpop.blueprints.pgm.impls.rdf.RdfGraph;
 import com.tinkerpop.blueprints.pgm.impls.rdf.impls.NativeStoreRdfGraph;
 import com.tinkerpop.blueprints.pgm.impls.sql.SqlGraph;
 import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph;
@@ -38,6 +41,10 @@ public class BenchmarkMicro extends Benchmark {
 	/// The list of supported databases
 	private static final String[] DATABASE_SHORT_NAMES = { "bdb", "dex", "dup", "neo", "rdf", "sql" };
 	
+	/// The list of supported database classes
+	private static final Class[] DATABASE_CLASSES = { BdbGraph.class, DexGraph.class, DupGraph.class,
+		Neo4jGraph.class, RdfGraph.class, SqlGraph.class };
+	
 	
 	/**
 	 * Print the help
@@ -53,19 +60,29 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("Options to select a database (select one):");
 		System.err.println("  --bdb             Berkeley DB, using massive indexing");
 		System.err.println("  --dex             DEX");
-		System.err.println("  --dup             Berkeley DB with duplicates on edge lookups and properties");
+		System.err.println("  --dup             Berkeley DB with duplicates "+
+										"on edge lookups and properties");
 		System.err.println("  --neo             neo4j");
 		System.err.println("  --rdf             Sesame RDF");
 		System.err.println("  --sql             MySQL");
 		System.err.println("");
 		System.err.println("Options to select a workload (select multiple):");
 		System.err.println("  --add             Adding nodes and edges to the database");
+		System.err.println("  --delete-graph    Delete the entire graph");
 		System.err.println("  --dijkstra        Dijkstra's shortest path algorithm");
-		System.err.println("  --ingest          Ingest a file to the database");
+		System.err.println("  --ingest          Ingest a file to the database "+
+										" (delete the existing graph first)");
+		System.err.println("  --generate MODEL  Generate (or grow) the graph "+
+										" based on the given model");
 		System.err.println("  --get             \"Get\" microbenchmarks");
 		System.err.println("");
 		System.err.println("Ingest options:");
 		System.err.println("  -f, --file FILE   Select the file to ingest");
+		System.err.println("");
+		System.err.println("Options for model \"Barabasi\":");
+		System.err.println("  --barabasi-n N    The number of vertices");
+		System.err.println("  --barabasi-m M    The number of outgoing edges "+
+										" generated for each vertex");
 	}
 
 	
@@ -96,9 +113,11 @@ public class BenchmarkMicro extends Benchmark {
 		
 		// Workloads
 		
-		parser.accepts("ingest");
-		parser.accepts("dijkstra");
 		parser.accepts("add");
+		parser.accepts("delete-graph");
+		parser.accepts("dijkstra");
+		parser.accepts("ingest");
+		parser.accepts("generate").withRequiredArg().ofType(String.class);
 		parser.accepts("get");
 		
 		
@@ -106,6 +125,12 @@ public class BenchmarkMicro extends Benchmark {
 		
 		parser.accepts("f").withRequiredArg().ofType(String.class);
 		parser.accepts("file").withRequiredArg().ofType(String.class);
+		
+		
+		// Generator modifiers
+		
+		parser.accepts("barabasi-n").withRequiredArg().ofType(Integer.class);
+		parser.accepts("barabasi-m").withRequiredArg().ofType(Integer.class);
 		
 		
 		// Parse the options
@@ -129,6 +154,7 @@ public class BenchmarkMicro extends Benchmark {
 		}
 		
 		String dbShortName = null;
+		Class dbClass = null;
 		for (int i = 0; i < DATABASE_SHORT_NAMES.length; i++) {
 			if (options.has(DATABASE_SHORT_NAMES[i])) {
 				if (dbShortName != null) {
@@ -136,6 +162,8 @@ public class BenchmarkMicro extends Benchmark {
 					return;
 				}
 				dbShortName = DATABASE_SHORT_NAMES[i];
+				dbClass = DATABASE_CLASSES[i];
+				break;
 			}
 		}
 		if (dbShortName == null) {
@@ -155,7 +183,28 @@ public class BenchmarkMicro extends Benchmark {
 		
 		
 		/*
-		 * Setup the benchmark
+		 * Setup the graph generator
+		 */
+		
+		GraphGenerator graphGenerator = null;
+		if (options.has("generate")) {
+			String model = options.valueOf("generate").toString().toLowerCase();
+			
+			if (model.equals("barabasi")) {
+				int n = options.has("barabasi-n") ? (Integer) options.valueOf("barabasi-n") : 1000;
+				int m = options.has("barabasi-m") ? (Integer) options.valueOf("barabasi-m") : 5;
+				graphGenerator = new SimpleBarabasiGenerator(n, m);
+			}
+			
+			if (graphGenerator == null) {
+				System.err.println("Error: Unrecognized graph generation model");
+				return;
+			}
+		}
+		
+		
+		/*
+		 * Get the file names
 		 */
 		
 		String propDirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY);
@@ -182,9 +231,17 @@ public class BenchmarkMicro extends Benchmark {
 				ingestFile = dirGraphML + ingestFile;
 			}
 		}
-		String[] graphmlFiles = new String[] { ingestFile };
 		
-		Benchmark benchmark = new BenchmarkMicro(dirResults + "benchmark_micro.csv", graphmlFiles, options);
+		
+		/*
+		 * Setup the benchmark
+		 */
+		
+		String[] graphmlFiles = new String[] { ingestFile };
+		GraphGenerator[] graphGenerators = new GraphGenerator[] { graphGenerator };
+		
+		Benchmark benchmark = new BenchmarkMicro(dirResults + "benchmark_micro.csv",
+				graphmlFiles, graphGenerators, options);
 		
 		
 		/*
@@ -207,14 +264,14 @@ public class BenchmarkMicro extends Benchmark {
 		// Load operation logs
 		
 		if (warmup) {
-			graphDescriptor = new GraphDescriptor(BdbGraph.class,
+			graphDescriptor = new GraphDescriptor(dbClass,
 					dirResults + dbShortName + "/warmup/", dirResults + dbShortName + "/warmup/");
 			benchmark.loadOperationLogs(graphDescriptor,
 					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
-			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/bdb-warmup-" + argString + ".csv");
+			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 		}
 			
-		graphDescriptor = new GraphDescriptor(BdbGraph.class,
+		graphDescriptor = new GraphDescriptor(dbClass,
 				dirResults + dbShortName + "/db", dirResults + dbShortName + "/db");
 		benchmark.loadOperationLogs(graphDescriptor,
 				dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
@@ -237,11 +294,14 @@ public class BenchmarkMicro extends Benchmark {
 	private final int K_HOPS = 2;
 
 	private String[] graphmlFilenames = null;
+	private GraphGenerator[] graphGenerators = null;
 	private OptionSet options = null;
 
-	public BenchmarkMicro(String log, String[] graphmlFilenames, OptionSet options) {
+	public BenchmarkMicro(String log, String[] graphmlFilenames,
+			GraphGenerator[] graphGenerators, OptionSet options) {
 		super(log);
 		this.graphmlFilenames = graphmlFilenames;
+		this.graphGenerators = graphGenerators;
 		this.options = options;
 	}
 
@@ -250,14 +310,26 @@ public class BenchmarkMicro extends Benchmark {
 		ArrayList<OperationFactory> operationFactories = new ArrayList<OperationFactory>();
 
 		for (String graphmlFilename : graphmlFilenames) {
+
+			// DELETE the graph (also invoked for the ingest benchmark)
+			if (options.has("ingest") || options.has("delete-graph")) {
+				operationFactories.add(new OperationFactoryGeneric(
+						OperationDeleteGraph.class, 1));
+			}
+
 			// INGEST benchmarks
 			if (options.has("ingest")) {
 				operationFactories.add(new OperationFactoryGeneric(
-						OperationDeleteGraph.class, 1));
-	
-				operationFactories.add(new OperationFactoryGeneric(
 						OperationLoadGraphML.class, 1,
 						new String[] { graphmlFilename }, LogUtils.pathToName(graphmlFilename)));
+			}
+			
+			// GENERATE benchmarks
+			if (options.has("generate")) {
+				for (GraphGenerator g : graphGenerators) {
+					operationFactories.add(new OperationFactoryGeneric(
+							OperationGenerateGraph.class, 1, new GraphGenerator[] { g }));
+				}
 			}
 
 			// GET microbenchmarks

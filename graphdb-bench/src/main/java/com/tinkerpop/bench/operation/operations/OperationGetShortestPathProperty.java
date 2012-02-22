@@ -7,6 +7,7 @@ import java.util.PriorityQueue;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Vertex;
+import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
 import com.tinkerpop.blueprints.pgm.impls.rdf.RdfGraph;
 import com.tinkerpop.blueprints.pgm.impls.sql.SqlGraph;
 
@@ -16,6 +17,7 @@ public class OperationGetShortestPathProperty extends Operation {
 	private Vertex target;
 	private boolean isRDFGraph;
 	private boolean isSQLGraph;
+	private boolean isHollowGraph;
 	
 	@Override
 	protected void onInitialize(Object[] args) {
@@ -23,6 +25,7 @@ public class OperationGetShortestPathProperty extends Operation {
 		target = getGraph().getVertex(args[1]);
 		isRDFGraph = getGraph() instanceof RdfGraph;
 		isSQLGraph = getGraph() instanceof SqlGraph;
+		isHollowGraph = getGraph() instanceof HollowGraph;
 	}
 	
 	@Override
@@ -103,6 +106,8 @@ public class OperationGetShortestPathProperty extends Operation {
 					
 					get_property++;
 					prevId = u.getProperty("prev");
+					
+					if (isHollowGraph) break;
 				}
 				
 				for (Vertex v: getGraph().getVertices()) {

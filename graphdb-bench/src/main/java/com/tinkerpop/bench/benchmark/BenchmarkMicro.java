@@ -18,6 +18,7 @@ import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomVert
 import com.tinkerpop.blueprints.pgm.impls.bdb.BdbGraph;
 import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.dup.DupGraph;
+import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 import com.tinkerpop.blueprints.pgm.impls.orientdb.OrientGraph;
 import com.tinkerpop.blueprints.pgm.impls.rdf.RdfGraph;
@@ -39,11 +40,11 @@ public class BenchmarkMicro extends Benchmark {
 	private static final String DEFAULT_INGEST_FILE = "barabasi_1000_5000.graphml";
 	
 	/// The list of supported databases
-	private static final String[] DATABASE_SHORT_NAMES = { "bdb", "dex", "dup", "neo", "rdf", "sql" };
+	private static final String[] DATABASE_SHORT_NAMES = { "bdb", "dex", "dup", "hollow", "neo", "rdf", "sql" };
 	
 	/// The list of supported database classes
 	private static final Class[] DATABASE_CLASSES = { BdbGraph.class, DexGraph.class, DupGraph.class,
-		Neo4jGraph.class, RdfGraph.class, SqlGraph.class };
+		HollowGraph.class, Neo4jGraph.class, RdfGraph.class, SqlGraph.class };
 	
 	
 	/**
@@ -62,6 +63,8 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("  --dex             DEX");
 		System.err.println("  --dup             Berkeley DB with duplicates "+
 										"on edge lookups and properties");
+		System.err.println("  --hollow          The hollow implementation with no "+
+										"backing database");
 		System.err.println("  --neo             neo4j");
 		System.err.println("  --rdf             Sesame RDF");
 		System.err.println("  --sql             MySQL");
@@ -181,6 +184,9 @@ public class BenchmarkMicro extends Benchmark {
 			warmup = false;
 		}
 		
+		boolean withGraphPath = true;
+		if (dbClass == HollowGraph.class) withGraphPath = false;
+		
 		
 		/*
 		 * Setup the graph generator
@@ -265,14 +271,16 @@ public class BenchmarkMicro extends Benchmark {
 		
 		if (warmup) {
 			graphDescriptor = new GraphDescriptor(dbClass,
-					dirResults + dbShortName + "/warmup/", dirResults + dbShortName + "/warmup/");
+					dirResults + dbShortName + "/warmup",
+					withGraphPath ? dirResults + dbShortName + "/warmup" : null);
 			benchmark.loadOperationLogs(graphDescriptor,
 					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 		}
 			
 		graphDescriptor = new GraphDescriptor(dbClass,
-				dirResults + dbShortName + "/db", dirResults + dbShortName + "/db");
+				dirResults + dbShortName + "/db",
+				withGraphPath ? dirResults + dbShortName + "/db" : null);
 		benchmark.loadOperationLogs(graphDescriptor,
 				dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		resultFiles.put(dbShortName, dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");

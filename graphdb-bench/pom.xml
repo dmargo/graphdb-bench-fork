@@ -27,6 +27,11 @@
 	</developers>
 	<inceptionYear>2010</inceptionYear>
 	<dependencies>
+		<dependency>
+			<groupId>net.sf.jopt-simple</groupId>
+			<artifactId>jopt-simple</artifactId>
+			<version>4.3</version>
+		</dependency>
 		<!-- TINKERPOP GENERAL -->
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>
@@ -91,6 +96,13 @@
         <dependency>
           <groupId>com.tinkerpop.blueprints</groupId>
           <artifactId>blueprints-dup-graph</artifactId>
+          <version>1.1-SNAPSHOT</version>
+        </dependency>
+
+        <!-- DMARGO - HOLLOWGRAPH -->
+        <dependency>
+          <groupId>com.tinkerpop.blueprints</groupId>
+          <artifactId>blueprints-hollow-graph</artifactId>
           <version>1.1-SNAPSHOT</version>
         </dependency>
 

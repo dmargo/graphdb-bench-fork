@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import com.tinkerpop.bench.Bench;
+import com.tinkerpop.bench.ConsoleUtils;
 import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.LogUtils;
 import com.tinkerpop.bench.generator.GraphGenerator;
@@ -55,6 +56,7 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("Usage: runBenchmarkSuite.sh OPTIONS");
 		System.err.println("");
 		System.err.println("General options:");
+		System.err.println("  --dir, -d DIR     Set the database and results directory");
 		System.err.println("  --help            Print this help message");
 		System.err.println("  --no-warmup       Disable the initial warmup run");
 		System.err.println("");
@@ -103,6 +105,8 @@ public class BenchmarkMicro extends Benchmark {
 		
 		OptionParser parser = new OptionParser();
 		
+		parser.accepts("d").withRequiredArg().ofType(String.class);
+		parser.accepts("dir").withRequiredArg().ofType(String.class);
 		parser.accepts("help");
 		parser.accepts("no-warmup");
 		
@@ -170,7 +174,7 @@ public class BenchmarkMicro extends Benchmark {
 			}
 		}
 		if (dbShortName == null) {
-			System.err.println("Error: No database is selected (please use --help for a list of options).");
+			ConsoleUtils.error("No database is selected (please use --help for a list of options).");
 			return;
 		}
 		
@@ -203,39 +207,56 @@ public class BenchmarkMicro extends Benchmark {
 			}
 			
 			if (graphGenerator == null) {
-				System.err.println("Error: Unrecognized graph generation model");
+				ConsoleUtils.error("Unrecognized graph generation model");
 				return;
 			}
 		}
 		
 		
 		/*
-		 * Get the file names
+		 * Get the name of the results directory
 		 */
 		
-		String propDirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY);
-		if (propDirResults == null) {
-			System.err.println("Error: Property \"" + Bench.RESULTS_DIRECTORY + "\" is not set.");
-			return;
+		String dirResults;
+		if (options.has("d") || options.has("dir")) {
+			dirResults = options.valueOf(options.has("d") ? "d" : "dir").toString();
+			if (!dirResults.endsWith("/")) dirResults += "/";
 		}
-		if (!propDirResults.endsWith("/")) propDirResults += "/";
-		String dirResults = propDirResults + "Micro/";
+		else {
+			String propDirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY);
+			if (propDirResults == null) {
+				ConsoleUtils.error("Property \"" + Bench.RESULTS_DIRECTORY + "\" is not set and --dir is not specified.");
+				return;
+			}
+			if (!propDirResults.endsWith("/")) propDirResults += "/";
+			dirResults = propDirResults + "Micro/";
+		}
 		
-		if (!(new File(ingestFile)).exists()) {
-			String dirGraphML = Bench.benchProperties.getProperty(Bench.DATASETS_DIRECTORY);
-			if (dirGraphML == null) {
-				System.err.println("Warning: Property \"" + Bench.DATASETS_DIRECTORY + "\" is not set.");
-				System.err.println("Error: File \"" + ingestFile + "\" does not exist.");
-				return;
+		
+		/*
+		 * Get the name of the ingest file (if necessary)
+		 */
+		
+		if (options.has("ingest")) {
+			if (!(new File(ingestFile)).exists()) {
+				String dirGraphML = Bench.benchProperties.getProperty(Bench.DATASETS_DIRECTORY);
+				if (dirGraphML == null) {
+					ConsoleUtils.warn("Property \"" + Bench.DATASETS_DIRECTORY + "\" is not set.");
+					ConsoleUtils.error("File \"" + ingestFile + "\" does not exist.");
+					return;
+				}
+				if (!dirGraphML.endsWith("/")) dirGraphML += "/";
+				if (!(new File(dirGraphML + ingestFile)).exists()) {
+					ConsoleUtils.error("File \"" + ingestFile + "\" does not exist.");
+					return;
+				}
+				else {
+					ingestFile = dirGraphML + ingestFile;
+				}
 			}
-			if (!dirGraphML.endsWith("/")) dirGraphML += "/";
-			if (!(new File(dirGraphML + ingestFile)).exists()) {
-				System.err.println("Error: File \"" + ingestFile + "\" does not exist.");
-				return;
-			}
-			else {
-				ingestFile = dirGraphML + ingestFile;
-			}
+		}
+		else {
+			ingestFile = null;
 		}
 		
 		
@@ -267,9 +288,22 @@ public class BenchmarkMicro extends Benchmark {
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
 		
 		
-		// Load operation logs
+		/*
+		 * Print info
+		 */
+		
+		ConsoleUtils.sectionHeader("Tinkubator Graph Database Benchmark");
+		
+		System.out.println("Database : " + dbShortName);
+		System.out.println("Directory: " + dirResults);
+		
+		
+		/*
+		 * Load operation logs
+		 */
 		
 		if (warmup) {
+			ConsoleUtils.sectionHeader("Warmup Run");
 			graphDescriptor = new GraphDescriptor(dbClass,
 					dirResults + dbShortName + "/warmup",
 					withGraphPath ? dirResults + dbShortName + "/warmup" : null);
@@ -278,6 +312,7 @@ public class BenchmarkMicro extends Benchmark {
 			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 		}
 			
+		ConsoleUtils.sectionHeader("Benchmark Run");
 		graphDescriptor = new GraphDescriptor(dbClass,
 				dirResults + dbShortName + "/db",
 				withGraphPath ? dirResults + dbShortName + "/db" : null);
@@ -286,8 +321,11 @@ public class BenchmarkMicro extends Benchmark {
 		resultFiles.put(dbShortName, dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		
 		
-		// Create file with summarized results from all databases and operations
+		/*
+		 * Create file with summarized results from all databases and operations
+		 */
 		
+		ConsoleUtils.sectionHeader("Summary");
 		LogUtils.makeResultsSummary(
 				dirResults + dbShortName + "/summary-" + argString + ".csv", resultFiles);
 	}

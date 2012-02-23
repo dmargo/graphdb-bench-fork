@@ -37,11 +37,17 @@ public class Bench {
 			benchProperties.load(Bench.class
 					.getResourceAsStream("bench.properties"));
 			//System.out.println(benchProperties);
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			//e.printStackTrace();
+			ConsoleUtils.warn("Could not load bench.properties");
 		}
-		PropertyConfigurator.configure(Bench.class
+		try {
+			PropertyConfigurator.configure(Bench.class
 				.getResource("log4j.properties"));
+		} catch (Exception e) {
+			//e.printStackTrace();
+			ConsoleUtils.warn("Could not load log4j.properties");
+		}
 	}
 
 }

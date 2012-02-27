@@ -1,6 +1,8 @@
 package com.tinkerpop.bench.generator;
 
+import com.tinkerpop.bench.ConsoleUtils;
 import com.tinkerpop.bench.StatisticsHelper;
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.evaluators.Evaluator;
 import com.tinkerpop.bench.evaluators.EvaluatorDegree;
 import com.tinkerpop.blueprints.pgm.Edge;
@@ -44,8 +46,6 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 		int m = M;
 		boolean optimized = false;
 		
-		Evaluator evaluator = new EvaluatorDegree(1, 8);
-		
 		
 		// Create a vertex if the graph is empty
 		
@@ -67,8 +67,11 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 			}
 		}
 		
+		Cache c = Cache.getInstance(graph);
+		
 		if (empty) {
-			graph.addVertex(optimized ? size++ : null);
+			Vertex v = graph.addVertex(optimized ? size++ : null);
+			c.addVertex(v);
 			n--;
 		}
 
@@ -88,6 +91,7 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 				}
 			}
 			else {
+				Evaluator evaluator = new EvaluatorDegree(1, 8);
 				otherVertices = StatisticsHelper
 						.getSampleVertexIds(graph, evaluator, m);
 				for (int j = 0; j < otherVertices.length; j++) {
@@ -99,10 +103,15 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 			// Create the new vertex and the appropriate edges
 			
 			Vertex v = graph.addVertex(optimized ? size++ : null);
+			c.addVertex(v);
 			
 			for (Object o : otherVertices) {
-				graph.addEdge(optimized ? edges++ : null, v, (Vertex) o, "");
+				Edge e = graph.addEdge(optimized ? edges++ : null, v, (Vertex) o, "");
+				c.addEdge(e);
 			}
+			
+			
+			if ((i & 7) == 0 || i == n-1) ConsoleUtils.printProgressIndicator(i, n-1);
 		}
 	}
 }

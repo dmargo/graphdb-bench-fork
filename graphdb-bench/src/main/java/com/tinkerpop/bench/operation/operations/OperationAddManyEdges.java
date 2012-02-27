@@ -1,8 +1,10 @@
 package com.tinkerpop.bench.operation.operations;
 
 import com.tinkerpop.bench.StatisticsHelper;
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.evaluators.EvaluatorUniform;
 import com.tinkerpop.bench.operation.Operation;
+import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
@@ -31,8 +33,10 @@ public class OperationAddManyEdges extends Operation {
 		try {
 			Graph graph = getGraph();
 			
-			for (int i = 0; i < 2 * opCount;)
-				graph.addEdge(id, vertexSamples[i++], vertexSamples[i++], label);
+			for (int i = 0; i < 2 * opCount;) {
+				Edge edge = graph.addEdge(id, vertexSamples[i++], vertexSamples[i++], label);
+				Cache.getInstance(getGraph()).addEdge(edge);
+			}
 			
 			setResult(opCount);
 		} catch (Exception e) {

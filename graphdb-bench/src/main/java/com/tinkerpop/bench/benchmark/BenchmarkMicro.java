@@ -8,6 +8,7 @@ import com.tinkerpop.bench.Bench;
 import com.tinkerpop.bench.ConsoleUtils;
 import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.LogUtils;
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.generator.GraphGenerator;
 import com.tinkerpop.bench.generator.SimpleBarabasiGenerator;
 import com.tinkerpop.bench.operation.OperationDeleteGraph;
@@ -310,6 +311,7 @@ public class BenchmarkMicro extends Benchmark {
 			benchmark.loadOperationLogs(graphDescriptor,
 					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
+			Cache.dropAll();
 		}
 			
 		ConsoleUtils.sectionHeader("Benchmark Run");

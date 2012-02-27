@@ -2,6 +2,7 @@ package com.tinkerpop.bench;
 
 import java.util.Random;
 
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.evaluators.EdgeEvaluator;
 import com.tinkerpop.bench.evaluators.Evaluator;
 import com.tinkerpop.blueprints.pgm.Edge;
@@ -33,10 +34,15 @@ public class StatisticsHelper {
 		}
 
 		boolean finished = true;
+		Cache cache = Cache.getInstance(db);
+		int max = cache.getVertexIndexRange();
+		
+		for (int index = 0; index < max; index++) {
 
-		for (Vertex currentVertex : db.getVertices()) {
-
-			double currentVal = evaluator.evaluate(currentVertex);
+			Object id = cache.getVertexID(index);
+			if (id == null) continue;
+			
+			double currentVal = evaluator.evaluate(cache, index);
 
 			finished = true;
 
@@ -44,7 +50,7 @@ public class StatisticsHelper {
 				if (samples[i] == null) {
 					sampleVals[i] -= currentVal;
 					if (sampleVals[i] <= 0)
-						samples[i] = currentVertex.getId();
+						samples[i] = id;
 					else
 						finished = false;
 				}
@@ -52,6 +58,12 @@ public class StatisticsHelper {
 
 			if (finished == true)
 				break;
+		}
+		
+		if (!finished) throw new RuntimeException("getSampleVertexIds() did not finish");
+		for (int i = 0; i < sampleVals.length; i++) {
+			if (samples[i] == null)
+				throw new RuntimeException("getSampleVertexIds() did not finish - some elements are null");
 		}
 
 		return samples;

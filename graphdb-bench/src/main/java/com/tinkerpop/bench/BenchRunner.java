@@ -12,6 +12,7 @@ import com.tinkerpop.bench.operation.OperationShutdownGraph;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
 import com.tinkerpop.bench.operationFactory.OperationFactoryLog;
+import com.tinkerpop.bench.operationFactory.factories.WithOpCount;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
@@ -89,6 +90,13 @@ public class BenchRunner {
 					//System.out.println("Complete");
 
 					logWriter.logOperation(operation);
+					
+					if (operationFactory instanceof WithOpCount) {
+						WithOpCount w = (WithOpCount) operationFactory;
+						if (w.getOpCount() > 1) {
+							ConsoleUtils.printProgressIndicator(w.getExecutedOpCount(), w.getOpCount());
+						}
+					}
 				}
 				
 				System.out.println();

@@ -111,7 +111,7 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 			}
 			
 			
-			if ((i & 7) == 0 || i == n-1) ConsoleUtils.printProgressIndicator(i, n-1);
+			if ((i & 7) == 0 || i == n-1) ConsoleUtils.printProgressIndicator(i+1, n);
 		}
 	}
 }

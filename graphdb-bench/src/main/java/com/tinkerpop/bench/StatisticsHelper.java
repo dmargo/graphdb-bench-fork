@@ -7,7 +7,8 @@ import com.tinkerpop.bench.evaluators.EdgeEvaluator;
 import com.tinkerpop.bench.evaluators.Evaluator;
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
-import com.tinkerpop.blueprints.pgm.Vertex;
+//import com.tinkerpop.blueprints.pgm.Vertex;
+import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -24,6 +25,13 @@ public class StatisticsHelper {
 			int sampleSize) {
 
 		Object[] samples = new Object[sampleSize];
+		if (db instanceof HollowGraph) {
+			for (int i = 0; i < samples.length; i++) {
+				samples[i] = new Long(0);
+			}
+			return samples;
+		}
+		
 		Double[] sampleVals = new Double[sampleSize];
 
 		double totalVal = evaluator.evaluateTotal(db);

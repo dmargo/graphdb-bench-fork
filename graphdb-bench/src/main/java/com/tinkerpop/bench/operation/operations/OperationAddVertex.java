@@ -1,6 +1,8 @@
 package com.tinkerpop.bench.operation.operations;
 
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.operation.Operation;
+import com.tinkerpop.blueprints.pgm.Vertex;
 
 public class OperationAddVertex extends Operation {
 	
@@ -14,7 +16,9 @@ public class OperationAddVertex extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			setResult(getGraph().addVertex(id).toString());
+			Vertex vertex = getGraph().addVertex(id);
+			setResult(vertex.toString());
+			Cache.getInstance(getGraph()).addVertex(vertex);
 		} catch (Exception e) {
 			throw e;
 		}

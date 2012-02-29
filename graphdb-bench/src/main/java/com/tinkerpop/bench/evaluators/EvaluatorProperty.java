@@ -1,6 +1,6 @@
 package com.tinkerpop.bench.evaluators;
 
-import com.tinkerpop.blueprints.pgm.Vertex;
+import com.tinkerpop.bench.cache.Cache;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
@@ -14,7 +14,7 @@ public class EvaluatorProperty extends Evaluator {
 	}
 
 	@Override
-	public double evaluate(Vertex vertex) {
-		return (Double) vertex.getProperty(property);
+	public double evaluate(Cache cache, int index) {
+		return (Double) cache.getVertex(index).getProperty(property);
 	}
 }

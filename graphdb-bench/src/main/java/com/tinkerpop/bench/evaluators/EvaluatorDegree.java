@@ -1,5 +1,6 @@
 package com.tinkerpop.bench.evaluators;
 
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
@@ -23,14 +24,8 @@ public class EvaluatorDegree extends Evaluator {
 
 	@Override
 	@SuppressWarnings("unused")
-	public double evaluate(Vertex vertex) {
-		double degree = 0;
-		for (Edge edge : vertex.getOutEdges()) {
-			degree++;
-		}
-		for (Edge edge : vertex.getInEdges()) {
-			degree++;
-		}
+	public double evaluate(Cache cache, int index) {
+		double degree = cache.getInDegree(index) + cache.getOutDegree(index);
 		return Math.pow(degree, power) + zeroAppeal;
 	}
 }

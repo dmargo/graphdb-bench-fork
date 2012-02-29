@@ -11,6 +11,8 @@ public class ConsoleUtils {
 	private static final int COLOR_SECTION_HEADER = 8 + 4;
 	
 	private static boolean useEscapeCharacter = false;
+	
+	private static long lastProgressDraw = 0;
 
 
 	/**
@@ -72,5 +74,20 @@ public class ConsoleUtils {
 	 */
 	public static void sectionHeader(String name) {
 		System.out.println("\n\n" + escapeColor(COLOR_SECTION_HEADER) + name + escapeNormal() + "\n");
+	}
+	
+	
+	/**
+	 * Print a progress indicator
+	 * 
+	 * @param value the position
+	 * @param max the maximum value
+	 */
+	public static void printProgressIndicator(int value, int max) {
+		if (value > max) value = max;
+		long t = System.currentTimeMillis();
+		if (t < lastProgressDraw + 100 && value != max) return;
+		lastProgressDraw = t;
+		System.out.printf(": %6.2f%%\b\b\b\b\b\b\b\b\b", 100 * value / (float) max);
 	}
 }

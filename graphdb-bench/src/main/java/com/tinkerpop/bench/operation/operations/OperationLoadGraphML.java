@@ -2,6 +2,7 @@ package com.tinkerpop.bench.operation.operations;
 
 import java.io.FileInputStream;
 
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.util.graphml.GraphMLReader;
 
@@ -25,6 +26,7 @@ public class OperationLoadGraphML extends Operation {
 		try {
 			GraphMLReader.inputGraph(getGraph(), new FileInputStream(
 					graphmlPath), TRANSACTION_BUFFER, null, null, null);
+			Cache.getInstance(getGraph()).invalidate();
 			setResult("DONE");
 		} catch (Exception e) {
 			throw e;

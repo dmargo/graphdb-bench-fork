@@ -1,7 +1,7 @@
 package com.tinkerpop.bench.evaluators;
 
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.blueprints.pgm.Graph;
-import com.tinkerpop.blueprints.pgm.Vertex;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
@@ -16,11 +16,16 @@ public abstract class Evaluator {
 			return total;
 
 		total = 0d;
-		for (Vertex vertex : db.getVertices())
-			total += evaluate(vertex);
+		Cache cache = Cache.getInstance(db);
+		int max = cache.getVertexIndexRange();
+		
+		for (int index = 0; index < max; index++) {
+			if (cache.getVertexID(index) == null) continue;
+			total += evaluate(cache, index);
+		}
 
 		return total;
 	}
 
-	public abstract double evaluate(Vertex vertex);
+	public abstract double evaluate(Cache cache, int index);
 }

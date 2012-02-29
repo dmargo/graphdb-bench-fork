@@ -1,6 +1,8 @@
 package com.tinkerpop.bench.operation.operations;
 
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.operation.Operation;
+import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
 public class OperationAddEdge extends Operation {
@@ -21,7 +23,9 @@ public class OperationAddEdge extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			setResult(getGraph().addEdge(id, out, in, label).toString());
+			Edge edge = getGraph().addEdge(id, out, in, label);
+			setResult(edge.toString());
+			Cache.getInstance(getGraph()).addEdge(edge);
 		} catch (Exception e) {
 			setResult("DUPLICATE");
 		}

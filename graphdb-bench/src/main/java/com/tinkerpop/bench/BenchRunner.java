@@ -12,6 +12,7 @@ import com.tinkerpop.bench.operation.OperationShutdownGraph;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
 import com.tinkerpop.bench.operationFactory.OperationFactoryLog;
+import com.tinkerpop.bench.operationFactory.factories.WithOpCount;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
@@ -56,6 +57,7 @@ public class BenchRunner {
 			OperationFactory gcFactory = new OperationFactoryGeneric(
 					OperationDoGC.class);
 
+			String lastOperationFactoryName = "";
 			for (OperationFactory operationFactory : operationFactories) {
 				if (operationFactory instanceof OperationFactoryLog == false) {
 					// Flush cache: open/close before/after each factory
@@ -68,21 +70,36 @@ public class BenchRunner {
 
 				operationFactory.initialize(graphDescriptor, startingOpId);
 
-				System.out.println(operationFactory.getClass().getSimpleName());
+				String factoryName = operationFactory.getClass().getSimpleName();
+				if (!factoryName.equals(lastOperationFactoryName)) {
+					ConsoleUtils.header(factoryName);
+					lastOperationFactoryName = factoryName;
+				}
 
 				for (Operation operation : operationFactory) {
 
 					operation.initialize(graphDescriptor);
 
-					System.out.printf("\tOperation[%d] Type[%s]...", operation
-							.getId(), operation.getName());
-
+					System.out.printf("\r\tOperation %d, %s",
+							operation.getId(),
+							operation.getName());
+					System.out.flush();
+					
 					operation.execute();
 
-					System.out.println("Complete");
+					//System.out.println("Complete");
 
 					logWriter.logOperation(operation);
+					
+					if (operationFactory instanceof WithOpCount) {
+						WithOpCount w = (WithOpCount) operationFactory;
+						if (w.getOpCount() > 1) {
+							ConsoleUtils.printProgressIndicator(w.getExecutedOpCount(), w.getOpCount());
+						}
+					}
 				}
+				
+				System.out.println();
 
 				startingOpId = operationFactory.getCurrentOpId();
 

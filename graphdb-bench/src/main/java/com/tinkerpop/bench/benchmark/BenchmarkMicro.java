@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import com.tinkerpop.bench.Bench;
+import com.tinkerpop.bench.ConsoleUtils;
 import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.LogUtils;
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.generator.GraphGenerator;
 import com.tinkerpop.bench.generator.SimpleBarabasiGenerator;
 import com.tinkerpop.bench.operation.OperationDeleteGraph;
@@ -18,12 +20,13 @@ import com.tinkerpop.bench.operationFactory.factories.OperationFactoryRandomVert
 import com.tinkerpop.blueprints.pgm.impls.bdb.BdbGraph;
 import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.dup.DupGraph;
+import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
-import com.tinkerpop.blueprints.pgm.impls.orientdb.OrientGraph;
+//import com.tinkerpop.blueprints.pgm.impls.orientdb.OrientGraph;
 import com.tinkerpop.blueprints.pgm.impls.rdf.RdfGraph;
-import com.tinkerpop.blueprints.pgm.impls.rdf.impls.NativeStoreRdfGraph;
+//import com.tinkerpop.blueprints.pgm.impls.rdf.impls.NativeStoreRdfGraph;
 import com.tinkerpop.blueprints.pgm.impls.sql.SqlGraph;
-import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph;
+//import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -39,11 +42,15 @@ public class BenchmarkMicro extends Benchmark {
 	private static final String DEFAULT_INGEST_FILE = "barabasi_1000_5000.graphml";
 	
 	/// The list of supported databases
-	private static final String[] DATABASE_SHORT_NAMES = { "bdb", "dex", "dup", "neo", "rdf", "sql" };
+	private static final String[] DATABASE_SHORT_NAMES = { "bdb", "dex", "dup", "hollow", "neo", "rdf", "sql" };
 	
 	/// The list of supported database classes
-	private static final Class[] DATABASE_CLASSES = { BdbGraph.class, DexGraph.class, DupGraph.class,
-		Neo4jGraph.class, RdfGraph.class, SqlGraph.class };
+	private static final Class<?>[] DATABASE_CLASSES = { BdbGraph.class, DexGraph.class, DupGraph.class,
+		HollowGraph.class, Neo4jGraph.class, RdfGraph.class, SqlGraph.class };
+	
+	/// The defaults
+	private static final int DEFAULT_OP_COUNT = 1000;
+	private static final int DEFAULT_K_HOPS = 2;
 	
 	
 	/**
@@ -54,6 +61,7 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("Usage: runBenchmarkSuite.sh OPTIONS");
 		System.err.println("");
 		System.err.println("General options:");
+		System.err.println("  --dir, -d DIR     Set the database and results directory");
 		System.err.println("  --help            Print this help message");
 		System.err.println("  --no-warmup       Disable the initial warmup run");
 		System.err.println("");
@@ -62,6 +70,8 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("  --dex             DEX");
 		System.err.println("  --dup             Berkeley DB with duplicates "+
 										"on edge lookups and properties");
+		System.err.println("  --hollow          The hollow implementation with no "+
+										"backing database");
 		System.err.println("  --neo             neo4j");
 		System.err.println("  --rdf             Sesame RDF");
 		System.err.println("  --sql             MySQL");
@@ -77,7 +87,11 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("  --get             \"Get\" microbenchmarks");
 		System.err.println("");
 		System.err.println("Ingest options:");
-		System.err.println("  -f, --file FILE   Select the file to ingest");
+		System.err.println("  --file, -f FILE   Select the file to ingest");
+		System.err.println("");
+		System.err.println("Benchmark options:");
+		System.err.println("  --op-count N      Set the number of operations");
+		System.err.println("  --k-hops K        Set the number of k-hops");
 		System.err.println("");
 		System.err.println("Options for model \"Barabasi\":");
 		System.err.println("  --barabasi-n N    The number of vertices");
@@ -100,6 +114,8 @@ public class BenchmarkMicro extends Benchmark {
 		
 		OptionParser parser = new OptionParser();
 		
+		parser.accepts("d").withRequiredArg().ofType(String.class);
+		parser.accepts("dir").withRequiredArg().ofType(String.class);
 		parser.accepts("help");
 		parser.accepts("no-warmup");
 		
@@ -121,10 +137,16 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("get");
 		
 		
-		// Modifiers
+		// Ingest modifiers
 		
 		parser.accepts("f").withRequiredArg().ofType(String.class);
 		parser.accepts("file").withRequiredArg().ofType(String.class);
+		
+		
+		// Benchmark modifiers
+		
+		parser.accepts("op-count").withRequiredArg().ofType(Integer.class);
+		parser.accepts("k-hops").withRequiredArg().ofType(Integer.class);
 		
 		
 		// Generator modifiers
@@ -154,7 +176,7 @@ public class BenchmarkMicro extends Benchmark {
 		}
 		
 		String dbShortName = null;
-		Class dbClass = null;
+		Class<?> dbClass = null;
 		for (int i = 0; i < DATABASE_SHORT_NAMES.length; i++) {
 			if (options.has(DATABASE_SHORT_NAMES[i])) {
 				if (dbShortName != null) {
@@ -167,7 +189,7 @@ public class BenchmarkMicro extends Benchmark {
 			}
 		}
 		if (dbShortName == null) {
-			System.err.println("Error: No database is selected (please use --help for a list of options).");
+			ConsoleUtils.error("No database is selected (please use --help for a list of options).");
 			return;
 		}
 		
@@ -180,6 +202,14 @@ public class BenchmarkMicro extends Benchmark {
 		if (options.has("no-warmup")) {
 			warmup = false;
 		}
+		
+		boolean withGraphPath = true;
+		if (dbClass == HollowGraph.class) withGraphPath = false;
+		
+		int opCount = DEFAULT_OP_COUNT;
+		int kHops = DEFAULT_K_HOPS;
+		if (options.has("op-count")) opCount = (Integer) options.valueOf("op-count");
+		if (options.has("k-hops")) kHops = (Integer) options.valueOf("k-hops");
 		
 		
 		/*
@@ -197,39 +227,56 @@ public class BenchmarkMicro extends Benchmark {
 			}
 			
 			if (graphGenerator == null) {
-				System.err.println("Error: Unrecognized graph generation model");
+				ConsoleUtils.error("Unrecognized graph generation model");
 				return;
 			}
 		}
 		
 		
 		/*
-		 * Get the file names
+		 * Get the name of the results directory
 		 */
 		
-		String propDirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY);
-		if (propDirResults == null) {
-			System.err.println("Error: Property \"" + Bench.RESULTS_DIRECTORY + "\" is not set.");
-			return;
+		String dirResults;
+		if (options.has("d") || options.has("dir")) {
+			dirResults = options.valueOf(options.has("d") ? "d" : "dir").toString();
+			if (!dirResults.endsWith("/")) dirResults += "/";
 		}
-		if (!propDirResults.endsWith("/")) propDirResults += "/";
-		String dirResults = propDirResults + "Micro/";
+		else {
+			String propDirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY);
+			if (propDirResults == null) {
+				ConsoleUtils.error("Property \"" + Bench.RESULTS_DIRECTORY + "\" is not set and --dir is not specified.");
+				return;
+			}
+			if (!propDirResults.endsWith("/")) propDirResults += "/";
+			dirResults = propDirResults + "Micro/";
+		}
 		
-		if (!(new File(ingestFile)).exists()) {
-			String dirGraphML = Bench.benchProperties.getProperty(Bench.DATASETS_DIRECTORY);
-			if (dirGraphML == null) {
-				System.err.println("Warning: Property \"" + Bench.DATASETS_DIRECTORY + "\" is not set.");
-				System.err.println("Error: File \"" + ingestFile + "\" does not exist.");
-				return;
+		
+		/*
+		 * Get the name of the ingest file (if necessary)
+		 */
+		
+		if (options.has("ingest")) {
+			if (!(new File(ingestFile)).exists()) {
+				String dirGraphML = Bench.benchProperties.getProperty(Bench.DATASETS_DIRECTORY);
+				if (dirGraphML == null) {
+					ConsoleUtils.warn("Property \"" + Bench.DATASETS_DIRECTORY + "\" is not set.");
+					ConsoleUtils.error("File \"" + ingestFile + "\" does not exist.");
+					return;
+				}
+				if (!dirGraphML.endsWith("/")) dirGraphML += "/";
+				if (!(new File(dirGraphML + ingestFile)).exists()) {
+					ConsoleUtils.error("File \"" + ingestFile + "\" does not exist.");
+					return;
+				}
+				else {
+					ingestFile = dirGraphML + ingestFile;
+				}
 			}
-			if (!dirGraphML.endsWith("/")) dirGraphML += "/";
-			if (!(new File(dirGraphML + ingestFile)).exists()) {
-				System.err.println("Error: File \"" + ingestFile + "\" does not exist.");
-				return;
-			}
-			else {
-				ingestFile = dirGraphML + ingestFile;
-			}
+		}
+		else {
+			ingestFile = null;
 		}
 		
 		
@@ -241,7 +288,7 @@ public class BenchmarkMicro extends Benchmark {
 		GraphGenerator[] graphGenerators = new GraphGenerator[] { graphGenerator };
 		
 		Benchmark benchmark = new BenchmarkMicro(dirResults + "benchmark_micro.csv",
-				graphmlFiles, graphGenerators, options);
+				graphmlFiles, graphGenerators, options, opCount, kHops);
 		
 		
 		/*
@@ -261,25 +308,45 @@ public class BenchmarkMicro extends Benchmark {
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
 		
 		
-		// Load operation logs
+		/*
+		 * Print info
+		 */
+		
+		ConsoleUtils.sectionHeader("Tinkubator Graph Database Benchmark");
+		
+		System.out.println("Database : " + dbShortName);
+		System.out.println("Directory: " + dirResults);
+		
+		
+		/*
+		 * Load operation logs
+		 */
 		
 		if (warmup) {
+			ConsoleUtils.sectionHeader("Warmup Run");
 			graphDescriptor = new GraphDescriptor(dbClass,
-					dirResults + dbShortName + "/warmup/", dirResults + dbShortName + "/warmup/");
+					dirResults + dbShortName + "/warmup",
+					withGraphPath ? dirResults + dbShortName + "/warmup" : null);
 			benchmark.loadOperationLogs(graphDescriptor,
 					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
+			Cache.dropAll();
 		}
 			
+		ConsoleUtils.sectionHeader("Benchmark Run");
 		graphDescriptor = new GraphDescriptor(dbClass,
-				dirResults + dbShortName + "/db", dirResults + dbShortName + "/db");
+				dirResults + dbShortName + "/db",
+				withGraphPath ? dirResults + dbShortName + "/db" : null);
 		benchmark.loadOperationLogs(graphDescriptor,
 				dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		resultFiles.put(dbShortName, dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		
 		
-		// Create file with summarized results from all databases and operations
+		/*
+		 * Create file with summarized results from all databases and operations
+		 */
 		
+		ConsoleUtils.sectionHeader("Summary");
 		LogUtils.makeResultsSummary(
 				dirResults + dbShortName + "/summary-" + argString + ".csv", resultFiles);
 	}
@@ -289,20 +356,23 @@ public class BenchmarkMicro extends Benchmark {
 	 * Instance Code
 	 */
 	
-	private final int OP_COUNT = 1000;
-	private final String PROPERTY_KEY = "_id";
-	private final int K_HOPS = 2;
+	private int opCount = 1000;
+	private String PROPERTY_KEY = "_id";
+	private int kHops = 2;
 
 	private String[] graphmlFilenames = null;
 	private GraphGenerator[] graphGenerators = null;
 	private OptionSet options = null;
 
 	public BenchmarkMicro(String log, String[] graphmlFilenames,
-			GraphGenerator[] graphGenerators, OptionSet options) {
+			GraphGenerator[] graphGenerators, OptionSet options,
+			int opCount, int kHops) {
 		super(log);
 		this.graphmlFilenames = graphmlFilenames;
 		this.graphGenerators = graphGenerators;
 		this.options = options;
+		this.opCount = opCount;
+		this.kHops = kHops;
 	}
 
 	@Override
@@ -336,81 +406,81 @@ public class BenchmarkMicro extends Benchmark {
 			if (options.has("get")) {
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationGetManyVertices.class, 1,
-						new Integer[] { OP_COUNT }));
+						new Integer[] { opCount }));
 				//operationFactories.add(new OperationFactoryRandomVertex(
 				//		OperationGetVertex.class, OP_COUNT));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationGetManyVertexProperties.class, 1,
-						new Object[] { PROPERTY_KEY, OP_COUNT }));
+						new Object[] { PROPERTY_KEY, opCount }));
 				//operationFactories.add(new OperationFactoryRandomVertex(
 				//		OperationGetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationGetManyEdges.class, 1,
-						new Integer[] { OP_COUNT }));
+						new Integer[] { opCount }));
 				//operationFactories.add(new OperationFactoryRandomEdge(
 				//		OperationGetEdge.class, OP_COUNT));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationGetManyEdgeProperties.class, 1,
-						new Object[] { PROPERTY_KEY, OP_COUNT }));
+						new Object[] { PROPERTY_KEY, opCount }));
 				//operationFactories.add(new OperationFactoryRandomEdge(
 				//		OperationGetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
 	
 				// GET_NEIGHBORS ops and variants
 				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetFirstNeighbor.class, OP_COUNT, new Integer[] { K_HOPS }));
+						OperationGetFirstNeighbor.class, opCount, new Integer[] { kHops }));
 				
 				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetRandomNeighbor.class, OP_COUNT, new Integer[] { K_HOPS }));
+						OperationGetRandomNeighbor.class, opCount, new Integer[] { kHops }));
 				
 				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetAllNeighbors.class, OP_COUNT, new Integer[] { K_HOPS }));
+						OperationGetAllNeighbors.class, opCount, new Integer[] { kHops }));
 				
 				// GET_K_NEIGHBORS ops and variants
 				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetKFirstNeighbors.class, OP_COUNT));
+						OperationGetKFirstNeighbors.class, opCount));
 				
 				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetKRandomNeighbors.class, OP_COUNT));
+						OperationGetKRandomNeighbors.class, opCount));
 				
 				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetKHopNeighbors.class, OP_COUNT));
+						OperationGetKHopNeighbors.class, opCount));
 			}
 			
 			// SHORTEST PATH (Djikstra's algorithm)
 			if (options.has("dijkstra")) {
 				operationFactories.add(new OperationFactoryRandomVertexPair(
-						OperationGetShortestPath.class, OP_COUNT / 2));
+						OperationGetShortestPath.class, opCount / 2));
 				
 				operationFactories.add(new OperationFactoryRandomVertexPair(
-						OperationGetShortestPathProperty.class, OP_COUNT / 2));
+						OperationGetShortestPathProperty.class, opCount / 2));
 			}
 			
 			// ADD/SET microbenchmarks
 			if (options.has("add")) {
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationAddManyVertices.class, 1,
-						new Integer[] { OP_COUNT }));
+						new Integer[] { opCount }));
 				//operationFactories.add(new OperationFactoryGeneric(
 				//		OperationAddVertex.class, OP_COUNT));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationSetManyVertexProperties.class, 1,
-						new Object[] { PROPERTY_KEY, OP_COUNT }));
+						new Object[] { PROPERTY_KEY, opCount }));
 				//operationFactories.add(new OperationFactoryRandomVertex(
 				//		OperationSetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationAddManyEdges.class, 1,
-						new Integer[] { OP_COUNT }));
+						new Integer[] { opCount }));
 				//operationFactories.add(new OperationFactoryRandomVertexPair(
 				//		OperationAddEdge.class, OP_COUNT));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationSetManyEdgeProperties.class, 1,
-						new Object[] { PROPERTY_KEY, OP_COUNT }));
+						new Object[] { PROPERTY_KEY, opCount }));
 				//operationFactories.add(new OperationFactoryRandomEdge(
 				//		OperationSetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY}));
 			}

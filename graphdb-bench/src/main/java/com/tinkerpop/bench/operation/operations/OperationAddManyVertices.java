@@ -1,7 +1,9 @@
 package com.tinkerpop.bench.operation.operations;
 
+import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Graph;
+import com.tinkerpop.blueprints.pgm.Vertex;
 
 public class OperationAddManyVertices extends Operation {
 	
@@ -21,8 +23,10 @@ public class OperationAddManyVertices extends Operation {
 		try {
 			Graph graph = getGraph();
 			
-			for (int i = 0; i < opCount; i++)
-				graph.addVertex(id);
+			for (int i = 0; i < opCount; i++) {
+				Vertex vertex = graph.addVertex(id);
+				Cache.getInstance(getGraph()).addVertex(vertex);
+			}
 			
 			setResult(opCount);
 		} catch (Exception e) {

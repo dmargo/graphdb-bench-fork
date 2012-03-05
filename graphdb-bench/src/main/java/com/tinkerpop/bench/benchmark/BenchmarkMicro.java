@@ -23,8 +23,8 @@ import com.tinkerpop.blueprints.pgm.impls.dup.DupGraph;
 import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 //import com.tinkerpop.blueprints.pgm.impls.orientdb.OrientGraph;
-import com.tinkerpop.blueprints.pgm.impls.rdf.RdfGraph;
-//import com.tinkerpop.blueprints.pgm.impls.rdf.impls.NativeStoreRdfGraph;
+//import com.tinkerpop.blueprints.pgm.impls.rdf.RdfGraph;
+import com.tinkerpop.blueprints.pgm.impls.rdf.impls.NativeStoreRdfGraph;
 import com.tinkerpop.blueprints.pgm.impls.sql.SqlGraph;
 //import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph;
 
@@ -41,12 +41,12 @@ public class BenchmarkMicro extends Benchmark {
 	/// The default file for ingest
 	private static final String DEFAULT_INGEST_FILE = "barabasi_1000_5000.graphml";
 	
-	/// The list of supported databases
+	/// The list of supported databases (XXX dmargo: Note for now SQL must be last for special arg handling)
 	private static final String[] DATABASE_SHORT_NAMES = { "bdb", "dex", "dup", "hollow", "neo", "rdf", "sql" };
 	
 	/// The list of supported database classes
 	private static final Class<?>[] DATABASE_CLASSES = { BdbGraph.class, DexGraph.class, DupGraph.class,
-		HollowGraph.class, Neo4jGraph.class, RdfGraph.class, SqlGraph.class };
+		HollowGraph.class, Neo4jGraph.class, NativeStoreRdfGraph.class, SqlGraph.class };
 	
 	/// The defaults
 	private static final int DEFAULT_OP_COUNT = 1000;
@@ -74,7 +74,7 @@ public class BenchmarkMicro extends Benchmark {
 										"backing database");
 		System.err.println("  --neo             neo4j");
 		System.err.println("  --rdf             Sesame RDF");
-		System.err.println("  --sql             MySQL");
+		System.err.println("  --sql ADDR        MySQL");
 		System.err.println("");
 		System.err.println("Options to select a workload (select multiple):");
 		System.err.println("  --add             Adding nodes and edges to the database");
@@ -120,11 +120,12 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("no-warmup");
 		
 		
-		// Databases
+		// Databases (XXX dmargo: Note for now SQL must be last for special arg handling)
 		
-		for (int i = 0; i < DATABASE_SHORT_NAMES.length; i++) {
+		for (int i = 0; i < DATABASE_SHORT_NAMES.length - 1; i++) {
 			parser.accepts(DATABASE_SHORT_NAMES[i]);
 		}
+		parser.accepts("sql").withRequiredArg().ofType(String.class);
 		
 		
 		// Workloads
@@ -303,7 +304,7 @@ public class BenchmarkMicro extends Benchmark {
 			sb.append('-');
 		}
 		sb.append(Runtime.getRuntime().maxMemory());
-		String argString = sb.toString();
+		String argString = sb.toString().replaceAll("\\W+", "");
 		
 		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
 		
@@ -325,8 +326,8 @@ public class BenchmarkMicro extends Benchmark {
 		if (warmup) {
 			ConsoleUtils.sectionHeader("Warmup Run");
 			graphDescriptor = new GraphDescriptor(dbClass,
-					dirResults + dbShortName + "/warmup",
-					withGraphPath ? dirResults + dbShortName + "/warmup" : null);
+					!options.has("sql") ? dirResults + dbShortName + "/warmup" : null,
+					withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/warmup" : (String) options.valueOf("sql")) : null);
 			benchmark.loadOperationLogs(graphDescriptor,
 					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
@@ -335,8 +336,8 @@ public class BenchmarkMicro extends Benchmark {
 			
 		ConsoleUtils.sectionHeader("Benchmark Run");
 		graphDescriptor = new GraphDescriptor(dbClass,
-				dirResults + dbShortName + "/db",
-				withGraphPath ? dirResults + dbShortName + "/db" : null);
+				!options.has("sql") ? dirResults + dbShortName + "/db" : null,
+				withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/db" : (String) options.valueOf("sql")) : null);
 		benchmark.loadOperationLogs(graphDescriptor,
 				dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		resultFiles.put(dbShortName, dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");

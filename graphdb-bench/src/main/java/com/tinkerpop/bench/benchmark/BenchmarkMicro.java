@@ -3,6 +3,7 @@ package com.tinkerpop.bench.benchmark;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Vector;
 
 import com.tinkerpop.bench.Bench;
 import com.tinkerpop.bench.ConsoleUtils;
@@ -85,6 +86,7 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("  --generate MODEL  Generate (or grow) the graph "+
 										" based on the given model");
 		System.err.println("  --get             \"Get\" microbenchmarks");
+		System.err.println("  --get-k           \"Get\" k-hops microbenchmarks");
 		System.err.println("");
 		System.err.println("Ingest options:");
 		System.err.println("  --file, -f FILE   Select the file to ingest");
@@ -92,6 +94,7 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("Benchmark options:");
 		System.err.println("  --op-count N      Set the number of operations");
 		System.err.println("  --k-hops K        Set the number of k-hops");
+		System.err.println("  --k-hops K1:K2    Set a range of k-hops");
 		System.err.println("");
 		System.err.println("Options for model \"Barabasi\":");
 		System.err.println("  --barabasi-n N    The number of vertices");
@@ -136,6 +139,7 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("ingest");
 		parser.accepts("generate").withRequiredArg().ofType(String.class);
 		parser.accepts("get");
+		parser.accepts("get-k");
 		
 		
 		// Ingest modifiers
@@ -147,7 +151,7 @@ public class BenchmarkMicro extends Benchmark {
 		// Benchmark modifiers
 		
 		parser.accepts("op-count").withRequiredArg().ofType(Integer.class);
-		parser.accepts("k-hops").withRequiredArg().ofType(Integer.class);
+		parser.accepts("k-hops").withRequiredArg().ofType(String.class);
 		
 		
 		// Generator modifiers
@@ -208,9 +212,48 @@ public class BenchmarkMicro extends Benchmark {
 		if (dbClass == HollowGraph.class) withGraphPath = false;
 		
 		int opCount = DEFAULT_OP_COUNT;
-		int kHops = DEFAULT_K_HOPS;
 		if (options.has("op-count")) opCount = (Integer) options.valueOf("op-count");
-		if (options.has("k-hops")) kHops = (Integer) options.valueOf("k-hops");
+		
+		int[] kHops;
+		if (options.has("k-hops")) {
+			String kHopsStr = (String) options.valueOf("k-hops");
+			int kc = kHopsStr.indexOf(':');
+			if (kc >= 0) {
+				int k1, k2;
+				try {
+					k1 = Integer.parseInt(kHopsStr.substring(0, kc));
+					k2 = Integer.parseInt(kHopsStr.substring(kc + 1));
+				}
+				catch (NumberFormatException e) {
+					ConsoleUtils.error("Invalid range of k hops (not a number).");
+					return;
+				}
+				if (k1 <= 0 || k1 > k2) {
+					ConsoleUtils.error("Invalid range of k hops.");
+					return;
+				}
+				kHops = new int[k2-k1+1];
+				for (int k = k1; k <= k2; k++) kHops[k-k1] = k;
+			}
+			else {
+				kHops = new int[1];
+				try {
+					kHops[0] = Integer.parseInt(kHopsStr);
+				}
+				catch (NumberFormatException e) {
+					ConsoleUtils.error("Invalid number of k hops (not a number).");
+					return;
+				}
+				if (kHops[0] <= 0) {
+					ConsoleUtils.error("Invalid number of k hops (must be positive).");
+					return;
+				}
+			}
+		}
+		else {
+			kHops = new int[1];
+			kHops[0] = DEFAULT_K_HOPS;
+		}
 		
 		
 		/*
@@ -300,7 +343,7 @@ public class BenchmarkMicro extends Benchmark {
 		
 		StringBuilder sb = new StringBuilder();
 		for (String s : args) {
-			sb.append(s.substring(2));
+			sb.append(s.charAt(0) == '-' ? s.substring(s.charAt(1) == '-' ? 2 : 1) : s);
 			sb.append('-');
 		}
 		sb.append(Runtime.getRuntime().maxMemory());
@@ -357,9 +400,9 @@ public class BenchmarkMicro extends Benchmark {
 	 * Instance Code
 	 */
 	
-	private int opCount = 1000;
+	private int opCount = DEFAULT_OP_COUNT;
 	private String PROPERTY_KEY = "_id";
-	private int kHops = 2;
+	private int[] kHops;
 
 	private String[] graphmlFilenames = null;
 	private GraphGenerator[] graphGenerators = null;
@@ -367,7 +410,7 @@ public class BenchmarkMicro extends Benchmark {
 
 	public BenchmarkMicro(String log, String[] graphmlFilenames,
 			GraphGenerator[] graphGenerators, OptionSet options,
-			int opCount, int kHops) {
+			int opCount, int[] kHops) {
 		super(log);
 		this.graphmlFilenames = graphmlFilenames;
 		this.graphGenerators = graphGenerators;
@@ -431,23 +474,31 @@ public class BenchmarkMicro extends Benchmark {
 	
 				// GET_NEIGHBORS ops and variants
 				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetFirstNeighbor.class, opCount, new Integer[] { kHops }));
-				
+						OperationGetFirstNeighbor.class, opCount));
+ 
 				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetRandomNeighbor.class, opCount, new Integer[] { kHops }));
-				
+						OperationGetRandomNeighbor.class, opCount));
+ 
 				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetAllNeighbors.class, opCount, new Integer[] { kHops }));
+						OperationGetAllNeighbors.class, opCount));
+			}
+			
+			// GET_K_NEIGHBORS ops and variants
+			if (options.has("get-k")) {				
+				for (int k : kHops) {
+					operationFactories.add(new OperationFactoryRandomVertex(
+							OperationGetKFirstNeighbors.class, opCount, new Integer[] { k }));
+				}
 				
-				// GET_K_NEIGHBORS ops and variants
-				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetKFirstNeighbors.class, opCount));
+				for (int k : kHops) {				
+					operationFactories.add(new OperationFactoryRandomVertex(
+							OperationGetKRandomNeighbors.class, opCount, new Integer[] { k }));
+				}
 				
-				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetKRandomNeighbors.class, opCount));
-				
-				operationFactories.add(new OperationFactoryRandomVertex(
-						OperationGetKHopNeighbors.class, opCount));
+				for (int k : kHops) {
+					operationFactories.add(new OperationFactoryRandomVertex(
+							OperationGetKHopNeighbors.class, opCount, new Integer[] { k }));
+				}
 			}
 			
 			// SHORTEST PATH (Djikstra's algorithm)

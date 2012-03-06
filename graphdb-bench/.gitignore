@@ -17,4 +17,7 @@ doc/old wiki entries/
 .classpath
 .idea/
 graphdb-bench.iml
+JRatOutput/
+data/datasets/*.graphml
+data/results/Micro
 

@@ -1,9 +1,9 @@
 package com.tinkerpop.bench.benchmark;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Vector;
 
 import com.tinkerpop.bench.Bench;
 import com.tinkerpop.bench.ConsoleUtils;
@@ -42,8 +42,9 @@ public class BenchmarkMicro extends Benchmark {
 	/// The default file for ingest
 	private static final String DEFAULT_INGEST_FILE = "barabasi_1000_5000.graphml";
 	
-	/// The list of supported databases (XXX dmargo: Note for now SQL must be last for special arg handling)
+	/// The list of supported databases
 	private static final String[] DATABASE_SHORT_NAMES = { "bdb", "dex", "dup", "hollow", "neo", "rdf", "sql" };
+	private static final String[] DATABASE_WITH_OPTIONAL_ARG = { "sql" };
 	
 	/// The list of supported database classes
 	private static final Class<?>[] DATABASE_CLASSES = { BdbGraph.class, DexGraph.class, DupGraph.class,
@@ -52,6 +53,9 @@ public class BenchmarkMicro extends Benchmark {
 	/// The defaults
 	private static final int DEFAULT_OP_COUNT = 1000;
 	private static final int DEFAULT_K_HOPS = 2;
+	
+	/// The graphdb-bench directory
+	private static String graphdbBenchDir = null;
 	
 	
 	/**
@@ -75,7 +79,7 @@ public class BenchmarkMicro extends Benchmark {
 										"backing database");
 		System.err.println("  --neo             neo4j");
 		System.err.println("  --rdf             Sesame RDF");
-		System.err.println("  --sql ADDR        MySQL");
+		System.err.println("  --sql [ADDR]      MySQL");
 		System.err.println("");
 		System.err.println("Options to select a workload (select multiple):");
 		System.err.println("  --add             Adding nodes and edges to the database");
@@ -101,6 +105,29 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("  --barabasi-m M    The number of outgoing edges "+
 										" generated for each vertex");
 	}
+	
+	
+	/**
+	 * Get the given property and expand variables
+	 * 
+	 * @param key the property key
+	 * @return the value, or null if not found
+	 */
+	protected static String getProperty(String key) {
+		
+		String v = Bench.benchProperties.getProperty(key);
+		if (v == null) return null;
+		
+		if (v.indexOf("$GRAPHDB_BENCH") >= 0) {
+			if (graphdbBenchDir == null) {
+				ConsoleUtils.error("Could not determine the graphdb-bench directory.");
+				throw new RuntimeException("Could not expand the $GRAPHDB_BENCH variable");
+			}
+			v = v.replaceAll("\\$GRAPHDB_BENCH", graphdbBenchDir);
+		}
+		
+		return v;
+	}
 
 	
 	/**
@@ -109,7 +136,28 @@ public class BenchmarkMicro extends Benchmark {
 	 * @param args the command-line arguments
 	 * @throws Exception on error
 	 */
-	public static void run(String[] args) throws Exception {		
+	public static void run(String[] args) throws Exception {
+		
+		/*
+		 * Initialize
+		 */
+		
+		// Find the graphdb-bench directory
+		
+		URL source = BenchmarkMicro.class.getProtectionDomain().getCodeSource().getLocation();
+		if ("file".equals(source.getProtocol())) {
+			for (File f = new File(source.toURI()); f != null; f = f.getParentFile()) {
+				if (f.getName().equals("graphdb-bench")) {
+					graphdbBenchDir = f.getAbsolutePath();
+					break;
+				}
+			}
+		}
+		
+		if (graphdbBenchDir == null) {
+			ConsoleUtils.warn("Could not determine the graphdb-bench directory.");
+		}
+		
 
 		/*
 		 * Parse the command-line arguments
@@ -123,12 +171,25 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("no-warmup");
 		
 		
-		// Databases (XXX dmargo: Note for now SQL must be last for special arg handling)
+		// Databases
 		
-		for (int i = 0; i < DATABASE_SHORT_NAMES.length - 1; i++) {
-			parser.accepts(DATABASE_SHORT_NAMES[i]);
+		for (int i = 0; i < DATABASE_SHORT_NAMES.length; i++) {
+			
+			boolean withOptArg = false;
+			for (int j = 0; j < DATABASE_WITH_OPTIONAL_ARG.length; j++) {
+				if (DATABASE_SHORT_NAMES[i].equals(DATABASE_WITH_OPTIONAL_ARG[j])) {
+					withOptArg = true;
+					break;
+				}
+			}
+			
+			if (withOptArg) {
+				parser.accepts(DATABASE_SHORT_NAMES[i]).withOptionalArg().ofType(String.class);
+			}
+			else {
+				parser.accepts(DATABASE_SHORT_NAMES[i]);
+			}
 		}
-		parser.accepts("sql").withRequiredArg().ofType(String.class);
 		
 		
 		// Workloads
@@ -180,24 +241,6 @@ public class BenchmarkMicro extends Benchmark {
 			return;
 		}
 		
-		String dbShortName = null;
-		Class<?> dbClass = null;
-		for (int i = 0; i < DATABASE_SHORT_NAMES.length; i++) {
-			if (options.has(DATABASE_SHORT_NAMES[i])) {
-				if (dbShortName != null) {
-					System.err.println("Error: Multiple databases selected.");
-					return;
-				}
-				dbShortName = DATABASE_SHORT_NAMES[i];
-				dbClass = DATABASE_CLASSES[i];
-				break;
-			}
-		}
-		if (dbShortName == null) {
-			ConsoleUtils.error("No database is selected (please use --help for a list of options).");
-			return;
-		}
-		
 		String ingestFile = DEFAULT_INGEST_FILE;		
 		if (options.has("f") || options.has("file")) {
 			ingestFile = options.valueOf(options.has("f") ? "f" : "file").toString();
@@ -207,9 +250,6 @@ public class BenchmarkMicro extends Benchmark {
 		if (options.has("no-warmup")) {
 			warmup = false;
 		}
-		
-		boolean withGraphPath = true;
-		if (dbClass == HollowGraph.class) withGraphPath = false;
 		
 		int opCount = DEFAULT_OP_COUNT;
 		if (options.has("op-count")) opCount = (Integer) options.valueOf("op-count");
@@ -256,6 +296,47 @@ public class BenchmarkMicro extends Benchmark {
 		}
 		
 		
+		// Database-specific arguments
+		
+		String dbShortName = null;
+		Class<?> dbClass = null;
+		for (int i = 0; i < DATABASE_SHORT_NAMES.length; i++) {
+			if (options.has(DATABASE_SHORT_NAMES[i])) {
+				if (dbShortName != null) {
+					System.err.println("Error: Multiple databases selected.");
+					return;
+				}
+				dbShortName = DATABASE_SHORT_NAMES[i];
+				dbClass = DATABASE_CLASSES[i];
+				break;
+			}
+		}
+		if (dbShortName == null) {
+			ConsoleUtils.error("No database is selected (please use --help for a list of options).");
+			return;
+		}
+		
+		boolean withGraphPath = true;
+		if (dbClass == HollowGraph.class) withGraphPath = false;
+		
+		String sqlDbPath = null;
+		if (options.has("sql")) {
+			if (options.hasArgument("sql")) {
+				sqlDbPath = options.valueOf("sql").toString();
+			}
+			else {
+				String sqlDbPath_property = getProperty(Bench.DB_SQL_PATH);
+				if (sqlDbPath_property != null) {
+					sqlDbPath = sqlDbPath_property;
+				}
+				else {
+					ConsoleUtils.error("The SQL database path is not specified.");
+					return;
+				}
+			}
+		}
+
+		
 		/*
 		 * Setup the graph generator
 		 */
@@ -287,7 +368,7 @@ public class BenchmarkMicro extends Benchmark {
 			if (!dirResults.endsWith("/")) dirResults += "/";
 		}
 		else {
-			String propDirResults = Bench.benchProperties.getProperty(Bench.RESULTS_DIRECTORY);
+			String propDirResults = getProperty(Bench.RESULTS_DIRECTORY);
 			if (propDirResults == null) {
 				ConsoleUtils.error("Property \"" + Bench.RESULTS_DIRECTORY + "\" is not set and --dir is not specified.");
 				return;
@@ -303,7 +384,7 @@ public class BenchmarkMicro extends Benchmark {
 		
 		if (options.has("ingest")) {
 			if (!(new File(ingestFile)).exists()) {
-				String dirGraphML = Bench.benchProperties.getProperty(Bench.DATASETS_DIRECTORY);
+				String dirGraphML = getProperty(Bench.DATASETS_DIRECTORY);
 				if (dirGraphML == null) {
 					ConsoleUtils.warn("Property \"" + Bench.DATASETS_DIRECTORY + "\" is not set.");
 					ConsoleUtils.error("File \"" + ingestFile + "\" does not exist.");
@@ -370,7 +451,7 @@ public class BenchmarkMicro extends Benchmark {
 			ConsoleUtils.sectionHeader("Warmup Run");
 			graphDescriptor = new GraphDescriptor(dbClass,
 					!options.has("sql") ? dirResults + dbShortName + "/warmup" : null,
-					withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/warmup" : (String) options.valueOf("sql")) : null);
+					withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/warmup" : sqlDbPath) : null);
 			benchmark.loadOperationLogs(graphDescriptor,
 					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
@@ -380,7 +461,7 @@ public class BenchmarkMicro extends Benchmark {
 		ConsoleUtils.sectionHeader("Benchmark Run");
 		graphDescriptor = new GraphDescriptor(dbClass,
 				!options.has("sql") ? dirResults + dbShortName + "/db" : null,
-				withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/db" : (String) options.valueOf("sql")) : null);
+				withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/db" : sqlDbPath) : null);
 		benchmark.loadOperationLogs(graphDescriptor,
 				dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		resultFiles.put(dbShortName, dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");

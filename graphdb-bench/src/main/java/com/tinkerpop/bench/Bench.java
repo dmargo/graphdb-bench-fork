@@ -16,6 +16,7 @@ public class Bench {
 
 	// DATASETS - GraphML & Databases
 	public static final String DATASETS_DIRECTORY = "bench.datasets.directory";
+	public static final String DB_SQL_PATH = "bench.db.sql.path";
 
 	// LOGS - Operation Logs
 	public static final String LOGS_DELIMITER = "bench.logs.delimiter";

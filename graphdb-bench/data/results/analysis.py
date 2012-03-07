@@ -4,10 +4,12 @@ import sys
 import os.path
 import os
 
+from collections import defaultdict
+
 
 def main(filename):
     for line in open(filename, 'r'):
-        _,name,_,_,time,result,_,_ = line.split(';')
+        _,name,_,args,time,result,_,_ = line.split(';')
 
         if name == 'OperationGetFirstNeighbor':
             op_get_first_neighbor(time, result)
@@ -16,11 +18,11 @@ def main(filename):
         elif name == 'OperationGetAllNeighbors':
             op_get_all_neighbors(time, result)
         elif name == 'OperationGetKFirstNeighbors':
-            op_get_k_first_neighbors(time, result)
+            op_get_k_first_neighbors(args, time, result)
         elif name == 'OperationGetKRandomNeighbors':
-            op_get_k_random_neighbors(time, result)
+            op_get_k_random_neighbors(args, time, result)
         elif name == 'OperationGetKHopNeighbors':
-            op_get_k_hop_neighbors(time, result)
+            op_get_k_hop_neighbors(args, time, result)
         elif name == 'OperationGetShortestPath':
             op_get_shortest_path(time, result)
         elif name == 'OperationGetShortestPathProperty':
@@ -36,8 +38,8 @@ def main(filename):
     print_get_k_first_neighbors(dirname + '/get_k_first_neighbors')
     print_get_k_random_neighbors(dirname + '/get_k_random_neighbors')
     print_get_k_hop_neighbors(dirname + '/get_k_hop_neighbors')
-    print_get_shortest_path(dirname + '/get_shortest_path')
-    print_get_shortest_path_property(dirname + '/get_shortest_path_property')
+    #print_get_shortest_path(dirname + '/get_shortest_path')
+    #print_get_shortest_path_property(dirname + '/get_shortest_path_property')
 
 
 op_get_first_neighbor_sum = 0.0
@@ -61,7 +63,7 @@ def print_get_first_neighbor(filename):
 
     f.write('mean_without_dne;mean_dne;mean\n')
     f.write('%f;' % (op_get_first_neighbor_sum / op_get_first_neighbor_total))
-    f.write('%f;' % (op_get_first_neighbor_dne_sum / op_get_first_neighbor_dne_total))
+    f.write('%f;' % (op_get_first_neighbor_dne_sum / op_get_first_neighbor_dne_total if op_get_first_neighbor_dne_total != 0 else 1))
     f.write('%f\n' % ((op_get_first_neighbor_total + op_get_first_neighbor_dne_total) / (op_get_first_neighbor_sum + op_get_first_neighbor_dne_sum)))
 
 
@@ -86,7 +88,7 @@ def print_get_random_neighbor(filename):
 
     f.write('mean_without_dne;mean_dne;mean\n')
     f.write('%f;' % (op_get_random_neighbor_sum / op_get_random_neighbor_total))
-    f.write('%f;' % (op_get_random_neighbor_dne_sum / op_get_random_neighbor_dne_total))
+    f.write('%f;' % (op_get_random_neighbor_dne_sum / op_get_random_neighbor_dne_total if op_get_random_neighbor_dne_total != 0 else 1))
     f.write('%f\n' % ((op_get_random_neighbor_total + op_get_random_neighbor_dne_total) / (op_get_random_neighbor_sum + op_get_random_neighbor_dne_sum)))
 
 
@@ -121,112 +123,124 @@ def print_get_all_neighbors(filename):
     
 
 op_get_k_first_neighbors_list = []
-op_get_k_first_neighbors_sum = 0.0
-op_get_k_first_neighbors_weighted_sum = 0.0
-op_get_k_first_neighbors_weighted_total = 0.0
+op_get_k_first_neighbors_sum = defaultdict(float)
+op_get_k_first_neighbors_weighted_sum = defaultdict(float)
+op_get_k_first_neighbors_weighted_total = defaultdict(float)
 
-def op_get_k_first_neighbors(time, result):
+def op_get_k_first_neighbors(args, time, result):
     global op_get_k_first_neighbors_list, op_get_k_first_neighbors_sum, op_get_k_first_neighbors_weighted_sum, op_get_k_first_neighbors_weighted_total
+    _, k = args.strip('[]').split(',')
+    k = int(k)
     time = int(time)
     result = int(result)
 
-    op_get_k_first_neighbors_list.append((time, result))
+    op_get_k_first_neighbors_list.append((k, time, result))
 
-    op_get_k_first_neighbors_sum += time
-    op_get_k_first_neighbors_weighted_sum += time / result if result != 0.0 else 0.0
-    op_get_k_first_neighbors_weighted_total += result
+    op_get_k_first_neighbors_sum[k] += time
+    op_get_k_first_neighbors_weighted_sum[k] += time / result if result != 0.0 else 0.0
+    op_get_k_first_neighbors_weighted_total[k] += result
 
 def print_get_k_first_neighbors(filename):
     f = open(filename, 'w')
 
-    f.write('mean;weighted_mean_per_op;weighted_mean_over_total\n')
-    f.write('%f;' % (op_get_k_first_neighbors_sum / len(op_get_k_first_neighbors_list)))
-    f.write('%f;' % (op_get_k_first_neighbors_weighted_sum / len(op_get_k_first_neighbors_list)))
-    f.write('%f\n' % (op_get_k_first_neighbors_sum / op_get_k_first_neighbors_weighted_total))
+    f.write('k;mean;weighted_mean_per_op;weighted_mean_over_total\n')
+    for k in op_get_k_first_neighbors.keys():
+        f.write('%d;' % k)
+        f.write('%f;' % (op_get_k_first_neighbors_sum / len(op_get_k_first_neighbors_list)))
+        f.write('%f;' % (op_get_k_first_neighbors_weighted_sum / len(op_get_k_first_neighbors_list)))
+        f.write('%f\n' % (op_get_k_first_neighbors_sum / op_get_k_first_neighbors_weighted_total))
 
-    f.write('time;neighbor_count\n')
-    for (time, result) in op_get_k_first_neighbors_list:
-        f.write('%f;%f\n' % (time, result))
+    f.write('k;time;neighbor_count\n')
+    for (k, time, result) in op_get_k_first_neighbors_list:
+        f.write('%f;%f;%f\n' % (k, time, result))
 
 
 op_get_k_random_neighbors_list = []
-op_get_k_random_neighbors_sum = 0.0
-op_get_k_random_neighbors_weighted_by_nodecount_sum = 0.0
-op_get_k_random_neighbors_weighted_by_getcount_sum = 0.0
-op_get_k_random_neighbors_nodecount_total = 0.0
-op_get_k_random_neighbors_getcount_total = 0.0
+op_get_k_random_neighbors_sum = defaultdict(float)
+op_get_k_random_neighbors_weighted_by_nodecount_sum = defaultdict(float)
+op_get_k_random_neighbors_weighted_by_getcount_sum = defaultdict(float)
+op_get_k_random_neighbors_nodecount_total = defaultdict(float)
+op_get_k_random_neighbors_getcount_total = defaultdict(float)
 
-def op_get_k_random_neighbors(time, result):
+def op_get_k_random_neighbors(args, time, result):
     global op_get_k_random_neighbors_list, op_get_k_random_neighbors_sum, op_get_k_random_neighbors_weighted_by_nodecount_sum, op_get_k_random_neighbors_weighted_by_getcount_sum, op_get_k_random_neighbors_nodecount_total, op_get_k_random_neighbors_getcount_total
+    _, k = args.strip('[]').split(',')
+    k = int(k)    
     time = int(time)
-    #//(nodecount, getcount = result.split(':')
-    #//nodecount = int(nodecount)
-    #getcount = int(getcount)
+    (nodecount, getcount = result.split(':')
+    nodecount = int(nodecount)
+    getcount = int(getcount)
     getcount = int(result)
 
-    #op_get_k_random_neighbors_list.append((time, nodecount, getcount))
-    op_get_k_random_neighbors_list.append((time, getcount))
+    op_get_k_random_neighbors_list.append((k, time, nodecount, getcount))
+    #op_get_k_random_neighbors_list.append((time, getcount))
 
-    op_get_k_random_neighbors_sum += time
-    #op_get_k_random_neighbors_weighted_by_nodecount_sum += time / nodecount if nodecount != 0.0 else 0.0
-    op_get_k_random_neighbors_weighted_by_getcount_sum += time / getcount if getcount != 0.0 else 0.0
-    #op_get_k_random_neighbors_nodecount_total += nodecount
-    op_get_k_random_neighbors_getcount_total += getcount
+    op_get_k_random_neighbors_sum[k] += time
+    op_get_k_random_neighbors_weighted_by_nodecount_sum[k] += time / nodecount if nodecount != 0.0 else 0.0
+    op_get_k_random_neighbors_weighted_by_getcount_sum[k] += time / getcount if getcount != 0.0 else 0.0
+    op_get_k_random_neighbors_nodecount_total[k] += nodecount
+    op_get_k_random_neighbors_getcount_total[k] += getcount
 
 def print_get_k_random_neighbors(filename):
     f = open(filename, 'w')
 
-    #f.write('mean;weighted_by_nodecount_per_op;weighted_by_nodecount_over_total;weighted_by_getcount_per_op;weighted_by_getcount_over_total')
-    f.write('mean;weighted_by_getcount_per_op;weighted_by_getcount_over_total')
-    f.write('%f;' % (op_get_k_random_neighbors_sum / len(op_get_k_random_neighbors_list)))
-    #f.write(op_get_k_random_neighbors_weighted_by_nodecount_sum / len(op_get_k_random_neighbors_list) + ';')
-    #f.write(op_get_k_random_neighbors_sum / op_get_k_random_neighbors_nodecount_total + ';')
-    f.write('%f;' % (op_get_k_random_neighbors_weighted_by_getcount_sum / len(op_get_k_random_neighbors_list)))
-    f.write('%f\n' % (op_get_k_random_neighbors_sum / op_get_k_random_neighbors_getcount_total))
+    f.write('k;mean;weighted_by_nodecount_per_op;weighted_by_nodecount_over_total;weighted_by_getcount_per_op;weighted_by_getcount_over_total')
+    #f.write('mean;weighted_by_getcount_per_op;weighted_by_getcount_over_total')
+    for k in op_get_k_random_neighbors_sum.keys():
+        f.write('%d;' % k)
+        f.write('%f;' % (op_get_k_random_neighbors_sum / len(op_get_k_random_neighbors_list)))
+        f.write('%f;' % (op_get_k_random_neighbors_weighted_by_nodecount_sum / len(op_get_k_random_neighbors_list)))
+        f.write('%f;' % (op_get_k_random_neighbors_sum / op_get_k_random_neighbors_nodecount_total))
+        f.write('%f;' % (op_get_k_random_neighbors_weighted_by_getcount_sum / len(op_get_k_random_neighbors_list)))
+        f.write('%f\n' % (op_get_k_random_neighbors_sum / op_get_k_random_neighbors_getcount_total))
 
-    #f.write('time;nodecount;getcount')
-    #for (time, nodecount, getcount) in op_get_k_random_neighbors_list:
-    #    f.write(time + ';' + nodecount + ';' + getcount + '\n')\
-    f.write('time;getcount\n')
-    for (time, getcount) in op_get_k_random_neighbors_list:
-        f.write('%f;%f\n' % (time, getcount))
+    f.write('k;time;nodecount;getcount')
+    for (k, time, nodecount, getcount) in op_get_k_random_neighbors_list:
+        f.write('%f;%f;%f;%f\n' % (k, time, nodecount, getcount))
+    #f.write('time;getcount\n')
+    #for (time, getcount) in op_get_k_random_neighbors_list:
+    #    f.write('%f;%f\n' % (time, getcount))
 
 
 op_get_k_hop_neighbors_list = []
-op_get_k_hop_neighbors_sum = 0.0
-op_get_k_hop_neighbors_weighted_by_nodecount_sum = 0.0
-op_get_k_hop_neighbors_weighted_by_getcount_sum = 0.0
-op_get_k_hop_neighbors_nodecount_total = 0.0
-op_get_k_hop_neighbors_getcount_total = 0.0
+op_get_k_hop_neighbors_sum = defaultdict(float)
+op_get_k_hop_neighbors_weighted_by_nodecount_sum = defaultdict(float)
+op_get_k_hop_neighbors_weighted_by_getcount_sum = defaultdict(float)
+op_get_k_hop_neighbors_nodecount_total = defaultdict(float)
+op_get_k_hop_neighbors_getcount_total = defaultdict(float)
 
-def op_get_k_hop_neighbors(time, result):
+def op_get_k_hop_neighbors(args, time, result):
     global op_get_k_hop_neighbors_list, op_get_k_hop_neighbors_sum, op_get_k_hop_neighbors_weighted_by_nodecount_sum, op_get_k_hop_neighbors_weighted_by_getcount_sum, op_get_k_hop_neighbors_nodecount_total, op_get_k_hop_neighbors_getcount_total
+    _, k = args.strip('[]').split(',')
+    k = int(k)
     time = int(time)
     (nodecount, getcount) = result.split(':')
     nodecount = int(nodecount)
     getcount = int(getcount)
 
-    op_get_k_hop_neighbors_list.append((time, nodecount, getcount))
+    op_get_k_hop_neighbors_list.append((k, time, nodecount, getcount))
 
-    op_get_k_hop_neighbors_sum += time
-    op_get_k_hop_neighbors_weighted_by_nodecount_sum += time / nodecount if nodecount != 0.0 else 0.0
-    op_get_k_hop_neighbors_weighted_by_getcount_sum += time / getcount if getcount != 0.0 else 0.0
-    op_get_k_hop_neighbors_nodecount_total += nodecount
-    op_get_k_hop_neighbors_getcount_total += getcount
+    op_get_k_hop_neighbors_sum[k] += time
+    op_get_k_hop_neighbors_weighted_by_nodecount_sum[k] += time / nodecount if nodecount != 0.0 else 0.0
+    op_get_k_hop_neighbors_weighted_by_getcount_sum[k] += time / getcount if getcount != 0.0 else 0.0
+    op_get_k_hop_neighbors_nodecount_total[k] += nodecount
+    op_get_k_hop_neighbors_getcount_total[k] += getcount
 
 def print_get_k_hop_neighbors(filename):
     f = open(filename, 'w')
 
-    f.write('mean;weighted_by_nodecount_per_op;weighted_by_nodecount_over_total;weighted_by_getcount_per_op;weighted_by_getcount_over_total')
-    f.write('%f;' % (op_get_k_hop_neighbors_sum / len(op_get_k_hop_neighbors_list)))
-    f.write('%f;' % (op_get_k_hop_neighbors_weighted_by_nodecount_sum / len(op_get_k_hop_neighbors_list)))
-    f.write('%f;' % (op_get_k_hop_neighbors_sum / op_get_k_hop_neighbors_nodecount_total))
-    f.write('%f;' % (op_get_k_hop_neighbors_weighted_by_getcount_sum / len(op_get_k_hop_neighbors_list)))
-    f.write('%f\n' % (op_get_k_hop_neighbors_sum / op_get_k_hop_neighbors_getcount_total))
+    f.write('k;mean;weighted_by_nodecount_per_op;weighted_by_nodecount_over_total;weighted_by_getcount_per_op;weighted_by_getcount_over_total')
+    for k in op_get_k_hop_neighbors_sum.keys():
+        f.write('%d;' % k)
+        f.write('%f;' % (op_get_k_hop_neighbors_sum / len(op_get_k_hop_neighbors_list)))
+        f.write('%f;' % (op_get_k_hop_neighbors_weighted_by_nodecount_sum / len(op_get_k_hop_neighbors_list)))
+        f.write('%f;' % (op_get_k_hop_neighbors_sum / op_get_k_hop_neighbors_nodecount_total))
+        f.write('%f;' % (op_get_k_hop_neighbors_weighted_by_getcount_sum / len(op_get_k_hop_neighbors_list)))
+        f.write('%f\n' % (op_get_k_hop_neighbors_sum / op_get_k_hop_neighbors_getcount_total))
 
-    f.write('time;nodecount;getcount\n')
-    for (time, nodecount, getcount) in op_get_k_hop_neighbors_list:
-        f.write('%f;%f;%f\n' % (time, nodecount, getcount))
+    f.write('k;time;nodecount;getcount\n')
+    for (k, time, nodecount, getcount) in op_get_k_hop_neighbors_list:
+        f.write('%f;%f;%f;%f\n' % (k, time, nodecount, getcount))
 
 
 op_get_shortest_path_list = []

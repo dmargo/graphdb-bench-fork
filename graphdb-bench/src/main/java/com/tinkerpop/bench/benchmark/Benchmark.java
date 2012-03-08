@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import com.tinkerpop.bench.BenchRunner;
 import com.tinkerpop.bench.GraphDescriptor;
-import com.tinkerpop.bench.operationFactory.OperationFactoryLog;
+//import com.tinkerpop.bench.operationFactory.OperationFactoryLog;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph;
 
@@ -20,6 +20,7 @@ public abstract class Benchmark {
 		this.log = log;
 	}
 
+	@SuppressWarnings("unused")
 	private void createOperationLogs() throws Exception {
 		GraphDescriptor graphDescriptor = new GraphDescriptor(TinkerGraph.class);
 

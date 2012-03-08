@@ -10,6 +10,7 @@ import com.tinkerpop.pipes.Pipe;
 public class OperationGremlin extends Operation {
 
 	private String gremlinScript = null;
+	@SuppressWarnings("rawtypes")
 	private Pipe compiledScript = null;
 
 	// args
@@ -26,7 +27,7 @@ public class OperationGremlin extends Operation {
 		try {
 			int resultCount = 0;
 
-			for (Object result : compiledScript)
+			for (@SuppressWarnings("unused") Object result : compiledScript)
 				resultCount++;
 
 			setResult(Integer.toString(resultCount));

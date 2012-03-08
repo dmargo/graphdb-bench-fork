@@ -66,43 +66,45 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("Usage: runBenchmarkSuite.sh OPTIONS");
 		System.err.println("");
 		System.err.println("General options:");
-		System.err.println("  --dir, -d DIR     Set the database and results directory");
-		System.err.println("  --help            Print this help message");
-		System.err.println("  --no-warmup       Disable the initial warmup run");
+		System.err.println("  --dir, -d DIR         Set the database and results directory");
+		System.err.println("  --help                Print this help message");
+		System.err.println("  --no-warmup           Disable the initial warmup run");
 		System.err.println("");
 		System.err.println("Options to select a database (select one):");
-		System.err.println("  --bdb             Berkeley DB, using massive indexing");
-		System.err.println("  --dex             DEX");
-		System.err.println("  --dup             Berkeley DB with duplicates "+
+		System.err.println("  --bdb                 Berkeley DB, using massive indexing");
+		System.err.println("  --dex                 DEX");
+		System.err.println("  --dup                 Berkeley DB, duplicates "+
 										"on edge lookups and properties");
-		System.err.println("  --hollow          The hollow implementation with no "+
+		System.err.println("  --hollow              The hollow implementation with no "+
 										"backing database");
-		System.err.println("  --neo             neo4j");
-		System.err.println("  --rdf             Sesame RDF");
-		System.err.println("  --sql [ADDR]      MySQL");
+		System.err.println("  --neo                 neo4j");
+		System.err.println("  --rdf                 Sesame RDF");
+		System.err.println("  --sql [ADDR]          MySQL");
 		System.err.println("");
 		System.err.println("Options to select a workload (select multiple):");
-		System.err.println("  --add             Adding nodes and edges to the database");
-		System.err.println("  --delete-graph    Delete the entire graph");
-		System.err.println("  --dijkstra        Dijkstra's shortest path algorithm");
-		System.err.println("  --ingest          Ingest a file to the database "+
-										" (delete the existing graph first)");
-		System.err.println("  --generate MODEL  Generate (or grow) the graph "+
+		System.err.println("  --add                 Adding nodes and edges to the database");
+		System.err.println("  --clustering-coef     Compute the clustering coefficients");
+		System.err.println("  --delete-graph        Delete the entire graph");
+		System.err.println("  --dijkstra            Dijkstra's shortest path algorithm");
+		System.err.println("  --generate MODEL      Generate (or grow) the graph "+
 										" based on the given model");
-		System.err.println("  --get             \"Get\" microbenchmarks");
-		System.err.println("  --get-k           \"Get\" k-hops microbenchmarks");
+		System.err.println("  --get                 \"Get\" microbenchmarks");
+		System.err.println("  --get-k               \"Get\" k-hops microbenchmarks");
+		System.err.println("  --ingest              Ingest a file to the database "+
+										" (implies --delete-graph)");
 		System.err.println("");
 		System.err.println("Ingest options:");
 		System.err.println("  --file, -f FILE   Select the file to ingest");
 		System.err.println("");
 		System.err.println("Benchmark options:");
-		System.err.println("  --op-count N      Set the number of operations");
-		System.err.println("  --k-hops K        Set the number of k-hops");
-		System.err.println("  --k-hops K1:K2    Set a range of k-hops");
+		System.err.println("  --k-hops K            Set the number of k-hops");
+		System.err.println("  --k-hops K1:K2        Set a range of k-hops");
+		System.err.println("  --op-count N          Set the number of operations");
+		System.err.println("  --warmup-op-count N   Set the number of warmup operations");
 		System.err.println("");
 		System.err.println("Options for model \"Barabasi\":");
-		System.err.println("  --barabasi-n N    The number of vertices");
-		System.err.println("  --barabasi-m M    The number of outgoing edges "+
+		System.err.println("  --barabasi-n N        The number of vertices");
+		System.err.println("  --barabasi-m M        The number of outgoing edges "+
 										" generated for each vertex");
 	}
 	
@@ -195,12 +197,13 @@ public class BenchmarkMicro extends Benchmark {
 		// Workloads
 		
 		parser.accepts("add");
+		parser.accepts("clustering-coef");
 		parser.accepts("delete-graph");
 		parser.accepts("dijkstra");
-		parser.accepts("ingest");
 		parser.accepts("generate").withRequiredArg().ofType(String.class);
 		parser.accepts("get");
 		parser.accepts("get-k");
+		parser.accepts("ingest");
 		
 		
 		// Ingest modifiers
@@ -211,8 +214,9 @@ public class BenchmarkMicro extends Benchmark {
 		
 		// Benchmark modifiers
 		
-		parser.accepts("op-count").withRequiredArg().ofType(Integer.class);
 		parser.accepts("k-hops").withRequiredArg().ofType(String.class);
+		parser.accepts("op-count").withRequiredArg().ofType(Integer.class);
+		parser.accepts("warmup-op-count").withRequiredArg().ofType(Integer.class);
 		
 		
 		// Generator modifiers
@@ -253,6 +257,9 @@ public class BenchmarkMicro extends Benchmark {
 		
 		int opCount = DEFAULT_OP_COUNT;
 		if (options.has("op-count")) opCount = (Integer) options.valueOf("op-count");
+		
+		int warmupOpCount = opCount;
+		if (options.has("warmup-op-count")) warmupOpCount = (Integer) options.valueOf("warmup-op-count");
 		
 		int[] kHops;
 		if (options.has("k-hops")) {
@@ -412,6 +419,9 @@ public class BenchmarkMicro extends Benchmark {
 		String[] graphmlFiles = new String[] { ingestFile };
 		GraphGenerator[] graphGenerators = new GraphGenerator[] { graphGenerator };
 		
+		Benchmark warmupBenchmark = new BenchmarkMicro(dirResults + "benchmark_micro_warmup.csv",
+				graphmlFiles, graphGenerators, options, warmupOpCount, kHops);
+		
 		Benchmark benchmark = new BenchmarkMicro(dirResults + "benchmark_micro.csv",
 				graphmlFiles, graphGenerators, options, opCount, kHops);
 		
@@ -452,7 +462,7 @@ public class BenchmarkMicro extends Benchmark {
 			graphDescriptor = new GraphDescriptor(dbClass,
 					!options.has("sql") ? dirResults + dbShortName + "/warmup" : null,
 					withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/warmup" : sqlDbPath) : null);
-			benchmark.loadOperationLogs(graphDescriptor,
+			warmupBenchmark.loadOperationLogs(graphDescriptor,
 					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			Cache.dropAll();
@@ -532,28 +542,21 @@ public class BenchmarkMicro extends Benchmark {
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationGetManyVertices.class, 1,
 						new Integer[] { opCount }));
-				//operationFactories.add(new OperationFactoryRandomVertex(
-				//		OperationGetVertex.class, OP_COUNT));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationGetManyVertexProperties.class, 1,
 						new Object[] { PROPERTY_KEY, opCount }));
-				//operationFactories.add(new OperationFactoryRandomVertex(
-				//		OperationGetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationGetManyEdges.class, 1,
 						new Integer[] { opCount }));
-				//operationFactories.add(new OperationFactoryRandomEdge(
-				//		OperationGetEdge.class, OP_COUNT));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationGetManyEdgeProperties.class, 1,
 						new Object[] { PROPERTY_KEY, opCount }));
-				//operationFactories.add(new OperationFactoryRandomEdge(
-				//		OperationGetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
 	
 				// GET_NEIGHBORS ops and variants
+				
 				operationFactories.add(new OperationFactoryRandomVertex(
 						OperationGetFirstNeighbor.class, opCount));
  
@@ -591,31 +594,35 @@ public class BenchmarkMicro extends Benchmark {
 						OperationGetShortestPathProperty.class, opCount / 2));
 			}
 			
+			// CLUSTERING COEFFICIENT benchmarks
+			if (options.has("clustering-coef")) {
+				//operationFactories.add(new OperationFactoryRandomVertex(
+				//		OperationLocalClusteringCoefficient.class, opCount));
+				
+				operationFactories.add(new OperationFactoryGeneric(
+						OperationGlobalClusteringCoefficient.class, 1));
+				
+				operationFactories.add(new OperationFactoryGeneric(
+						OperationNetworkAverageClusteringCoefficient.class, 1));
+			}
+			
 			// ADD/SET microbenchmarks
 			if (options.has("add")) {
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationAddManyVertices.class, 1,
 						new Integer[] { opCount }));
-				//operationFactories.add(new OperationFactoryGeneric(
-				//		OperationAddVertex.class, OP_COUNT));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationSetManyVertexProperties.class, 1,
 						new Object[] { PROPERTY_KEY, opCount }));
-				//operationFactories.add(new OperationFactoryRandomVertex(
-				//		OperationSetVertexProperty.class, OP_COUNT, new String[] { PROPERTY_KEY }));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationAddManyEdges.class, 1,
 						new Integer[] { opCount }));
-				//operationFactories.add(new OperationFactoryRandomVertexPair(
-				//		OperationAddEdge.class, OP_COUNT));
 				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationSetManyEdgeProperties.class, 1,
 						new Object[] { PROPERTY_KEY, opCount }));
-				//operationFactories.add(new OperationFactoryRandomEdge(
-				//		OperationSetEdgeProperty.class, OP_COUNT, new String[] { PROPERTY_KEY}));
 			}
 					
 		}

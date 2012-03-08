@@ -21,6 +21,7 @@ public class OperationPipesEchoLazy extends Operation {
 	private String startVertexIndexKey = null;
 	private String startVertexIndexValue = null;
 	private int steps = 1;
+	@SuppressWarnings("rawtypes")
 	private Pipeline pipeline = null;
 	private boolean isIndexableGraph = false;
 	Iterable<Vertex> startVertices = null;
@@ -47,6 +48,7 @@ public class OperationPipesEchoLazy extends Operation {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void onExecute() throws Exception {
 		try {
@@ -75,6 +77,7 @@ public class OperationPipesEchoLazy extends Operation {
 		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Pipeline createPipeline(final Integer steps) {
 		final ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 		for (int i = 0; i < steps; i++) {

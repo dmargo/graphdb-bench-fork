@@ -5,16 +5,16 @@ set datafile separator ';'
 set xlabel 'Neighborhood Size (vertices)'
 set ylabel 'Time (nanoseconds)'
 
-set xrange [0:60]
-set yrange [0:3e+06]
+set xrange [0:100]
+set yrange [0:400000]
 
-#Fitted least-squares data.
+# Fitted by least squares to data.
 f(x) = a*x + b
-a = 55858.6; b = 21143.2
+a = 2141.49; b = 20727
 fit f(x) '<sed "1,3d" get_all_neighbors' using 2:1 via a,b
 
-#Predicted by get_vertex + get_neighbor.
+# Predicted by get_vertex + get_edge per neighbor.
 g(x) = i*x + j
-i = 26230.435 + 31636.655; j = 21143.2
+i = 993.837 + 3178.681; j = 20727
 
 plot '<sed "1,3d" get_all_neighbors' using 2:1 title 'Real', g(x) title 'Predicted'

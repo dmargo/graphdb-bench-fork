@@ -11,7 +11,7 @@ set ylabel 'Time (nanoseconds)'
 set xrange [1:5]
 
 f(x) = a*x**b + c
-a = 57864.4; b = 4.70097; c = 15000
+a               = 57864.4; b               = 4.70097; c               = 14956
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 1:2 via a,b,c
 
 plot '<sed "1,7d" get_k_hop_neighbors' using 1:2 title 'Real', f(x) title 'Fitted'
@@ -24,11 +24,11 @@ set ylabel 'Time (nanoseconds)'
 set xrange [0:4000]
 
 f(x) = a*x + b
-a = 53011.8; b = 19002.8
+a               = 53011.8; b               = 19002.8  
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 3:2 via a,b
 
 g(x) = i*x + j
-i = 26230.435 + 31636.655; j = 19002.8
+i = 26230.435 + 31636.655; j = 19002.8  
 
 plot '<sed "1,7d" get_k_hop_neighbors' using 3:2 title 'Real', f(x) title 'Fitted', g(x) title 'Predicted'
 
@@ -40,7 +40,7 @@ set ylabel 'Time (nanoseconds)'
 set xrange [1:5]
 
 f(x) = a*x**b + c
-a = 57848.8; b = 5.30028; c = 14999.9
+a               = 57848.8; b               = 5.30028; c               = 14955.9
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 4:2 via a,b,c
 
 plot '<sed "1,7d" get_k_hop_neighbors' using 4:2 title 'Real', f(x) title 'Fitted'
@@ -53,11 +53,11 @@ set ylabel 'Time (nanoseconds)'
 set xrange [0:1500]
 
 f(x) = a*x + b
-a = 139706; b = -396968
+a               = 139706; b               = -396968 
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 5:2 via a,b
 
 g(x) = i*x + j
-i = 279321.213; j = -396968
+i = 279321.213; j = -396968 
 
 plot '<sed "1,7d" get_k_hop_neighbors' using 5:2 title 'Real', f(x) title 'Fitted', g(x) title 'Predicted'
 
@@ -69,11 +69,11 @@ set ylabel 'Time (nanoseconds)'
 set xrange [0:4000]
 
 f(x) = a*x + b
-a = 52955.2; b = 20910.5
+a               = 52955.2; b               = 20910.5
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 6:2 via a,b
 
 g(x) = i*x + j
-i = 26230.435 + 31636.655; j = 20910.5
+i = 26230.435 + 31636.655; j               = 20910.5
 
 plot '<sed "1,7d" get_k_hop_neighbors' using 6:2 title 'Real', f(x) title 'Fitted', g(x) title 'Predicted'
 

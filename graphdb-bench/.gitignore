@@ -8,9 +8,6 @@ bin/
 wiki/
 blog/
 doc/old wiki entries/
-#data/datasets/
-#!data/datasets/barabasi.graphml
-#data/results/
 .settings/
 .project
 .pydevproject
@@ -19,5 +16,6 @@ doc/old wiki entries/
 graphdb-bench.iml
 JRatOutput/
 data/datasets/*.graphml
-data/results/Micro
+data/results/Micro/*/warmup/
+data/results/Micro/*/db/
 

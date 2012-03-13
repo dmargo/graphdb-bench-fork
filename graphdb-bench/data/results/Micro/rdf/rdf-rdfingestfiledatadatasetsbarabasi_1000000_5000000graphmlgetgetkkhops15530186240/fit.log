@@ -1,0 +1,288 @@
+
+
+*******************************************************************************
+Thu Mar  8 18:53:52 2012
+
+
+FIT:    data read from '<sed "1,3d" get_all_neighbors' using 2:1
+	x range restricted to [0.00000 : 60.0000]
+	y range restricted to [0.00000 : 3.00000e+06]
+        #datapoints = 995
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+fitted parameters initialized with current variable values
+
+
+
+ Iteration 0
+ WSSR        : 8.09564e+13       delta(WSSR)/WSSR   : 0
+ delta(WSSR) : 0                 limit for stopping : 1e-05
+ lambda	  : 5.85147
+
+initial set of free parameter values
+
+a               = 54418
+b               = 20000
+
+After 3 iterations the fit converged.
+final sum of squares of residuals : 2.30683e+11
+rel. change during last iteration : -5.78153e-11
+
+degrees of freedom    (FIT_NDF)                        : 993
+rms of residuals      (FIT_STDFIT) = sqrt(WSSR/ndf)    : 15241.7
+variance of residuals (reduced chisquare) = WSSR/ndf   : 2.32309e+08
+
+Final set of parameters            Asymptotic Standard Error
+=======================            ==========================
+
+a               = 19505.1          +/- 70.43        (0.3611%)
+b               = 23590.5          +/- 578.6        (2.453%)
+
+
+correlation matrix of the fit parameters:
+
+               a      b      
+a               1.000 
+b              -0.550  1.000 
+
+
+*******************************************************************************
+Thu Mar  8 18:54:09 2012
+
+
+FIT:    data read from '<sed "1,7d" get_k_hop_neighbors' using 1:2
+	x range restricted to [1.00000 : 5.00000]
+	y range restricted to [0.00000 : 2.00000e+08]
+        #datapoints = 4932
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+fitted parameters initialized with current variable values
+
+
+
+ Iteration 0
+ WSSR        : 9.01519e+17       delta(WSSR)/WSSR   : 0
+ delta(WSSR) : 0                 limit for stopping : 1e-05
+ lambda	  : 133494
+
+initial set of free parameter values
+
+a               = 100
+b               = 5
+c               = 100
+
+After 244 iterations the fit converged.
+final sum of squares of residuals : 8.44248e+17
+rel. change during last iteration : -3.06248e-06
+
+degrees of freedom    (FIT_NDF)                        : 4929
+rms of residuals      (FIT_STDFIT) = sqrt(WSSR/ndf)    : 1.30875e+07
+variance of residuals (reduced chisquare) = WSSR/ndf   : 1.71282e+14
+
+Final set of parameters            Asymptotic Standard Error
+=======================            ==========================
+
+a               = 226030           +/- 2.044e+05    (90.45%)
+b               = 2.03525          +/- 0.5311       (26.09%)
+c               = 18362.9          +/- 5.395e+05    (2938%)
+
+
+correlation matrix of the fit parameters:
+
+               a      b      c      
+a               1.000 
+b              -0.995  1.000 
+c              -0.872  0.834  1.000 
+
+
+*******************************************************************************
+Thu Mar  8 18:54:16 2012
+
+
+FIT:    data read from '<sed "1,7d" get_k_hop_neighbors' using 3:2
+	x range restricted to [0.00000 : 4000.00]
+	y range restricted to [0.00000 : 2.00000e+08]
+        #datapoints = 4918
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+fitted parameters initialized with current variable values
+
+
+
+ Iteration 0
+ WSSR        : 4.4211e+17        delta(WSSR)/WSSR   : 0
+ delta(WSSR) : 0                 limit for stopping : 1e-05
+ lambda	  : 223.338
+
+initial set of free parameter values
+
+a               = 5000
+b               = 100
+
+After 3 iterations the fit converged.
+final sum of squares of residuals : 6.51321e+16
+rel. change during last iteration : -3.95312e-06
+
+degrees of freedom    (FIT_NDF)                        : 4916
+rms of residuals      (FIT_STDFIT) = sqrt(WSSR/ndf)    : 3.63992e+06
+variance of residuals (reduced chisquare) = WSSR/ndf   : 1.3249e+13
+
+Final set of parameters            Asymptotic Standard Error
+=======================            ==========================
+
+a               = 32780.8          +/- 169          (0.5157%)
+b               = -83819           +/- 5.339e+04    (63.7%)
+
+
+correlation matrix of the fit parameters:
+
+               a      b      
+a               1.000 
+b              -0.235  1.000 
+
+
+*******************************************************************************
+Thu Mar  8 18:54:16 2012
+
+
+FIT:    data read from '<sed "1,7d" get_k_hop_neighbors' using 4:2
+	x range restricted to [1.00000 : 5.00000]
+	y range restricted to [0.00000 : 2.00000e+08]
+        #datapoints = 3710
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+fitted parameters initialized with current variable values
+
+
+
+ Iteration 0
+ WSSR        : 9.01522e+17       delta(WSSR)/WSSR   : 0
+ delta(WSSR) : 0                 limit for stopping : 1e-05
+ lambda	  : 91662.7
+
+initial set of free parameter values
+
+a               = 100
+b               = 5
+c               = 100
+
+After 164 iterations the fit converged.
+final sum of squares of residuals : 7.62674e+17
+rel. change during last iteration : -8.59979e-06
+
+degrees of freedom    (FIT_NDF)                        : 3707
+rms of residuals      (FIT_STDFIT) = sqrt(WSSR/ndf)    : 1.43436e+07
+variance of residuals (reduced chisquare) = WSSR/ndf   : 2.05739e+14
+
+Final set of parameters            Asymptotic Standard Error
+=======================            ==========================
+
+a               = 9307.47          +/- 7557         (81.19%)
+b               = 4.66394          +/- 0.5057       (10.84%)
+c               = 165.336          +/- 3.195e+05    (1.932e+05%)
+
+
+correlation matrix of the fit parameters:
+
+               a      b      c      
+a               1.000 
+b              -0.998  1.000 
+c              -0.569  0.546  1.000 
+
+
+*******************************************************************************
+Thu Mar  8 18:54:20 2012
+
+
+FIT:    data read from '<sed "1,7d" get_k_hop_neighbors' using 5:2
+	x range restricted to [0.00000 : 1500.00]
+	y range restricted to [0.00000 : 2.00000e+08]
+        #datapoints = 4923
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+fitted parameters initialized with current variable values
+
+
+
+ Iteration 0
+ WSSR        : 5.76779e+17       delta(WSSR)/WSSR   : 0
+ delta(WSSR) : 0                 limit for stopping : 1e-05
+ lambda	  : 89.2502
+
+initial set of free parameter values
+
+a               = 10000
+b               = 100
+
+After 3 iterations the fit converged.
+final sum of squares of residuals : 1.0402e+17
+rel. change during last iteration : -6.22098e-07
+
+degrees of freedom    (FIT_NDF)                        : 4921
+rms of residuals      (FIT_STDFIT) = sqrt(WSSR/ndf)    : 4.59761e+06
+variance of residuals (reduced chisquare) = WSSR/ndf   : 2.1138e+13
+
+Final set of parameters            Asymptotic Standard Error
+=======================            ==========================
+
+a               = 88299.4          +/- 537          (0.6081%)
+b               = -347438          +/- 6.778e+04    (19.51%)
+
+
+correlation matrix of the fit parameters:
+
+               a      b      
+a               1.000 
+b              -0.255  1.000 
+
+
+*******************************************************************************
+Thu Mar  8 18:54:20 2012
+
+
+FIT:    data read from '<sed "1,7d" get_k_hop_neighbors' using 6:2
+	x range restricted to [0.00000 : 4000.00]
+	y range restricted to [0.00000 : 2.00000e+08]
+        #datapoints = 4918
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+fitted parameters initialized with current variable values
+
+
+
+ Iteration 0
+ WSSR        : 4.41954e+17       delta(WSSR)/WSSR   : 0
+ delta(WSSR) : 0                 limit for stopping : 1e-05
+ lambda	  : 223.58
+
+initial set of free parameter values
+
+a               = 5000
+b               = 100
+
+After 3 iterations the fit converged.
+final sum of squares of residuals : 6.50718e+16
+rel. change during last iteration : -3.87321e-06
+
+degrees of freedom    (FIT_NDF)                        : 4916
+rms of residuals      (FIT_STDFIT) = sqrt(WSSR/ndf)    : 3.63823e+06
+variance of residuals (reduced chisquare) = WSSR/ndf   : 1.32367e+13
+
+Final set of parameters            Asymptotic Standard Error
+=======================            ==========================
+
+a               = 32746.4          +/- 168.8        (0.5154%)
+b               = -82752.9         +/- 5.337e+04    (64.49%)
+
+
+correlation matrix of the fit parameters:
+
+               a      b      
+a               1.000 
+b              -0.234  1.000 

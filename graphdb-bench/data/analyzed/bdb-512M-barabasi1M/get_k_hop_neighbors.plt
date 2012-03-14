@@ -11,10 +11,10 @@ set ylabel 'Time (nanoseconds)'
 set xrange [1:5]
 
 f(x) = a*x**b + c
-a = 57864.4; b = 4.70097; c = 14956
+a = 26230.435 + 31636.655; b = 5; c = 8286.0
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 1:2 via a,b,c
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 1:2 title 'Real'
+plot '<sed "1,7d" get_k_hop_neighbors' using 1:2 title 'Real', f(x) title 'Fitted'
 
 
 
@@ -24,13 +24,13 @@ set ylabel 'Time (nanoseconds)'
 set xrange [0:4000]
 
 f(x) = a*x + b
-a = 53011.8; b = 19002.8  
+a = 26230.435 + 31636.655; b = 8286.0
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 3:2 via a,b
 
 g(x) = i*x + j
-i = 26230.435 + 31636.655; j = 19002.8  
+i = 26230.435 + 31636.655; j = 19002.3
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 3:2 title 'Real', g(x) title 'Predicted'
+plot '<sed "1,7d" get_k_hop_neighbors' using 3:2 title 'Real', f(x) title 'Fitted', g(x) title 'Predicted'
 
 
 
@@ -40,10 +40,10 @@ set ylabel 'Time (nanoseconds)'
 set xrange [1:5]
 
 f(x) = a*x**b + c
-a = 57848.8; b = 5.30028; c = 14955.9
+a = 26230.435 + 31636.655; b = 5; c = 8286.0
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 4:2 via a,b,c
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 4:2 title 'Real'
+plot '<sed "1,7d" get_k_hop_neighbors' using 4:2 title 'Real', f(x) title 'Fitted'
 
 
 
@@ -53,13 +53,13 @@ set ylabel 'Time (nanoseconds)'
 set xrange [0:1500]
 
 f(x) = a*x + b
-a = 139706; b = -396968 
+a = 279321.213; b = 8286.0
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 5:2 via a,b
 
 g(x) = i*x + j
 i = 279321.213; j = -396968 
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 5:2 title 'Real', g(x) title 'Predicted'
+plot '<sed "1,7d" get_k_hop_neighbors' using 5:2 title 'Real', f(x) title 'Fitted', g(x) title 'Predicted'
 
 
 
@@ -69,11 +69,11 @@ set ylabel 'Time (nanoseconds)'
 set xrange [0:4000]
 
 f(x) = a*x + b
-a = 52955.2; b = 20910.5
+a = 26230.435 + 31636.655; b = 8286.0
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 6:2 via a,b
 
 g(x) = i*x + j
-i = 26230.435 + 31636.655; j = 20910.5
+i = 26230.435 + 31636.655; j = 20910
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 6:2 title 'Real', g(x) title 'Predicted'
+plot '<sed "1,7d" get_k_hop_neighbors' using 6:2 title 'Real', f(x) title 'Fitted', g(x) title 'Predicted'
 

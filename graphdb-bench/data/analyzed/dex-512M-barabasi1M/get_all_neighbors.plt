@@ -12,7 +12,6 @@ i = 1358.439 + 1433.284; b = 11819.0
 fit f(x) '<sed "1,3d" get_all_neighbors' using 2:1 via a,b
 
 g(x) = i*x + j
-i = 1358.439 + 1433.284; j = 11819.0
-fit g(x) '<sed "1,3d" get_all_neighbors' using 2:1 via j
+i = 1358.439 + 1433.284; j = 37822.8
 
-plot '<sed "1,3d" get_all_neighbors' using 2:1 title 'Real', g(x) title 'Predicted'
+plot '<sed "1,3d" get_all_neighbors' using 2:1 title 'Real', f(x) title 'Fitted', g(x) title 'Predicted'

@@ -3,8 +3,9 @@ set output 'get_all_neighbors.eps'
 
 set datafile separator ';'
 set xlabel 'Neighborhood Size (vertices)'
-set xrange [0:100]
 set ylabel 'Time (nanoseconds)'
+
+set xrange [0:100]
 set yrange [0:400000]
 
 f(x) = a*x + b

@@ -19,6 +19,7 @@ i = 993.837 + 3178.681; j = -250433
 plot '<sed "1,7d" bdb-512M-barabasi1M/get_k_hop_neighbors' using 3:2 title 'bdb', \
      '<sed "1,7d" dex-512M-barabasi1M/get_k_hop_neighbors' using 3:2 title 'dex', \
      '<sed "1,7d" dup-512M-barabasi1M/get_k_hop_neighbors' using 3:2 title 'dup', \
+     '<sed "1,7d" hollow-512M-barabasi1M/get_k_hop_neighbors' using 3:2 title 'hollow', \
      '<sed "1,7d" neo-512M-barabasi1M/get_k_hop_neighbors' using 3:2 title 'neo', \
      '<sed "1,7d" rdf-512M-barabasi1M/get_k_hop_neighbors' using 3:2 title 'rdf'
 
@@ -32,6 +33,7 @@ set xrange [0:4000]
 plot '<sed "1,7d" bdb-512M-barabasi1M/get_k_hop_neighbors' using 5:2 title 'bdb', \
      '<sed "1,7d" dex-512M-barabasi1M/get_k_hop_neighbors' using 5:2 title 'dex', \
      '<sed "1,7d" dup-512M-barabasi1M/get_k_hop_neighbors' using 5:2 title 'dup', \
+     '<sed "1,7d" hollow-512M-barabasi1M/get_k_hop_neighbors' using 5:2 title 'hollow', \
      '<sed "1,7d" neo-512M-barabasi1M/get_k_hop_neighbors' using 5:2 title 'neo', \
      '<sed "1,7d" rdf-512M-barabasi1M/get_k_hop_neighbors' using 5:2 title 'rdf'
 
@@ -45,6 +47,7 @@ set xrange [0:10000]
 plot '<sed "1,7d" bdb-512M-barabasi1M/get_k_hop_neighbors' using 6:2 title 'bdb', \
      '<sed "1,7d" dex-512M-barabasi1M/get_k_hop_neighbors' using 6:2 title 'dex', \
      '<sed "1,7d" dup-512M-barabasi1M/get_k_hop_neighbors' using 6:2 title 'dup', \
+     '<sed "1,7d" hollow-512M-barabasi1M/get_k_hop_neighbors' using 6:2 title 'hollow', \
      '<sed "1,7d" neo-512M-barabasi1M/get_k_hop_neighbors' using 6:2 title 'neo', \
      '<sed "1,7d" rdf-512M-barabasi1M/get_k_hop_neighbors' using 6:2 title 'rdf'
 

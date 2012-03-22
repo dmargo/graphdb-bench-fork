@@ -1,5 +1,6 @@
-set terminal postscript color enhanced
-set output 'get_all_neighbors.eps'
+#set terminal postscript color enhanced
+set terminal png
+set output 'get_all_neighbors.png'
 
 set datafile separator ';'
 set xlabel 'Neighborhood Size (vertices)'
@@ -15,4 +16,4 @@ fit f(x) '<sed "1,3d" get_all_neighbors' using 2:1 via a,b
 g(x) = i*x + j
 i = 1358.439 + 1433.284; j = 37822.8
 
-plot '<sed "1,3d" get_all_neighbors' using 2:1 title 'Real', f(x) title 'Fitted', g(x) title 'Predicted'
+plot '<sed "1,3d" get_all_neighbors' using 2:1 title 'Real Dex performance', g(x) title 'Predicted by traversal cost'

@@ -32,6 +32,11 @@
 			<artifactId>jopt-simple</artifactId>
 			<version>4.3</version>
 		</dependency>
+		<dependency>
+			<groupId>edu.harvard.pass</groupId>
+			<artifactId>cpl</artifactId>
+			<version>1.0</version>
+		</dependency>
 		<!-- TINKERPOP GENERAL -->
 		<dependency>
 			<groupId>com.tinkerpop.blueprints</groupId>

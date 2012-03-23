@@ -16,6 +16,6 @@ doc/old wiki entries/
 graphdb-bench.iml
 JRatOutput/
 data/datasets/*.graphml
-data/results/Micro/*/warmup/
-data/results/Micro/*/db/
+data/results/Micro/*
+.directory
 

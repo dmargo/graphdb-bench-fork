@@ -1,8 +1,15 @@
 package com.tinkerpop.bench.operation;
 
+import com.tinkerpop.bench.Bench;
 import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.StatisticsHelper;
+import com.tinkerpop.bench.log.OperationLogWriter;
+import com.tinkerpop.bench.operationFactory.OperationFactory;
+import com.tinkerpop.bench.operationFactory.factories.WithOpCount;
 import com.tinkerpop.blueprints.pgm.Graph;
+
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLObject;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
@@ -17,6 +24,12 @@ public abstract class Operation {
 	private GraphDescriptor graphDescriptor = null;
 	private String name = null;
 	private long memory = -1;
+	private OperationLogWriter logWriter = null;
+	private OperationFactory factory = null;
+	private CPLObject cplObject = null;
+	
+	public Operation() {
+	}
 
 	/*
 	 * Setter Methods
@@ -36,6 +49,14 @@ public abstract class Operation {
 
 	protected final void setResult(Object result) {
 		this.result = result;
+	}
+	
+	public final void setLogWriter(OperationLogWriter logWriter) {
+		this.logWriter = logWriter;
+	}
+	
+	public final void setFactory(OperationFactory factory) {
+		this.factory = factory;
 	}
 
 	/*
@@ -78,6 +99,40 @@ public abstract class Operation {
 		return memory;
 	}
 	
+	public final OperationLogWriter getLogWriter() {
+		return logWriter;
+	}
+	
+	public final OperationFactory getFactory() {
+		return factory;
+	}
+	
+	public CPLObject getCPLObject() {
+		if (!CPL.isAttached()) return null;
+		if (cplObject != null) return cplObject;
+		
+		if (factory != null) {
+			if (factory.getSharedOperationCPLObject() != null) {
+				cplObject = factory.getSharedOperationCPLObject();
+				return cplObject;
+			}
+		}
+		
+		cplObject = new CPLObject(Bench.ORIGINATOR,
+				name, Bench.TYPE_OPERATION);
+		cplObject.addProperty("CLASS", getClass().getCanonicalName());
+
+		if (factory != null && factory instanceof WithOpCount) {
+			WithOpCount w = (WithOpCount) factory;
+			if (w.getOpCount() > 1) {
+				cplObject.addProperty("COUNT", "" + w.getOpCount());
+				factory.setSharedOperationCPLObject(cplObject);
+			}
+		}
+		
+		return cplObject;
+	}
+	
 	/*
 	 * Event Methods
 	 */
@@ -93,9 +148,12 @@ public abstract class Operation {
 		onExecute();
 		time = StatisticsHelper.stopWatch();
 		memory = StatisticsHelper.stopMemory();
+		onFinalize();
 	}
 
 	protected abstract void onInitialize(Object[] args);
 
 	protected abstract void onExecute() throws Exception;
+	
+	protected void onFinalize() throws Exception {};
 }

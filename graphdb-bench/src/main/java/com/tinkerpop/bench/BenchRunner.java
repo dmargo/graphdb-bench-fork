@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import com.tinkerpop.bench.log.OperationLogWriter;
 import com.tinkerpop.bench.operation.Operation;
+import com.tinkerpop.bench.operation.OperationDeleteGraph;
 import com.tinkerpop.bench.operation.OperationDoGC;
 import com.tinkerpop.bench.operation.OperationOpenGraph;
 import com.tinkerpop.bench.operation.OperationShutdownGraph;
@@ -13,6 +14,8 @@ import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
 import com.tinkerpop.bench.operationFactory.OperationFactoryLog;
 import com.tinkerpop.bench.operationFactory.factories.WithOpCount;
+
+import edu.harvard.pass.cpl.CPL;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
@@ -63,6 +66,7 @@ public class BenchRunner {
 					// Flush cache: open/close before/after each factory
 					Operation openOperation = openFactory.next();
 					openOperation.setId(++startingOpId);
+					openOperation.setLogWriter(logWriter);
 					openOperation.initialize(graphDescriptor);
 					openOperation.execute();
 					logWriter.logOperation(openOperation);
@@ -78,6 +82,7 @@ public class BenchRunner {
 
 				for (Operation operation : operationFactory) {
 
+					operation.setLogWriter(logWriter);
 					operation.initialize(graphDescriptor);
 
 					System.out.printf("\r\tOperation %d, %s",
@@ -85,11 +90,20 @@ public class BenchRunner {
 							operation.getName());
 					System.out.flush();
 					
+					if (CPL.isAttached()) {
+						if (!(operation instanceof OperationDeleteGraph)
+								&& !(operation instanceof OperationDoGC)) {
+							operation.getCPLObject().dataFlowFrom(graphDescriptor.getCPLObject());
+						}
+					}
 					operation.execute();
 
 					//System.out.println("Complete");
 
 					logWriter.logOperation(operation);
+					if (CPL.isAttached()) {
+						logWriter.getCPLObject().dataFlowFrom(operation.getCPLObject());
+					}
 					
 					if (operationFactory instanceof WithOpCount) {
 						WithOpCount w = (WithOpCount) operationFactory;
@@ -106,6 +120,7 @@ public class BenchRunner {
 				if (operationFactory instanceof OperationFactoryLog == false) {
 					// Flush cache: open/close before/after each factory
 					Operation shutdownOperation = shutdownFactory.next();
+					shutdownOperation.setLogWriter(logWriter);
 					shutdownOperation.setId(++startingOpId);
 					shutdownOperation.initialize(graphDescriptor);
 					shutdownOperation.execute();
@@ -113,6 +128,7 @@ public class BenchRunner {
 
 					// Try to Garbage Collect
 					Operation gcOperation = gcFactory.next();
+					gcOperation.setLogWriter(logWriter);
 					gcOperation.setId(++startingOpId);
 					gcOperation.initialize(graphDescriptor);
 					gcOperation.execute();

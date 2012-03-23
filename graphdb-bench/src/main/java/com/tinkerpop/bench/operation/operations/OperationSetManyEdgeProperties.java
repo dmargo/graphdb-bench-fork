@@ -7,6 +7,9 @@ import com.tinkerpop.bench.evaluators.EdgeEvaluatorUniform;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Edge;
 
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLObject;
+
 public class OperationSetManyEdgeProperties extends Operation {
 
 	private String property_key;
@@ -40,4 +43,12 @@ public class OperationSetManyEdgeProperties extends Operation {
 		}
 	}
 
+	@Override
+	protected void onFinalize() throws Exception {
+		if (CPL.isAttached()) {
+			CPLObject obj = getCPLObject();
+			obj.addProperty("COUNT", "" + opCount);
+			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
+		}
+	}
 }

@@ -1,5 +1,6 @@
 package com.tinkerpop.bench.generator;
 
+import com.tinkerpop.bench.Bench;
 import com.tinkerpop.bench.ConsoleUtils;
 import com.tinkerpop.bench.StatisticsHelper;
 import com.tinkerpop.bench.cache.Cache;
@@ -8,6 +9,9 @@ import com.tinkerpop.bench.evaluators.EvaluatorDegree;
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
+
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLObject;
 
 
 /**
@@ -19,6 +23,7 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 
 	protected int N;
 	protected int M;
+	protected CPLObject cplObject = null;
 
 
 	/**
@@ -113,5 +118,25 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 			
 			if ((i & 7) == 0 || i == n-1) ConsoleUtils.printProgressIndicator(i+1, n);
 		}
+	}
+	
+	
+	/**
+	 * Return (or create) the generator's CPL object
+	 * 
+	 * @return the CPL object
+	 */
+	public CPLObject getCPLObject() {
+		
+		if (cplObject != null) return cplObject;
+		if (!CPL.isAttached()) return null;
+		
+		cplObject = new CPLObject(Bench.ORIGINATOR,
+				getClass().getCanonicalName() + " N=" + N + " M=" + M,
+				Bench.TYPE_OPERATION);
+		cplObject.addProperty("N", "" + N);
+		cplObject.addProperty("M", "" + M);
+		
+		return cplObject;
 	}
 }

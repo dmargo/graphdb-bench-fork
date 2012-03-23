@@ -5,6 +5,9 @@ import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLObject;
+
 public class OperationAddEdge extends Operation {
 
 	private Object id;
@@ -31,4 +34,11 @@ public class OperationAddEdge extends Operation {
 		}
 	}
 
+	@Override
+	protected void onFinalize() throws Exception {
+		if (CPL.isAttached()) {
+			CPLObject obj = getCPLObject();
+			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
+		}
+	}
 }

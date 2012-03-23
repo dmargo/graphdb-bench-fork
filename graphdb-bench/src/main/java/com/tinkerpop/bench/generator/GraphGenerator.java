@@ -2,6 +2,8 @@ package com.tinkerpop.bench.generator;
 
 import com.tinkerpop.blueprints.pgm.Graph;
 
+import edu.harvard.pass.cpl.CPLObject;
+
 /**
  * Abstract, stateless graph generator
  * 
@@ -24,4 +26,12 @@ public abstract class GraphGenerator {
 	 * @param graph the graph
 	 */
 	public abstract void generate(Graph graph);
+	
+	
+	/**
+	 * Return (or create) the generator's CPL object
+	 * 
+	 * @return the CPL object
+	 */
+	public abstract CPLObject getCPLObject();
 }

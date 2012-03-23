@@ -5,6 +5,9 @@ import java.util.UUID;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Edge;
 
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLObject;
+
 public class OperationSetEdgeProperty extends Operation {
 
 	private Edge edge;
@@ -28,4 +31,11 @@ public class OperationSetEdgeProperty extends Operation {
 		}
 	}
 
+	@Override
+	protected void onFinalize() throws Exception {
+		if (CPL.isAttached()) {
+			CPLObject obj = getCPLObject();
+			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
+		}
+	}
 }

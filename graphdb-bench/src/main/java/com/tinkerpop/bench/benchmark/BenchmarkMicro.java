@@ -27,6 +27,9 @@ import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 //import com.tinkerpop.blueprints.pgm.impls.rdf.RdfGraph;
 import com.tinkerpop.blueprints.pgm.impls.rdf.impls.NativeStoreRdfGraph;
 import com.tinkerpop.blueprints.pgm.impls.sql.SqlGraph;
+
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLException;
 //import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph;
 
 import joptsimple.OptionParser;
@@ -68,6 +71,7 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("General options:");
 		System.err.println("  --dir, -d DIR         Set the database and results directory");
 		System.err.println("  --help                Print this help message");
+		System.err.println("  --no-provenance       Disable provenance collection");
 		System.err.println("  --no-warmup           Disable the initial warmup run");
 		System.err.println("");
 		System.err.println("Options to select a database (select one):");
@@ -83,7 +87,7 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("");
 		System.err.println("Options to select a workload (select multiple):");
 		System.err.println("  --add                 Adding nodes and edges to the database");
-		System.err.println("  --clustering-coef     Compute the clustering coefficients");
+		System.err.println("  --clustering-coeff    Compute the clustering coefficients");
 		System.err.println("  --delete-graph        Delete the entire graph");
 		System.err.println("  --dijkstra            Dijkstra's shortest path algorithm");
 		System.err.println("  --generate MODEL      Generate (or grow) the graph "+
@@ -113,12 +117,13 @@ public class BenchmarkMicro extends Benchmark {
 	 * Get the given property and expand variables
 	 * 
 	 * @param key the property key
-	 * @return the value, or null if not found
+	 * @param defaultValue the default value
+	 * @return the value
 	 */
-	protected static String getProperty(String key) {
+	protected static String getProperty(String key, String defaultValue) {
 		
 		String v = Bench.benchProperties.getProperty(key);
-		if (v == null) return null;
+		if (v == null) return defaultValue;
 		
 		if (v.indexOf("$GRAPHDB_BENCH") >= 0) {
 			if (graphdbBenchDir == null) {
@@ -129,6 +134,17 @@ public class BenchmarkMicro extends Benchmark {
 		}
 		
 		return v;
+	}
+	
+	
+	/**
+	 * Get the given property and expand variables
+	 * 
+	 * @param key the property key
+	 * @return the value, or null if not found
+	 */
+	protected static String getProperty(String key) {
+		return getProperty(key, null);
 	}
 
 	
@@ -170,6 +186,7 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("d").withRequiredArg().ofType(String.class);
 		parser.accepts("dir").withRequiredArg().ofType(String.class);
 		parser.accepts("help");
+		parser.accepts("no-provenance");
 		parser.accepts("no-warmup");
 		
 		
@@ -198,6 +215,7 @@ public class BenchmarkMicro extends Benchmark {
 		
 		parser.accepts("add");
 		parser.accepts("clustering-coef");
+		parser.accepts("clustering-coeff");
 		parser.accepts("delete-graph");
 		parser.accepts("dijkstra");
 		parser.accepts("generate").withRequiredArg().ofType(String.class);
@@ -255,6 +273,11 @@ public class BenchmarkMicro extends Benchmark {
 			warmup = false;
 		}
 		
+		boolean provenance = true;
+		if (options.has("no-provenance")) {
+			provenance = false;
+		}
+		
 		int opCount = DEFAULT_OP_COUNT;
 		if (options.has("op-count")) opCount = (Integer) options.valueOf("op-count");
 		
@@ -300,6 +323,23 @@ public class BenchmarkMicro extends Benchmark {
 		else {
 			kHops = new int[1];
 			kHops[0] = DEFAULT_K_HOPS;
+		}
+		
+		if (provenance) {
+			if (!CPL.isInstalled()) {
+				ConsoleUtils.error("CPL is not installed. Use --no-provenance to disable provenance collection.");
+				return;
+			}
+			else {
+				try {
+					CPL.attachODBC(getProperty(Bench.CPL_ODBC_DSN, "DSN=CPL"));
+				}
+				catch (CPLException e) {
+					ConsoleUtils.error("Could not initialize provenance collection:");
+					ConsoleUtils.error("  " + e.getMessage());
+					return;
+				}
+			}
 		}
 		
 		
@@ -595,7 +635,7 @@ public class BenchmarkMicro extends Benchmark {
 			}
 			
 			// CLUSTERING COEFFICIENT benchmarks
-			if (options.has("clustering-coef")) {
+			if (options.has("clustering-coef") || options.has("clustering-coeff")) {
 				//operationFactories.add(new OperationFactoryRandomVertex(
 				//		OperationLocalClusteringCoefficient.class, opCount));
 				

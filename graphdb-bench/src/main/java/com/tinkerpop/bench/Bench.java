@@ -13,13 +13,19 @@ public class Bench {
 
 	public static Logger logger = Logger.getLogger(Bench.class);
 	public static Properties benchProperties = new Properties();
+	
+	// CPL - Originator & Types
+	public static final String ORIGINATOR = "com.tinkerpop.bench";
+	public static final String TYPE_DB = "Database";
+	public static final String TYPE_OPERATION = "Operation";
 
 	// DATASETS - GraphML & Databases
 	public static final String DATASETS_DIRECTORY = "bench.datasets.directory";
 	public static final String DB_SQL_PATH = "bench.db.sql.path";
 
-	// LOGS - Operation Logs
+	// LOGS - Operation Logs & Provenance
 	public static final String LOGS_DELIMITER = "bench.logs.delimiter";
+	public static final String CPL_ODBC_DSN = "bench.cpl.odbc";
 
 	// RESULTS - Logs, Summaries, Plots
 	public static final String RESULTS_DIRECTORY = "bench.results.directory";

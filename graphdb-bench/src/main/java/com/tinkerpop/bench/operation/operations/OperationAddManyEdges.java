@@ -8,6 +8,9 @@ import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLObject;
+
 public class OperationAddManyEdges extends Operation {
 
 	private int opCount;
@@ -44,4 +47,11 @@ public class OperationAddManyEdges extends Operation {
 		}
 	}
 
+	@Override
+	protected void onFinalize() throws Exception {
+		if (CPL.isAttached()) {
+			CPLObject obj = getCPLObject();
+			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
+		}
+	}
 }

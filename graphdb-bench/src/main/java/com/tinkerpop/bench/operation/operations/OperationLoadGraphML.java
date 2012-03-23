@@ -1,10 +1,14 @@
 package com.tinkerpop.bench.operation.operations;
 
+import java.io.File;
 import java.io.FileInputStream;
 
 import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.util.graphml.GraphMLReader;
+
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLFile;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
@@ -33,4 +37,11 @@ public class OperationLoadGraphML extends Operation {
 		}
 	}
 
+	@Override
+	protected void onFinalize() throws Exception {
+		if (CPL.isAttached()) {
+			getCPLObject().dataFlowFrom(CPLFile.lookupOrCreate(new File(graphmlPath)));
+			getGraphDescriptor().getCPLObject().dataFlowFrom(getCPLObject());
+		}
+	}
 }

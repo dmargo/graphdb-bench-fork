@@ -1,19 +1,27 @@
-set terminal postscript color enhanced
-set output 'get_all_neighbors.eps'
-
-set datafile separator ';'
-set xlabel 'Neighborhood Size (vertices)'
-set ylabel 'Time (nanoseconds)'
+avg_traversal = 18882 + 86691
+min_get_neighbors = 11583
 
 set xrange [0:60]
 set yrange [0:3e+06]
 
+set xlabel 'Neighborhood Size (vertices)'
+set ylabel 'Time (nanoseconds)'
 
+
+
+set datafile separator ';'
+set output 'get_all_neighbors.eps'
+set terminal postscript color enhanced
+
+#Fitted least-squares data.
+a = avg_traversal
+b = min_get_neighbors
 f(x) = a*x + b
-a = 18882 + 86691; b = 11583
 fit f(x) '<sed "1,3d" get_all_neighbors' using 2:1 via a,b
 
-g(x) = i*x + j
-i = 18882 + 86691; j = 23590.5
+#Predicted by get_vertex + get_neighbor.
+g(x) = avg_traversal*x + b
 
-plot '<sed "1,3d" get_all_neighbors' using 2:1 title 'Real', f(x) title 'Fitted', g(x) title 'Predicted'
+plot '<sed "1,3d" get_all_neighbors' using 2:1 title 'Real', \
+                                           f(x) title 'Fitted', \
+                                           g(x) title 'Predicted'

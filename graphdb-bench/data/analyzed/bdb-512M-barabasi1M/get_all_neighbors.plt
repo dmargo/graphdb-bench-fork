@@ -1,4 +1,4 @@
-avg_traversal = 26230.435
+avg_traversal = 26230.435 + 31636.655
 min_get_neighbors = 12367
 
 set xrange [0:60]

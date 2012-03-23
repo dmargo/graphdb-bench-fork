@@ -1,79 +1,87 @@
-set terminal postscript color enhanced
+avg_traversal = 993.837 + 3178.681
+avg_get_neighbors = 30666.204
+min_khop_neighbors = 2453.0
+hop_plot_constant = 5
+
+set yrange [0:1.5e+08]
+set ylabel 'Time (nanoseconds)'
+
+
 
 set datafile separator ';'
-set yrange [0:1.5e+08]
+set terminal postscript color enhanced
 
 
 
 set output 'get_k_hop_neighbors_khops.eps'
 set xlabel 'Input K-Hops'
-set ylabel 'Time (nanoseconds)'
 set xrange [1:5]
 
-f(x) = a*x**b + c
-a = 993.837 + 3178.681; b = 5; c = 2453.0
+a = avg_traversal; b = min_khop_neighbors; c = hop_plot_constant
+f(x) = a*x**c + b
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 1:2 via a,b,c
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 1:2 title 'Real'
+plot '<sed "1,7d" get_k_hop_neighbors' using 1:2 title 'Real', \
+                                             f(x) title 'Fitted'
 
 
 
 set output 'get_k_hop_neighbors_dedup.eps'
 set xlabel 'Deduplicated Vertex Count (vertices)'
-set ylabel 'Time (nanoseconds)'
 set xrange [0:10000]
 
+a = avg_traversal; b = min_khop_neighbors
 f(x) = a*x + b
-a = 993.837 + 3178.681; b = 2453.0
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 3:2 via a,b
 
-g(x) = i*x + j
-i = 993.837 + 3178.681; j = -250433 
+g(x) = avg_traversal*x + b
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 3:2 title 'Real', g(x) title 'Predicted'
+plot '<sed "1,7d" get_k_hop_neighbors' using 3:2 title 'Real', \
+                                             f(x) title 'Fitted', \
+                                             g(x) title 'Predicted'
 
 
 
 set output 'get_k_hop_neighbors_realhops.eps'
 set xlabel 'Actual K-Hops'
-set ylabel 'Time (nanoseconds)'
 set xrange [1:5]
 
-f(x) = a*x**b + c
-a = 993.837 + 3178.681; b = 5; c = 2453.0
+a = avg_traversal; b = min_khop_neighbors; c = hop_plot_constant
+f(x) = a*x**c + b
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 4:2 via a,b,c
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 4:2 title 'Real'
+plot '<sed "1,7d" get_k_hop_neighbors' using 4:2 title 'Real', \
+                                             f(x) title 'Fitted'
 
 
 
 set output 'get_k_hop_neighbors_getcount.eps'
 set xlabel 'GetNeighborsOp Count'
-set ylabel 'Time'
 set xrange [0:4000]
 
+a = avg_get_neighbors; b = min_khop_neighbors
 f(x) = a*x + b
-a = 30666.204; b = 2453.0
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 5:2 via a,b
 
-g(x) = i*x + j
-i = 30666.204; j = -481786 
+g(x) = avg_get_neighbors*x + b
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 5:2 title 'Real', g(x) title 'Predicted'
+plot '<sed "1,7d" get_k_hop_neighbors' using 5:2 title 'Real', \
+                                             f(x) title 'Fitted', \
+                                             g(x) title 'Predicted'
 
 
 
 set output 'get_k_hop_neighbors_nodecount.eps'
-set xlabel 'Vertex Count'
-set ylabel 'Time'
+set xlabel 'Vertex Count (vertices)'
 set xrange [0:10000]
 
+a = avg_traversal; b = min_khop_neighbors
 f(x) = a*x + b
-a = 993.837 + 3178.681; b = 2453.0
 fit f(x) '<sed "1,7d" get_k_hop_neighbors' using 6:2 via a,b
 
-g(x) = i*x + j
-i = 993.837 + 3178.681; j = -247480
+g(x) = avg_traversal*x + b
 
-plot '<sed "1,7d" get_k_hop_neighbors' using 6:2 title 'Real', g(x) title 'Predicted'
+plot '<sed "1,7d" get_k_hop_neighbors' using 6:2 title 'Real', \
+                                             f(x) title 'Fitted', \
+                                             g(x) title 'Predicted'
 

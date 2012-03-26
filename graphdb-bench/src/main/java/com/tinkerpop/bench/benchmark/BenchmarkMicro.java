@@ -90,6 +90,7 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("  --clustering-coeff    Compute the clustering coefficients");
 		System.err.println("  --delete-graph        Delete the entire graph");
 		System.err.println("  --dijkstra            Dijkstra's shortest path algorithm");
+        System.err.println("  --dijkstra-property   Shortest paths with in-DB marking.");
 		System.err.println("  --generate MODEL      Generate (or grow) the graph "+
 										" based on the given model");
 		System.err.println("  --get                 \"Get\" microbenchmarks");
@@ -218,6 +219,7 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("clustering-coeff");
 		parser.accepts("delete-graph");
 		parser.accepts("dijkstra");
+        parser.accepts("dijkstra-property")
 		parser.accepts("generate").withRequiredArg().ofType(String.class);
 		parser.accepts("get");
 		parser.accepts("get-k");
@@ -629,7 +631,9 @@ public class BenchmarkMicro extends Benchmark {
 			if (options.has("dijkstra")) {
 				operationFactories.add(new OperationFactoryRandomVertexPair(
 						OperationGetShortestPath.class, opCount / 2));
-				
+            }
+
+			if (options.has("djikstra-property")) {	
 				operationFactories.add(new OperationFactoryRandomVertexPair(
 						OperationGetShortestPathProperty.class, opCount / 2));
 			}

@@ -17,7 +17,7 @@ import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
  */
 public class StatisticsHelper {
 
-	private static Random rand = new Random(42);
+	private static Random rand = new Random();
 	private static long time = -1l;
 	private static long memory = -1l;
 

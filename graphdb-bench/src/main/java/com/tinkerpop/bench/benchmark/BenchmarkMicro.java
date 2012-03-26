@@ -219,7 +219,7 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("clustering-coeff");
 		parser.accepts("delete-graph");
 		parser.accepts("dijkstra");
-        parser.accepts("dijkstra-property")
+        parser.accepts("dijkstra-property");
 		parser.accepts("generate").withRequiredArg().ofType(String.class);
 		parser.accepts("get");
 		parser.accepts("get-k");

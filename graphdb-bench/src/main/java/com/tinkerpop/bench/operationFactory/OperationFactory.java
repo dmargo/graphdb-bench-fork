@@ -6,17 +6,32 @@ import java.util.Iterator;
 import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.operation.Operation;
 
+import edu.harvard.pass.cpl.CPLObject;
+
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
  * @author Martin Neumann (m.neumann.1980@gmail.com)
  */
 public abstract class OperationFactory implements Iterator<Operation>,
 		Iterable<Operation> {
+	
+	protected CPLObject sharedOperationCPLObject = null;
 
 	//
 	// Getter methods
 	//	
 	public abstract int getCurrentOpId();
+	
+	public CPLObject getSharedOperationCPLObject() {
+		return sharedOperationCPLObject;
+	}
+	
+	//
+	// Setter methods
+	//	
+	public void setSharedOperationCPLObject(CPLObject object) {
+		sharedOperationCPLObject = object;
+	}
 
 	//
 	// Event methods
@@ -54,6 +69,7 @@ public abstract class OperationFactory implements Iterator<Operation>,
 			operation.setId(opId);
 			operation.setArgs(args);
 			operation.setName(name);
+			operation.setFactory(this);
 		} catch (Exception e) {
 			throw e;
 		}

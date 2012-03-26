@@ -5,6 +5,9 @@ import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLObject;
+
 public class OperationAddManyVertices extends Operation {
 	
 	private int opCount;
@@ -34,4 +37,12 @@ public class OperationAddManyVertices extends Operation {
 		}
 	}
 
+	@Override
+	protected void onFinalize() throws Exception {
+		if (CPL.isAttached()) {
+			CPLObject obj = getCPLObject();
+			obj.addProperty("COUNT", "" + opCount);
+			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
+		}
+	}
 }

@@ -9,15 +9,24 @@ import java.util.Arrays;
 import com.tinkerpop.bench.LogUtils;
 import com.tinkerpop.bench.operation.Operation;
 
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLFile;
+import edu.harvard.pass.cpl.CPLObject;
+
 public class OperationLogWriter {
 	private final String logDelim = LogUtils.LOG_DELIMITER;
 	private BufferedWriter bufferedLogWriter = null;
+	private CPLFile cplObject = null;
 
 	public OperationLogWriter(File logFile) throws IOException {
 		super();
 		(new File(logFile.getParent())).mkdirs();
 		bufferedLogWriter = new BufferedWriter(new FileWriter(logFile));
 		writeHeaders();
+		
+		if (CPL.isAttached()) {
+			cplObject = CPLFile.create(logFile);
+		}
 	}
 
 	// Write .csv log column headers
@@ -76,4 +85,9 @@ public class OperationLogWriter {
 		bufferedLogWriter.flush();
 		bufferedLogWriter.close();
 	}
+	
+	public CPLObject getCPLObject() {
+		return cplObject;
+	}
 }
+

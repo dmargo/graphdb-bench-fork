@@ -3,6 +3,8 @@ package com.tinkerpop.bench.operation.operations;
 import com.tinkerpop.bench.generator.GraphGenerator;
 import com.tinkerpop.bench.operation.Operation;
 
+import edu.harvard.pass.cpl.CPL;
+
 /**
  * Operator for graph generation
  * 
@@ -24,5 +26,13 @@ public class OperationGenerateGraph extends Operation {
 	protected void onExecute() throws Exception {
 		generator.generate(getGraph());
 		setResult("COMPLETE");
+	}
+
+	@Override
+	protected void onFinalize() throws Exception {
+		if (CPL.isAttached()) {
+			getCPLObject().dataFlowFrom(generator.getCPLObject());
+			getGraphDescriptor().getCPLObject().dataFlowFrom(getCPLObject());
+		}
 	}
 }

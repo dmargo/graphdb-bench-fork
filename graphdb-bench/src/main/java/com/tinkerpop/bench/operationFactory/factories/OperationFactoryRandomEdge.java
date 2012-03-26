@@ -8,7 +8,7 @@ import com.tinkerpop.bench.evaluators.EdgeEvaluatorUniform;
 import com.tinkerpop.bench.operationFactory.OperationArgs;
 import com.tinkerpop.bench.operationFactory.OperationFactoryBase;
 
-public class OperationFactoryRandomEdge extends OperationFactoryBase {
+public class OperationFactoryRandomEdge extends OperationFactoryBase implements WithOpCount {
 	
 	private Class<?> opType = null;
 	private int opCount;
@@ -44,5 +44,24 @@ public class OperationFactoryRandomEdge extends OperationFactoryBase {
 		System.arraycopy(args, 0, myArgs, 1, args.length);
 		return new OperationArgs(myArgs, opType);
 	}
-
+	
+	/**
+	 * Return the total number of operations
+	 * 
+	 * @return the total number of operations
+	 */
+	@Override
+	public int getOpCount() {
+		return opCount;
+	}
+	
+	/**
+	 * Return the number of already executed operations
+	 * 
+	 * @return the number of already executed operations
+	 */
+	@Override
+	public int getExecutedOpCount() {
+		return opCount - edgeSamples.size();
+	}
 }

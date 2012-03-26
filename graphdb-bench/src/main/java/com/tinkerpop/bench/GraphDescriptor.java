@@ -6,6 +6,9 @@ import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.sql.SqlGraph;
 
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLObject;
+
 import java.io.File;
 
 public class GraphDescriptor {
@@ -14,6 +17,7 @@ public class GraphDescriptor {
 	private String graphDir = null;
 	private String graphPath = null;
 	private Graph graph = null;
+	private CPLObject cplObject = null;
 
 	public GraphDescriptor(Class<?> graphType) {
 		this(graphType, null, null);
@@ -23,6 +27,13 @@ public class GraphDescriptor {
 		this.graphType = graphType;
 		this.graphDir = graphDir;
 		this.graphPath = graphPath;
+		
+		if (CPL.isAttached()) {
+			String name = graphType.getSimpleName();
+			if (graphPath != null) name += " " + graphPath;
+			cplObject = CPLObject.lookupOrCreate(Bench.ORIGINATOR, name, Bench.TYPE_DB);
+			if (cplObject.getVersion() == 0) initializeCPLObject();
+		}
 	}
 
 	//
@@ -40,6 +51,11 @@ public class GraphDescriptor {
 	public boolean getPersistent() {
 		return graphPath != null;
 	}
+	
+	public CPLObject getCPLObject() {
+		return cplObject;
+	}
+	
 
 	//
 	// Functionality
@@ -87,10 +103,26 @@ public class GraphDescriptor {
 				deleteDir(graphDir);
 			}
 		}
+		
+		recreateCPLObject();
 	}
 
 	private void deleteDir(String pathStr) {
 		LogUtils.deleteDir(pathStr);
 	}
 
+	public void recreateCPLObject() {
+		if (CPL.isAttached()) {
+			String name = graphType.toString();
+			if (graphPath != null) name += " " + graphPath;
+			cplObject = new CPLObject(Bench.ORIGINATOR, name, Bench.TYPE_DB);
+			initializeCPLObject();
+		}
+	}
+	
+	private void initializeCPLObject() {
+		cplObject.addProperty("CLASS", "" + graphType);
+		if (graphDir != null) cplObject.addProperty("DIR", graphDir);
+		if (graphPath != null) cplObject.addProperty("PATH", graphPath);
+	}
 }

@@ -1,6 +1,7 @@
 package com.tinkerpop.bench.operation.operations;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Edge;
@@ -20,30 +21,40 @@ public class OperationGetKHopNeighbors extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
-			int get_nbrs = 0;
+			int real_hops, get_ops = 0, get_vertex = 0;
 			
 			ArrayList<Vertex> curr = new ArrayList<Vertex>();
 			ArrayList<Vertex> next = new ArrayList<Vertex>();
-			final ArrayList<Vertex> result = new ArrayList<Vertex>();
+			final HashSet<Vertex> result = new HashSet<Vertex>();
 			
 			curr.add(startVertex);
 			
-			for(int i = 0; i < k; i++) {
+			for(real_hops = 0; real_hops < k; real_hops++) {
+				
 				for (Vertex u : curr) {
-					get_nbrs++;
+					
+					get_ops++;
 					for (Edge e : u.getOutEdges()) {
+						
+						get_vertex++;
 						Vertex v = e.getInVertex();
-						next.add(v);
-						result.add(v);
+						
+						if (result.add(v)) {
+							next.add(v);
+						}
 					}
 				}
+				
+				if(next.size() == 0)
+					break;
+				
 				ArrayList<Vertex> tmp = curr;
 				curr = next;
 				tmp.clear();
 				next = tmp;
 			}
 			
-			setResult(result.size() + ":" + get_nbrs);
+			setResult(result.size() + ":" + real_hops + ":" + get_ops + ":" + get_vertex);
 		} catch (Exception e) {
 			throw e;
 		}

@@ -49,10 +49,6 @@ public class GraphDescriptor {
 		if (null != graph)
 			return graph;
 		
-		//XXX dmargo: TOTAL kludge for Dex but I don't see a nontrivial "right" way to do this
-		if (graphType == DexGraph.class)
-			(new File(graphDir)).mkdirs();
-		
 		Object[] args = (null == graphPath) ? new Object[] {}
 				: new Object[] { graphPath };
 

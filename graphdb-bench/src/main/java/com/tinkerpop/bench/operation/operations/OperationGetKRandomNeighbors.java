@@ -21,13 +21,17 @@ public class OperationGetKRandomNeighbors extends Operation {
 	@Override
 	protected void onExecute() throws Exception {
 		try {
+			int vertex_cnt = 0;
+			
 			Vertex curr = startVertex;
 			final ArrayList<Edge> next = new ArrayList<Edge>();
 			final ArrayList<Vertex> result = new ArrayList<Vertex>();
 						
 			for(int i = 0; i < k; i++) {
-				for (Edge e : curr.getOutEdges())
+				for (Edge e : curr.getOutEdges()) {
+					vertex_cnt++;
 					next.add(e);
+				}
 				if (next.size() > 0) {
 					curr = next.get((new Random()).nextInt(next.size())).getInVertex();
 					next.clear();
@@ -36,7 +40,7 @@ public class OperationGetKRandomNeighbors extends Operation {
 					break;
 			}
 		
-			setResult(result.size());	
+			setResult(vertex_cnt + ":" + result.size());	
 		} catch (Exception e) {
 			throw e;
 		}

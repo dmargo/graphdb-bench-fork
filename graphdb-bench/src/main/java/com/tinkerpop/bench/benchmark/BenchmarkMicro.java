@@ -461,7 +461,7 @@ public class BenchmarkMicro extends Benchmark {
 			ConsoleUtils.sectionHeader("Warmup Run");
 			graphDescriptor = new GraphDescriptor(dbClass,
 					!options.has("sql") ? dirResults + dbShortName + "/warmup" : null,
-					withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/warmup" : sqlDbPath) : null);
+					withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/warmup" + (options.has("dex") ? "/graph.dex" : "") : sqlDbPath) : null);
 			warmupBenchmark.loadOperationLogs(graphDescriptor,
 					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
@@ -471,7 +471,7 @@ public class BenchmarkMicro extends Benchmark {
 		ConsoleUtils.sectionHeader("Benchmark Run");
 		graphDescriptor = new GraphDescriptor(dbClass,
 				!options.has("sql") ? dirResults + dbShortName + "/db" : null,
-				withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/db" : sqlDbPath) : null);
+				withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/db" + (options.has("dex") ? "/graph.dex" : "") : sqlDbPath) : null);
 		benchmark.loadOperationLogs(graphDescriptor,
 				dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		resultFiles.put(dbShortName, dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");

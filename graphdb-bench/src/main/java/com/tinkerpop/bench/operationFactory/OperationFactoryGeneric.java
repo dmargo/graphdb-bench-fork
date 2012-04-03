@@ -4,6 +4,7 @@ import com.tinkerpop.bench.operationFactory.factories.WithOpCount;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
+ * @author Peter Macko (pmacko@eecs.harvard.edu)
  */
 public class OperationFactoryGeneric extends OperationFactoryBase implements WithOpCount {
 

@@ -143,10 +143,10 @@ public abstract class Operation {
 	}
 
 	public final void execute() throws Exception {
-		StatisticsHelper.stopMemory();
-		StatisticsHelper.stopWatch();
+		StatisticsHelper.stopMemory();	//XXX multi-threaded???
+		long start = System.nanoTime();
 		onExecute();
-		time = StatisticsHelper.stopWatch();
+		time = System.nanoTime() - start;
 		memory = StatisticsHelper.stopMemory();
 		onFinalize();
 	}

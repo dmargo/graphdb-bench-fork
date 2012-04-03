@@ -93,7 +93,7 @@ public class BenchmarkEchoVersusDepth extends Benchmark {
 	}
 
 	@Override
-	public ArrayList<OperationFactory> getOperationFactories() {
+	public ArrayList<OperationFactory> createOperationFactories() {
 		ArrayList<OperationFactory> operationFactories = new ArrayList<OperationFactory>();
 
 		operationFactories.add(new OperationFactoryGeneric(

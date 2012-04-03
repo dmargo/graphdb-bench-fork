@@ -111,7 +111,7 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 	}
 
 	@Override
-	public ArrayList<OperationFactory> getOperationFactories() {
+	public ArrayList<OperationFactory> createOperationFactories() {
 		ArrayList<OperationFactory> operationFactories = new ArrayList<OperationFactory>();
 
 		for (String graphmlFilename : graphmlFilenames) {

@@ -111,7 +111,7 @@ public class GraphDescriptor {
 
 	public void recreateCPLObject() {
 		if (CPL.isAttached()) {
-			String name = graphType.toString();
+			String name = graphType.getSimpleName();
 			if (graphPath != null) name += " " + graphPath;
 			cplObject = new CPLObject(Bench.ORIGINATOR, name, Bench.TYPE_DB);
 			initializeCPLObject();

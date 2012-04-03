@@ -53,13 +53,12 @@ public class BenchmarkRandomTraversals extends Benchmark {
 				dirGraphML + "barabasi_100000_500000.graphml",
 				dirGraphML + "barabasi_1000000_5000000.graphml" };
 
-		Benchmark benchmark = new BenchmarkRandomTraversals(dirResults
-				+ "load_graphml.csv", graphmlFiles);
+		Benchmark benchmark = new BenchmarkRandomTraversals(graphmlFiles);
 		
 		//XXX dmargo: Load operation logs with Bdb
 		graphDescriptor = new GraphDescriptor(BdbGraph.class, dirResults
 				+ "bdb/", dirResults + "bdb/");
-		benchmark.loadOperationLogs(graphDescriptor, dirResults
+		benchmark.runBenchmark(graphDescriptor, dirResults
 				+ "load_graphml_bdb.csv");
 		
         //XXX dmargo: Load operation logs with Dex
@@ -71,7 +70,7 @@ public class BenchmarkRandomTraversals extends Benchmark {
 		// Load operation logs with Neo4j
         graphDescriptor = new GraphDescriptor(Neo4jGraph.class, dirResults
               + "neo4j/", dirResults + "neo4j/");
-		benchmark.loadOperationLogs(graphDescriptor, dirResults
+		benchmark.runBenchmark(graphDescriptor, dirResults
 				+ "load_graphml_neo4j.csv");
 
 		// Load operation logs with Orient
@@ -88,7 +87,7 @@ public class BenchmarkRandomTraversals extends Benchmark {
 
 		// Load operation logs with TinkerGraph
 		graphDescriptor = new GraphDescriptor(TinkerGraph.class);
-		benchmark.loadOperationLogs(graphDescriptor, dirResults
+		benchmark.runBenchmark(graphDescriptor, dirResults
 				+ "load_graphml_tinker.csv");
 
 		// Create file with summarized results from all databases and operations
@@ -111,13 +110,12 @@ public class BenchmarkRandomTraversals extends Benchmark {
 
 	private final int OP_COUNT = 1000;
 
-	public BenchmarkRandomTraversals(String log, String[] graphmlFilenames) {
-		super(log);
+	public BenchmarkRandomTraversals(String[] graphmlFilenames) {
 		this.graphmlFilenames = graphmlFilenames;
 	}
 
 	@Override
-	protected ArrayList<OperationFactory> getOperationFactories() {
+	public ArrayList<OperationFactory> getOperationFactories() {
 		ArrayList<OperationFactory> operationFactories = new ArrayList<OperationFactory>();
 
 		for (String graphmlFilename : graphmlFilenames) {

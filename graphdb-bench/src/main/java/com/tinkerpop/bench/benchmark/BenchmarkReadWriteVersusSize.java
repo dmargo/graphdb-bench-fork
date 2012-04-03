@@ -46,12 +46,11 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 		//		dirGraphML + "barabasi_100000_500000.graphml",
 		//		dirGraphML + "barabasi_1000000_5000000.graphml" };
 
-		Benchmark benchmark = new BenchmarkReadWriteVersusSize(dirResults
-				+ "load_graphml.csv", graphmlFiles);
+		Benchmark benchmark = new BenchmarkReadWriteVersusSize(graphmlFiles);
 		
 		graphDescriptor = new GraphDescriptor(BdbGraph.class, dirResults
 				+ "bdb/", dirResults + "bdb/");
-		benchmark.loadOperationLogs(graphDescriptor, dirResults
+		benchmark.runBenchmark(graphDescriptor, dirResults
 				+ "load_graphml_bdb.csv");
 
         //XXX dmargo: Load operation logs with Dex
@@ -107,13 +106,12 @@ public class BenchmarkReadWriteVersusSize extends Benchmark {
 	private final int GET_OP_COUNT = 1000;
 	private final int GET_LOOKUPS_PER_OP = 100;
 
-	public BenchmarkReadWriteVersusSize(String log, String[] graphmlFilenames) {
-		super(log);
+	public BenchmarkReadWriteVersusSize(String[] graphmlFilenames) {
 		this.graphmlFilenames = graphmlFilenames;
 	}
 
 	@Override
-	protected ArrayList<OperationFactory> getOperationFactories() {
+	public ArrayList<OperationFactory> getOperationFactories() {
 		ArrayList<OperationFactory> operationFactories = new ArrayList<OperationFactory>();
 
 		for (String graphmlFilename : graphmlFilenames) {

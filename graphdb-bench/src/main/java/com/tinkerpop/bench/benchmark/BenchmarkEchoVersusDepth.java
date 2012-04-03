@@ -40,13 +40,12 @@ public class BenchmarkEchoVersusDepth extends Benchmark {
 
 		GraphDescriptor graphDescriptor = null;
 
-		Benchmark benchmark = new BenchmarkEchoVersusDepth(dirResults
-				+ "echo.csv", dirGraphML + "barabasi_1000_5000.graphml");
+		Benchmark benchmark = new BenchmarkEchoVersusDepth(dirGraphML + "barabasi_1000_5000.graphml");
 
         //XXX dmargo: Load operation logs with Dex
         graphDescriptor = new GraphDescriptor(DexGraph.class, dirResults,
                 dirResults + "graph.dex");
-        benchmark.loadOperationLogs(graphDescriptor, dirResults
+        benchmark.runBenchmark(graphDescriptor, dirResults
                 + "echo_dex.csv");
 
 		// Load operation logs with Orient
@@ -58,12 +57,12 @@ public class BenchmarkEchoVersusDepth extends Benchmark {
 		// Load operation logs with Neo4j
 		graphDescriptor = new GraphDescriptor(Neo4jGraph.class, dirResults
 				+ "neo4j/", dirResults + "neo4j/");
-		benchmark.loadOperationLogs(graphDescriptor, dirResults
+		benchmark.runBenchmark(graphDescriptor, dirResults
 				+ "echo_neo4j.csv");
 
 		// Load operation logs with TinkerGraph
 		graphDescriptor = new GraphDescriptor(TinkerGraph.class);
-		benchmark.loadOperationLogs(graphDescriptor, dirResults
+		benchmark.runBenchmark(graphDescriptor, dirResults
 				+ "echo_tinker.csv");
 
 		// Create file with summarized results from all databases and operations
@@ -89,13 +88,12 @@ public class BenchmarkEchoVersusDepth extends Benchmark {
 
 	private String graphMLFile = null;
 
-	public BenchmarkEchoVersusDepth(String log, String graphMLFile) {
-		super(log);
+	public BenchmarkEchoVersusDepth(String graphMLFile) {
 		this.graphMLFile = graphMLFile;
 	}
 
 	@Override
-	protected ArrayList<OperationFactory> getOperationFactories() {
+	public ArrayList<OperationFactory> getOperationFactories() {
 		ArrayList<OperationFactory> operationFactories = new ArrayList<OperationFactory>();
 
 		operationFactories.add(new OperationFactoryGeneric(

@@ -12,6 +12,9 @@ import java.util.Map.Entry;
 
 import com.tinkerpop.bench.LogUtils;
 
+import edu.harvard.pass.cpl.CPL;
+import edu.harvard.pass.cpl.CPLFile;
+
 public class SummaryLogWriter {
 	private final String logDelim = LogUtils.LOG_DELIMITER;
 
@@ -20,12 +23,20 @@ public class SummaryLogWriter {
 	 * 
 	 * resultFiles = ["graphName"->"path/to/result/file.csv"]
 	 */
-	public void writeSummary(String summaryFilePath,
+	public synchronized void writeSummary(String summaryFilePath,
 			Map<String, String> resultFilePaths) throws IOException {
 		// summarizedResults = ["operation" -> ["graphRuntimes"]]
 		LinkedHashMap<String, ArrayList<GraphRunTimes>> summarizedFiles = summarizeFiles(resultFilePaths);
 
 		writeSummaryFile(summaryFilePath, summarizedFiles);
+		
+		if (CPL.isAttached()) {
+			CPLFile summaryFileObject = CPLFile.create(new File(summaryFilePath));
+			for (Entry<String, String> fileEntry : resultFilePaths.entrySet()) {
+				String path = fileEntry.getValue();
+				summaryFileObject.dataFlowFrom(CPLFile.lookup(new File(path)));
+			}
+		}
 	}
 
 	private LinkedHashMap<String, ArrayList<GraphRunTimes>> summarizeFiles(

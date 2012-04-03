@@ -461,10 +461,10 @@ public class BenchmarkMicro extends Benchmark {
 		String[] graphmlFiles = new String[] { ingestFile };
 		GraphGenerator[] graphGenerators = new GraphGenerator[] { graphGenerator };
 		
-		Benchmark warmupBenchmark = new BenchmarkMicro(dirResults + "benchmark_micro_warmup.csv",
+		Benchmark warmupBenchmark = new BenchmarkMicro(
 				graphmlFiles, graphGenerators, options, warmupOpCount, kHops);
 		
-		Benchmark benchmark = new BenchmarkMicro(dirResults + "benchmark_micro.csv",
+		Benchmark benchmark = new BenchmarkMicro(
 				graphmlFiles, graphGenerators, options, opCount, kHops);
 		
 		
@@ -496,7 +496,7 @@ public class BenchmarkMicro extends Benchmark {
 		
 		
 		/*
-		 * Load operation logs
+		 * Run the benchmark
 		 */
 		
 		if (warmup) {
@@ -504,7 +504,7 @@ public class BenchmarkMicro extends Benchmark {
 			graphDescriptor = new GraphDescriptor(dbClass,
 					!options.has("sql") ? dirResults + dbShortName + "/warmup" : null,
 					withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/warmup" + (options.has("dex") ? "/graph.dex" : "") : sqlDbPath) : null);
-			warmupBenchmark.loadOperationLogs(graphDescriptor,
+			warmupBenchmark.runBenchmark(graphDescriptor,
 					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
 			Cache.dropAll();
@@ -514,7 +514,7 @@ public class BenchmarkMicro extends Benchmark {
 		graphDescriptor = new GraphDescriptor(dbClass,
 				!options.has("sql") ? dirResults + dbShortName + "/db" : null,
 				withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/db" + (options.has("dex") ? "/graph.dex" : "") : sqlDbPath) : null);
-		benchmark.loadOperationLogs(graphDescriptor,
+		benchmark.runBenchmark(graphDescriptor,
 				dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		resultFiles.put(dbShortName, dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
 		
@@ -541,10 +541,9 @@ public class BenchmarkMicro extends Benchmark {
 	private GraphGenerator[] graphGenerators = null;
 	private OptionSet options = null;
 
-	public BenchmarkMicro(String log, String[] graphmlFilenames,
+	public BenchmarkMicro(String[] graphmlFilenames,
 			GraphGenerator[] graphGenerators, OptionSet options,
 			int opCount, int[] kHops) {
-		super(log);
 		this.graphmlFilenames = graphmlFilenames;
 		this.graphGenerators = graphGenerators;
 		this.options = options;
@@ -553,7 +552,7 @@ public class BenchmarkMicro extends Benchmark {
 	}
 
 	@Override
-	protected ArrayList<OperationFactory> getOperationFactories() {
+	public ArrayList<OperationFactory> getOperationFactories() {
 		ArrayList<OperationFactory> operationFactories = new ArrayList<OperationFactory>();
 
 		for (String graphmlFilename : graphmlFilenames) {

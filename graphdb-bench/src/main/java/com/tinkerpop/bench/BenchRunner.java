@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.tinkerpop.bench.benchmark.Benchmark;
 import com.tinkerpop.bench.log.OperationLogWriter;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.bench.operation.OperationDeleteGraph;
@@ -26,28 +27,20 @@ public class BenchRunner {
 
 	private GraphDescriptor graphDescriptor = null;
 
+	private Benchmark benchmark = null;
 	private ArrayList<OperationFactory> operationFactories = null;
 
 	public BenchRunner(GraphDescriptor graphDescriptor, File logFile,
-			final OperationFactory operationFactory) throws IOException {
-		this(graphDescriptor, logFile, new ArrayList<OperationFactory>() {
-			private static final long serialVersionUID = -6151422065314229327L;
-
-			{
-				add(operationFactory);
-			}
-		});
-	}
-
-	public BenchRunner(GraphDescriptor graphDescriptor, File logFile,
-			ArrayList<OperationFactory> operationFactories) throws IOException {
+			Benchmark benchmark) throws IOException {
+		
 		this.graphDescriptor = graphDescriptor;
-		this.operationFactories = operationFactories;
+		this.benchmark = benchmark;
+		this.operationFactories = this.benchmark.getOperationFactories();
 
 		logWriter = LogUtils.getOperationLogWriter(logFile);
 	}
 
-	public void startBench() throws Exception {
+	public void runBenchmark() throws Exception {
 		try {
 			int startingOpId = -1;
 

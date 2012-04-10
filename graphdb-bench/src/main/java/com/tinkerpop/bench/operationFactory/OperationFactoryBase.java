@@ -1,65 +1,50 @@
 package com.tinkerpop.bench.operationFactory;
 
-import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.operation.Operation;
-import com.tinkerpop.blueprints.pgm.Graph;
+
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
+ * @author Peter Macko (pmacko@eecs.harvard.edu
  */
 public abstract class OperationFactoryBase extends OperationFactory {
 
-	private GraphDescriptor graphDescriptor = null;
-	private int opId = 0;
-
-	//
-	// Event methods
-	//
-	@Override
-	public final void initialize(GraphDescriptor graphDescriptor, int firstOpId) {
-		this.graphDescriptor = graphDescriptor;
-		this.opId = firstOpId;
-		onInitialize();
-	}
-
+	/**
+	 * Create arguments for an operation
+	 * 
+	 * @return operation arguments
+	 * @throws Exception
+	 */
 	abstract protected OperationArgs onCreateOperation() throws Exception;
 
-	//
-	// Getter methods
-	//
-	@Override
-	public final int getCurrentOpId() {
-		return opId;
-	}
-
-	protected final GraphDescriptor getGraphDescriptor() {
-		return graphDescriptor;
-	}
-
-	protected final Graph getGraph() {
-		return graphDescriptor.getGraph();
-	}
-
-	//
-	// Iterator/Iterable methods
-	//
+	
+	/**
+	 * Instantiate the next operation
+	 * 
+	 * @return the next operation
+	 */
 	@Override
 	public final Operation next() {
 		OperationArgs operationArgs = null;
 		try {
 			operationArgs = onCreateOperation();
-		} catch (Exception e) {
-			throw new RuntimeException("Error in onCreateOperation", e
-					.getCause());
+		}
+		catch (RuntimeException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Error in onCreateOperation", e);
 		}
 
-		opId++;
-
 		try {
-			return loadOperation(opId, operationArgs.getType().getName(),
+			return createOperation(operationArgs.getType().getName(),
 					operationArgs.getArgs(), operationArgs.getName());
-		} catch (Exception e) {
-			throw new RuntimeException("Error in loadOperation", e.getCause());
+		}
+		catch (RuntimeException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Error in loadOperation", e);
 		}
 	}
 

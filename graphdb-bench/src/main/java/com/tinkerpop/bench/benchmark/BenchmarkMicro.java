@@ -2,7 +2,9 @@ package com.tinkerpop.bench.benchmark;
 
 import java.io.File;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 
 import com.tinkerpop.bench.Bench;
@@ -12,6 +14,7 @@ import com.tinkerpop.bench.LogUtils;
 import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.generator.GraphGenerator;
 import com.tinkerpop.bench.generator.SimpleBarabasiGenerator;
+import com.tinkerpop.bench.log.SummaryLogWriter;
 import com.tinkerpop.bench.operation.OperationDeleteGraph;
 import com.tinkerpop.bench.operation.operations.*;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
@@ -37,8 +40,8 @@ import joptsimple.OptionSet;
 
 /**
  * @author Alex Averbuch (alex.averbuch@gmail.com)
- * @author Daniel Margo
- * @author Peter Macko
+ * @author Daniel Margo (dmargo@eecs.harvard.edu)
+ * @author Peter Macko (pmacko@eecs.harvard.edu)
  */
 public class BenchmarkMicro extends Benchmark {
 	
@@ -60,6 +63,9 @@ public class BenchmarkMicro extends Benchmark {
 	/// The graphdb-bench directory
 	private static String graphdbBenchDir = null;
 	
+	/// The number of threads
+	private static int numThreads = 1;
+	
 	
 	/**
 	 * Print the help
@@ -73,6 +79,7 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("  --help                Print this help message");
 		System.err.println("  --no-provenance       Disable provenance collection");
 		System.err.println("  --no-warmup           Disable the initial warmup run");
+		System.err.println("  --threads N           Run N copies of the benchmark concurrently");
 		System.err.println("");
 		System.err.println("Options to select a database (select one):");
 		System.err.println("  --bdb                 Berkeley DB, using massive indexing");
@@ -189,6 +196,7 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("help");
 		parser.accepts("no-provenance");
 		parser.accepts("no-warmup");
+		parser.accepts("threads").withRequiredArg().ofType(Integer.class);
 		
 		
 		// Databases
@@ -253,7 +261,7 @@ public class BenchmarkMicro extends Benchmark {
 			options = parser.parse(args);
 		}
 		catch (Exception e) {
-			System.err.println("Invalid options (please use --help for a list): " + e.getMessage());
+			ConsoleUtils.error("Invalid options (please use --help for a list): " + e.getMessage());
 			return;
 		}
 		
@@ -278,6 +286,14 @@ public class BenchmarkMicro extends Benchmark {
 		boolean provenance = true;
 		if (options.has("no-provenance")) {
 			provenance = false;
+		}
+		
+		if (options.has("threads")) {
+			numThreads = (Integer) options.valueOf("threads");
+			if (numThreads < 1) {
+				ConsoleUtils.error("Invalid number of threads -- must be at least 1");
+				return;
+			}
 		}
 		
 		int opCount = DEFAULT_OP_COUNT;
@@ -461,28 +477,66 @@ public class BenchmarkMicro extends Benchmark {
 		String[] graphmlFiles = new String[] { ingestFile };
 		GraphGenerator[] graphGenerators = new GraphGenerator[] { graphGenerator };
 		
-		Benchmark warmupBenchmark = new BenchmarkMicro(dirResults + "benchmark_micro_warmup.csv",
+		Benchmark warmupBenchmark = new BenchmarkMicro(
 				graphmlFiles, graphGenerators, options, warmupOpCount, kHops);
 		
-		Benchmark benchmark = new BenchmarkMicro(dirResults + "benchmark_micro.csv",
+		Benchmark benchmark = new BenchmarkMicro(
 				graphmlFiles, graphGenerators, options, opCount, kHops);
 		
 		
 		/*
-		 * Setup the database
+		 * Build the argument string to be used as a part of the log file name
 		 */
 		
 		GraphDescriptor graphDescriptor = null;
 		
 		StringBuilder sb = new StringBuilder();
 		for (String s : args) {
-			sb.append(s.charAt(0) == '-' ? s.substring(s.charAt(1) == '-' ? 2 : 1) : s);
-			sb.append('-');
+			String argName = s.charAt(0) == '-' ? s.substring(s.charAt(1) == '-' ? 2 : 1) : s;
+			if (s.charAt(0) == '-') sb.append('_');
+			sb.append(argName);
 		}
-		sb.append(Runtime.getRuntime().maxMemory());
-		String argString = sb.toString().replaceAll("\\W+", "");
 		
-		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
+		sb.append("_mem");
+		sb.append(Math.round(Runtime.getRuntime().maxMemory() / 1024768.0f));
+		sb.append("m");	
+		
+		sb.append("_");
+		sb.append((new SimpleDateFormat("yyyyMMdd-HHmmss")).format(new Date()));
+		
+		String argString = sb.toString().replaceAll("\\s+", "");
+		
+		
+		/*
+		 * Set the file, directory, and database names
+		 */
+		
+		String dbPrefix = dirResults + dbShortName + "/";
+		String warmupDbDir = null;
+		String dbDir = null;
+		if (!options.has("sql")) {
+			warmupDbDir = dbPrefix + "warmup";
+			dbDir = dbPrefix + "db";
+		}
+		
+		String warmupDbPath = null;
+		String dbPath = null;
+		if (withGraphPath) {
+			if (options.has("sql")) {
+				warmupDbPath = sqlDbPath;
+				dbPath = sqlDbPath;
+			}
+			else {
+				warmupDbPath = warmupDbDir + (options.has("dex") ? "/graph.dex" : "");
+				dbPath = dbDir + (options.has("dex") ? "/graph.dex" : "");
+			}
+		}
+		
+		String logPrefix = dbPrefix + dbShortName;
+		String warmupLogFile = logPrefix + "-warmup" + argString + ".csv";
+		String logFile = logPrefix + argString + ".csv";
+		String summaryLogFile = logPrefix + "-summary" + argString + ".csv";
+		String summaryLogFileText = logPrefix + "-summary" + argString + ".txt";
 		
 		
 		/*
@@ -493,30 +547,27 @@ public class BenchmarkMicro extends Benchmark {
 		
 		System.out.println("Database : " + dbShortName);
 		System.out.println("Directory: " + dirResults);
+		System.out.println("Log File : " + logFile);
 		
 		
 		/*
-		 * Load operation logs
+		 * Run the benchmark
 		 */
+		
+		LinkedHashMap<String, String> resultFiles = new LinkedHashMap<String, String>();
 		
 		if (warmup) {
 			ConsoleUtils.sectionHeader("Warmup Run");
-			graphDescriptor = new GraphDescriptor(dbClass,
-					!options.has("sql") ? dirResults + dbShortName + "/warmup" : null,
-					withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/warmup" + (options.has("dex") ? "/graph.dex" : "") : sqlDbPath) : null);
-			warmupBenchmark.loadOperationLogs(graphDescriptor,
-					dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
-			resultFiles.put(dbShortName + "-warmup", dirResults + dbShortName + "/" + dbShortName + "-warmup-" + argString + ".csv");
+			graphDescriptor = new GraphDescriptor(dbClass, warmupDbDir, warmupDbPath);
+			warmupBenchmark.runBenchmark(graphDescriptor, warmupLogFile, numThreads);
+			//resultFiles.put(dbShortName + "-warmup", warmupLogFile);
 			Cache.dropAll();
 		}
-			
+		
 		ConsoleUtils.sectionHeader("Benchmark Run");
-		graphDescriptor = new GraphDescriptor(dbClass,
-				!options.has("sql") ? dirResults + dbShortName + "/db" : null,
-				withGraphPath ? (!options.has("sql") ? dirResults + dbShortName + "/db" + (options.has("dex") ? "/graph.dex" : "") : sqlDbPath) : null);
-		benchmark.loadOperationLogs(graphDescriptor,
-				dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
-		resultFiles.put(dbShortName, dirResults + dbShortName + "/" + dbShortName + "-" + argString + ".csv");
+		graphDescriptor = new GraphDescriptor(dbClass, dbDir, dbPath);
+		benchmark.runBenchmark(graphDescriptor, logFile, numThreads);
+		resultFiles.put(dbShortName, logFile);
 		
 		
 		/*
@@ -524,8 +575,11 @@ public class BenchmarkMicro extends Benchmark {
 		 */
 		
 		ConsoleUtils.sectionHeader("Summary");
-		LogUtils.makeResultsSummary(
-				dirResults + dbShortName + "/summary-" + argString + ".csv", resultFiles);
+		
+		SummaryLogWriter summaryLogWriter = new SummaryLogWriter(resultFiles);
+		summaryLogWriter.writeSummary(summaryLogFile);
+		summaryLogWriter.writeSummaryText(summaryLogFileText);
+		summaryLogWriter.writeSummaryText(null);
 	}
 
 	
@@ -541,10 +595,9 @@ public class BenchmarkMicro extends Benchmark {
 	private GraphGenerator[] graphGenerators = null;
 	private OptionSet options = null;
 
-	public BenchmarkMicro(String log, String[] graphmlFilenames,
+	public BenchmarkMicro(String[] graphmlFilenames,
 			GraphGenerator[] graphGenerators, OptionSet options,
 			int opCount, int[] kHops) {
-		super(log);
 		this.graphmlFilenames = graphmlFilenames;
 		this.graphGenerators = graphGenerators;
 		this.options = options;
@@ -553,13 +606,18 @@ public class BenchmarkMicro extends Benchmark {
 	}
 
 	@Override
-	protected ArrayList<OperationFactory> getOperationFactories() {
+	public ArrayList<OperationFactory> createOperationFactories() {
 		ArrayList<OperationFactory> operationFactories = new ArrayList<OperationFactory>();
 
 		for (String graphmlFilename : graphmlFilenames) {
 
 			// DELETE the graph (also invoked for the ingest benchmark)
 			if (options.has("ingest") || options.has("delete-graph")) {
+				if (numThreads != 1) {
+					throw new UnsupportedOperationException("Operations \"ingest\" "
+							+"and \"delete-graph\" are not supported in the "
+							+"multi-threaded mode");
+				}
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationDeleteGraph.class, 1));
 			}

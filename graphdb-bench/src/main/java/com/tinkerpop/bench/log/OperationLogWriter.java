@@ -30,7 +30,7 @@ public class OperationLogWriter {
 	}
 
 	// Write .csv log column headers
-	private void writeHeaders() throws IOException {
+	private synchronized void writeHeaders() throws IOException {
 		bufferedLogWriter.write("id");
 		bufferedLogWriter.write(logDelim);
 
@@ -56,7 +56,7 @@ public class OperationLogWriter {
 	}
 
 	// Write a .csv log data row
-	public void logOperation(Operation op) throws IOException {
+	public synchronized void logOperation(Operation op) throws IOException {
 		bufferedLogWriter.write(Integer.toString(op.getId()));
 		bufferedLogWriter.write(logDelim);
 
@@ -81,7 +81,7 @@ public class OperationLogWriter {
 		bufferedLogWriter.newLine();
 	}
 
-	public void close() throws IOException {
+	public synchronized void close() throws IOException {
 		bufferedLogWriter.flush();
 		bufferedLogWriter.close();
 	}

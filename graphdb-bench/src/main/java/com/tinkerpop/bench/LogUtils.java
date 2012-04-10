@@ -15,8 +15,14 @@ public class LogUtils {
 
 	public static void makeResultsSummary(String summaryFilePath,
 			Map<String, String> resultFilePaths) throws IOException {
-		SummaryLogWriter summaryLogWriter = new SummaryLogWriter();
-		summaryLogWriter.writeSummary(summaryFilePath, resultFilePaths);
+		SummaryLogWriter summaryLogWriter = new SummaryLogWriter(resultFilePaths);
+		summaryLogWriter.writeSummary(summaryFilePath);
+	}
+	
+	public static void makeResultsSummaryText(String summaryFilePath,
+			Map<String, String> resultFilePaths) throws IOException {
+		SummaryLogWriter summaryLogWriter = new SummaryLogWriter(resultFilePaths);
+		summaryLogWriter.writeSummaryText(summaryFilePath);
 	}
 
 	public static OperationLogReader getOperationLogReader(File logFile) {

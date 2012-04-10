@@ -3,13 +3,11 @@ package com.tinkerpop.bench;
 import java.lang.reflect.Constructor;
 
 import com.tinkerpop.blueprints.pgm.Graph;
-import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
+//import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
 import com.tinkerpop.blueprints.pgm.impls.sql.SqlGraph;
 
 import edu.harvard.pass.cpl.CPL;
 import edu.harvard.pass.cpl.CPLObject;
-
-import java.io.File;
 
 public class GraphDescriptor {
 
@@ -113,7 +111,7 @@ public class GraphDescriptor {
 
 	public void recreateCPLObject() {
 		if (CPL.isAttached()) {
-			String name = graphType.toString();
+			String name = graphType.getSimpleName();
 			if (graphPath != null) name += " " + graphPath;
 			cplObject = new CPLObject(Bench.ORIGINATOR, name, Bench.TYPE_DB);
 			initializeCPLObject();

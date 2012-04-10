@@ -1,5 +1,9 @@
 package com.tinkerpop.bench.operationFactory.factories;
 
+
+/**
+ * @author Peter Macko (pmacko@eecs.harvard.edu)
+ */
 public interface WithOpCount {
 
 	/**

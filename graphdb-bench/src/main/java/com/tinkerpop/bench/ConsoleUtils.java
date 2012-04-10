@@ -2,6 +2,8 @@ package com.tinkerpop.bench;
 
 /**
  * Utilities for text output to the console
+ * 
+ * @author Peter Macko (pmacko@eecs.harvard.edu)
  */
 public class ConsoleUtils {
 

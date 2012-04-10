@@ -15,7 +15,7 @@ import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
 /**
  * A node ID cache
  * 
- * @author Peter Macko
+ * @author Peter Macko (pmacko@eecs.harvard.edu)
  */
 public class Cache {
 	

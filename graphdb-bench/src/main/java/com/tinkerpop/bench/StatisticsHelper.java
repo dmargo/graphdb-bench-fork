@@ -18,7 +18,6 @@ import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
 public class StatisticsHelper {
 
 	private static Random rand = new Random();
-	private static long time = -1l;
 	private static long memory = -1l;
 
 	public static Object[] getSampleVertexIds(Graph db, Evaluator evaluator,
@@ -113,17 +112,6 @@ public class StatisticsHelper {
 		}
 
 		return samples;
-	}
-
-	public static long stopWatch() {
-		if (time == -1l) {
-			time = System.nanoTime();
-			return time;
-		} else {
-			long temp = System.nanoTime() - time;
-			time = -1l;
-			return temp;
-		}
 	}
 	
 	public static long stopMemory() {

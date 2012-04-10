@@ -8,7 +8,7 @@ set terminal postscript color enhanced
 
 
 
-set output 'get_k_hop_neighbors_dedup.eps'
+set output 'get_k_hop_neighbors_dedup_1M.eps'
 set xlabel 'Deduplicated Vertex Count (vertices)'
 set xrange [0:10000]
 
@@ -21,7 +21,7 @@ plot '<sed "1,7d" bdb-512M-barabasi1M/get_k_hop_neighbors' using 3:2 title 'bdb'
 
 
 
-set output 'get_k_hop_neighbors_getcount.eps'
+set output 'get_k_hop_neighbors_getcount_1M.eps'
 set xlabel 'GetNeighborsOp Count'
 set xrange [0:4000]
 
@@ -34,7 +34,7 @@ plot '<sed "1,7d" bdb-512M-barabasi1M/get_k_hop_neighbors' using 5:2 title 'bdb'
 
 
 
-set output 'get_k_hop_neighbors_nodecount.eps'
+set output 'get_k_hop_neighbors_nodecount_1M.eps'
 set xlabel 'Vertex Count (vertices)'
 set xrange [0:10000]
 

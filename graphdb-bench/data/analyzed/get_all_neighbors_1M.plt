@@ -7,7 +7,7 @@ set ylabel 'Time (nanoseconds)'
 
 
 set datafile separator ';'
-set output 'get_all_neighbors.eps'
+set output 'get_all_neighbors_1M.eps'
 set terminal postscript color enhanced
 
 plot '<sed "1,3d" bdb-512M-barabasi1M/get_all_neighbors' using 2:1 title 'bdb', \

@@ -15,17 +15,19 @@ public class OperationNetworkAverageClusteringCoefficient extends Operation {
 	protected void onExecute() throws Exception {
 		try {
 			Graph graph = getGraph();
+			GraphUtils.OpStat stat = new GraphUtils.OpStat();
 			
 			double C = 0;
 			int N = 0;
 			
 			for (Vertex v : graph.getVertices()) {
-				C += GraphUtils.localClusteringCoefficient(v);
+				C += GraphUtils.localClusteringCoefficient(v, stat);
 				N++;
 			}
 			
+			stat.num_uniqueVertices = N;
 			if (N > 0) C /= N;
-			setResult("" + C);
+			setResult("" + C + ":" + stat);
 			
 		} catch (Exception e) {
 			throw e;

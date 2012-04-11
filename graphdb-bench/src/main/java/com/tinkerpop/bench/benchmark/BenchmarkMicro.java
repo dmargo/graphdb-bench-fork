@@ -545,9 +545,11 @@ public class BenchmarkMicro extends Benchmark {
 		
 		ConsoleUtils.sectionHeader("Tinkubator Graph Database Benchmark");
 		
-		System.out.println("Database : " + dbShortName);
-		System.out.println("Directory: " + dirResults);
-		System.out.println("Log File : " + logFile);
+		System.out.println("Database    : " + dbShortName);
+		System.out.println("Directory   : " + dirResults);
+		System.out.println("Log File    : " + logFile);
+		System.out.println("Summary Log : " + summaryLogFile);
+		System.out.println("Summary File: " + summaryLogFileText);
 		
 		
 		/*
@@ -731,5 +733,4 @@ public class BenchmarkMicro extends Benchmark {
 
 		return operationFactories;
 	}
-
 }

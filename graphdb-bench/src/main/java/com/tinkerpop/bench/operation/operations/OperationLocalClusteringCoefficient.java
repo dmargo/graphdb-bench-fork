@@ -22,13 +22,14 @@ public class OperationLocalClusteringCoefficient extends Operation {
 	protected void onExecute() throws Exception {
 		try {
 			Graph graph = getGraph();
+			GraphUtils.OpStat stat = new GraphUtils.OpStat();
 			
 			for (int i = 0; i < opCount; i++) {
 				Vertex v = graph.getVertex(vertexSamples[i]);
-				GraphUtils.localClusteringCoefficient(v);
+				GraphUtils.localClusteringCoefficient(v, stat);
 			}
 			
-			setResult(opCount);
+			setResult(opCount + ":" + stat);
 		} catch (Exception e) {
 			throw e;
 		}

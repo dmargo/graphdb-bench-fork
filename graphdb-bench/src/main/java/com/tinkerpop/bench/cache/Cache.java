@@ -139,18 +139,41 @@ public class Cache {
 	
 	
 	/**
+	 * Replace a vertex ID. This is useful, for example, to add a temporary
+	 * vertex ID to the cache and then replace it by whatever ID the database
+	 * generates when the vertex is added
+	 * 
+	 * @param oldID the old ID
+	 * @param newID the new ID
+	 */
+	public synchronized void replaceVertexID(Object oldID, Object newID) {
+		Integer index = nodeIDtoIndex.remove(oldID);
+		if (index != null) nodeIDtoIndex.put(newID, index);
+	}
+	
+	
+	/**
+	 * Add an edge
+	 * 
+	 * @param inID the ID of the "in" vertex
+	 * @param outID the ID of the "out"vertex
+	 */
+	public synchronized void addEdgeByID(Object inID, Object outID) {
+		if (!valid) return;
+		int i = nodeIDtoIndex.get(inID);
+		int o = nodeIDtoIndex.get(outID);
+		inDegrees.get(i / PER_ARRAY)[i % PER_ARRAY]++;
+		outDegrees.get(o / PER_ARRAY)[o % PER_ARRAY]++;
+	}
+	
+	
+	/**
 	 * Add an edge
 	 * 
 	 * @param edge the edge
 	 */
 	public void addEdge(Edge edge) {
-		if (!valid) return;
-		Vertex in = edge.getInVertex();
-		Vertex out = edge.getOutVertex();
-		int i = nodeIDtoIndex.get(in.getId());
-		int o = nodeIDtoIndex.get(out.getId());
-		inDegrees.get(i / PER_ARRAY)[i % PER_ARRAY]++;
-		outDegrees.get(o / PER_ARRAY)[o % PER_ARRAY]++;
+		addEdgeByID(edge.getInVertex().getId(), edge.getOutVertex().getId());
 	}
 	
 	

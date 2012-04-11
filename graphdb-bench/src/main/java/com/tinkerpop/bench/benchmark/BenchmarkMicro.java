@@ -633,6 +633,10 @@ public class BenchmarkMicro extends Benchmark {
 			
 			// GENERATE benchmarks
 			if (options.has("generate")) {
+				if (numThreads != 1) {
+					throw new UnsupportedOperationException("Operation \"generate\" "
+							+"is not supported in the multi-threaded mode");
+				}
 				for (GraphGenerator g : graphGenerators) {
 					operationFactories.add(new OperationFactoryGeneric(
 							OperationGenerateGraph.class, 1, new GraphGenerator[] { g }));

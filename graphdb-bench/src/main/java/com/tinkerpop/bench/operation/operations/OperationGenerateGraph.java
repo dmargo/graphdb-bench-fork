@@ -24,8 +24,9 @@ public class OperationGenerateGraph extends Operation {
 
 	@Override
 	protected void onExecute() throws Exception {
+		// Note: Must be single-threaded
 		generator.generate(getGraph());
-		setResult("COMPLETE");
+		setResult(generator.getStatisticsString());
 	}
 
 	@Override

@@ -147,8 +147,15 @@ public class Cache {
 	 * @param newID the new ID
 	 */
 	public synchronized void replaceVertexID(Object oldID, Object newID) {
+		if (!valid) return;
+		if (newID == null) throw new IllegalArgumentException("id cannot be null");
 		Integer index = nodeIDtoIndex.remove(oldID);
-		if (index != null) nodeIDtoIndex.put(newID, index);
+		if (index != null) {
+			nodeIDtoIndex.put(newID, index);
+			int arrayID = index / PER_ARRAY;
+			int withinID = index % PER_ARRAY;
+			nodeIDs.get(arrayID)[withinID] = newID;
+		}
 	}
 	
 	

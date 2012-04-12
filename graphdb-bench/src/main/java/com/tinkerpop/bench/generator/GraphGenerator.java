@@ -34,4 +34,13 @@ public abstract class GraphGenerator {
 	 * @return the CPL object
 	 */
 	public abstract CPLObject getCPLObject();
+	
+	
+	/**
+	 * Return a colon-separated (:) list of key-value pairs with additional
+	 * statistics about the last graph generation process
+	 * 
+	 * @return the statistics string
+	 */
+	public abstract String getStatisticsString();
 }

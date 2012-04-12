@@ -6,7 +6,7 @@ import com.tinkerpop.bench.StatisticsHelper;
 import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.evaluators.Evaluator;
 import com.tinkerpop.bench.evaluators.EvaluatorDegree;
-import com.tinkerpop.blueprints.pgm.Edge;
+import com.tinkerpop.bench.util.Pair;
 import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
@@ -24,6 +24,13 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 	protected int N;
 	protected int M;
 	protected CPLObject cplObject = null;
+	
+	private int num_addEdge;
+	private double time_addEdges;
+	private int num_getVertex;
+	private double time_addVertices;
+	private int num_addVertex;
+	private double time_getVertices;
 
 
 	/**
@@ -50,8 +57,12 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 		int n = N;
 		int m = M;
 		
+		Object[] newVertices = new Object[n];
+		@SuppressWarnings({ "rawtypes" })
+		Pair[] newEdges = new Pair[n * m];
 		
-		// Create a vertex if the graph is empty
+		
+		// Schedule an initial vertex to be created if the graph is empty
 		
 		boolean empty = true;
 		for (@SuppressWarnings("unused") Vertex v : graph.getVertices()) {
@@ -62,40 +73,116 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 		Cache c = Cache.getInstance(graph);
 		
 		if (empty) {
-			Vertex v = graph.addVertex(null);
-			c.addVertex(v);
-			n--;
+			Object v = new TemporaryObject(0);
+			newVertices[0] = v;
+			c.addVertexID(v);
 		}
 
 		
-		// Create more vertices
+		// Plan the creation of vertices and edges
 		
 		Object[] otherVertices = new Object[m];
-		for (int i = 0; i < n; i++) {
+		int edge_i = 0;
+		for (int i = empty ? 1 : 0; i < n; i++) {
 			
 			// Get an array of vertices to connect to
 			
 			Evaluator evaluator = new EvaluatorDegree(1, 8);
 			otherVertices = StatisticsHelper
 					.getSampleVertexIds(graph, evaluator, m);
-			for (int j = 0; j < otherVertices.length; j++) {
-				otherVertices[j] = graph.getVertex(otherVertices[j]);
-			}
 			
 			
 			// Create the new vertex and the appropriate edges
 			
-			Vertex v = graph.addVertex(null);
-			c.addVertex(v);
+			Object v = new TemporaryObject(i);
+			newVertices[i] = v;
+			c.addVertexID(v);
 			
 			for (Object o : otherVertices) {
-				Edge e = graph.addEdge(null, v, (Vertex) o, "");
-				c.addEdge(e);
+				Pair<Object, Object> e = new Pair<Object, Object>(v, o);
+				newEdges[edge_i++] = e;
+				c.addEdgeByID(v, o);
 			}
 			
 			
-			if ((i & 7) == 0 || i == n-1) ConsoleUtils.printProgressIndicator(i+1, n);
+			if ((i & 15) == 0 || i == n-1) ConsoleUtils.printProgressIndicator(i+1, n, "Pass 1/4");
 		}
+		
+		
+		// Now actually create the vertices
+		
+		Object[] oldVertices = newVertices;
+		newVertices = new Object[n];
+
+		long start = System.nanoTime(); 
+		
+		for (int i = 0; i < n; i++) {
+			Vertex v = graph.addVertex(null);
+			newVertices[i] = v;
+			
+			if ((i & 1023) == 0 || i == n-1) ConsoleUtils.printProgressIndicator(i+1, n, "Pass 2/4");
+		}
+		
+		time_addVertices = System.nanoTime() - start;
+		num_addVertex = newVertices.length;
+		
+		for (int i = 0; i < n; i++) {
+			c.replaceVertexID(oldVertices[i], ((Vertex) newVertices[i]).getId());
+		}
+
+		
+		// Now actually get the other vertices
+		
+		start = System.nanoTime();
+		num_getVertex = 0;
+
+		for (int i = 0; i < newEdges.length; i++) {
+			Object a = newEdges[i].getFirst();
+			Object b = newEdges[i].getSecond();
+			
+			if (a instanceof TemporaryObject) {
+				a = newVertices[((TemporaryObject) a).value];
+			}
+			else {
+				a = graph.getVertex(a);
+				num_getVertex++;
+			}
+			
+			if (b instanceof TemporaryObject) {
+				b = newVertices[((TemporaryObject) b).value];
+			}
+			else {
+				b = graph.getVertex(b);
+				num_getVertex++;
+			}
+			
+			newEdges[i] = new Pair<Object, Object>(a, b);
+			
+			if ((i & 255) == 0 || i == newEdges.length-1) {
+				ConsoleUtils.printProgressIndicator(i+1, newEdges.length, "Pass 3/4");
+			}
+		}
+		
+		time_getVertices = System.nanoTime() - start;
+
+		
+		// Now actually create the edges
+		
+		start = System.nanoTime(); 
+		
+		for (int i = 0; i < newEdges.length; i++) {
+			Object a = newEdges[i].getFirst();
+			Object b = newEdges[i].getSecond();
+			
+			graph.addEdge(null, (Vertex) a, (Vertex) b, "");
+			
+			if ((i & 127) == 0 || i == newEdges.length-1) {
+				ConsoleUtils.printProgressIndicator(i+1, newEdges.length, "Pass 4/4");
+			}
+		}
+		
+		time_addEdges = System.nanoTime() - start;
+		num_addEdge = newEdges.length;
 	}
 	
 	
@@ -116,5 +203,70 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 		cplObject.addProperty("M", "" + M);
 		
 		return cplObject;
+	}
+	
+	
+	/**
+	 * Safe division
+	 */
+	private double safediv(double a, int b) {
+		return b == 0 ? 0 : a / b;
+	}
+	
+	
+	/**
+	 * Return a colon-separated (:) list of key-value pairs with additional
+	 * statistics about the last graph generation process
+	 * 
+	 * @return the statistics string
+	 */
+	public String getStatisticsString() {		
+		return     "addVertex=" + num_addVertex + ":addVertex_ns=" + safediv(time_addVertices, num_addVertex)
+				+ ":getVertex=" + num_getVertex + ":getVertex_ns=" + safediv(time_getVertices, num_getVertex)
+				+ ":addEdge="   + num_addEdge   + ":addEdge_ns="   + safediv(time_addEdges   , num_addEdge  );
+	}
+
+	
+	/**
+	 * A temporary object
+	 */
+	private class TemporaryObject {
+		
+		public Integer value;
+		
+		/**
+		 * Create an instance of class TemporaryObject
+		 * 
+		 * @param value the value
+		 */
+		public TemporaryObject(int value) {
+			this.value = value;
+		}
+		
+		/**
+		 * Generate hash code
+		 * 
+		 * @return the hash code
+		 */
+		@Override
+		public int hashCode() {
+			return value.hashCode();
+		}
+		
+		/**
+		 * Determine if two objects are equal
+		 * 
+		 * @param other the other object
+		 * @return true if they are
+		 */
+		@Override
+		public boolean equals(Object other) {
+			if (other instanceof TemporaryObject) {
+				return value.equals(((TemporaryObject) other).value);
+			}
+			else {
+				return false;
+			}
+		}
 	}
 }

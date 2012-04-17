@@ -20,8 +20,10 @@ public class OperationNetworkAverageClusteringCoefficient extends Operation {
 			double C = 0;
 			int N = 0;
 			
+			stat.num_getVertices++;
 			for (Vertex v : graph.getVertices()) {
 				C += GraphUtils.localClusteringCoefficient(v, stat);
+				stat.num_getVerticesNext++;
 				N++;
 			}
 			

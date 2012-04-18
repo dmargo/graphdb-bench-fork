@@ -711,13 +711,17 @@ public class BenchmarkMicro extends Benchmark {
 				}
 			}
 			
-			// SHORTEST PATH (Djikstra's algorithm)
+			// SHORTEST PATH (Dijkstra's algorithm)
 			if (options.has("dijkstra")) {
 				operationFactories.add(new OperationFactoryRandomVertexPair(
 						OperationGetShortestPath.class, opCount / 2));
             }
 
-			if (options.has("djikstra-property")) {	
+			if (options.has("dijkstra-property")) {	
+				if (numThreads != 1) {
+					throw new UnsupportedOperationException("Operation \"dijkstra-property\" "
+							+"is not supported in the multi-threaded mode");
+				}
 				operationFactories.add(new OperationFactoryRandomVertexPair(
 						OperationGetShortestPathProperty.class, opCount / 2));
 			}
@@ -736,6 +740,11 @@ public class BenchmarkMicro extends Benchmark {
 			
 			// ADD/SET microbenchmarks
 			if (options.has("add")) {
+				if (numThreads != 1 && GlobalConfig.transactionBufferSize != 1) {
+					throw new UnsupportedOperationException("Set property operations inside \"add\" "
+							+"are not supported in the multi-threaded mode with tx-buffer > 1");
+				}
+				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationAddManyVertices.class, 1,
 						new Integer[] { opCount }));

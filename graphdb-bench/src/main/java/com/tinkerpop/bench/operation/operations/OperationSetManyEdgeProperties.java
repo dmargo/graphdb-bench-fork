@@ -51,4 +51,9 @@ public class OperationSetManyEdgeProperties extends Operation {
 			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
 		}
 	}
+
+	@Override
+	public boolean isUpdate() {
+		return true;
+	}
 }

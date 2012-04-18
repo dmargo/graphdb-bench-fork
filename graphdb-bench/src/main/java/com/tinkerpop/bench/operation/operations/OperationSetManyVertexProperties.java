@@ -33,15 +33,11 @@ public class OperationSetManyVertexProperties extends Operation {
 	
 	@Override
 	protected void onExecute() throws Exception {
-		try {
-			for (int i = 0; i < opCount; i++)
-				vertexSamples[i].setProperty(property_key, property_value);
+		for (int i = 0; i < opCount; i++)
+			vertexSamples[i].setProperty(property_key, property_value);
 			
-			setResult(opCount);
-		} catch (Exception e) {
-			throw e;
-		}
-	}
+		setResult(opCount);
+    }
 
 	@Override
 	protected void onFinalize() throws Exception {
@@ -50,5 +46,10 @@ public class OperationSetManyVertexProperties extends Operation {
 			obj.addProperty("COUNT", "" + opCount);
 			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
 		}
+	}
+
+	@Override
+	public boolean isUpdate() {
+		return true;
 	}
 }

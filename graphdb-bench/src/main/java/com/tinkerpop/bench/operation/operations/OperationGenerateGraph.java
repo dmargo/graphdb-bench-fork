@@ -36,4 +36,9 @@ public class OperationGenerateGraph extends Operation {
 			getGraphDescriptor().getCPLObject().dataFlowFrom(getCPLObject());
 		}
 	}
+
+	@Override
+	public boolean isUpdate() {
+		return true;
+	}
 }

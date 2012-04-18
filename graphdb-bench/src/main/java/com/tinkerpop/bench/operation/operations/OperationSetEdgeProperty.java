@@ -38,4 +38,9 @@ public class OperationSetEdgeProperty extends Operation {
 			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
 		}
 	}
+
+	@Override
+	public boolean isUpdate() {
+		return true;
+	}
 }

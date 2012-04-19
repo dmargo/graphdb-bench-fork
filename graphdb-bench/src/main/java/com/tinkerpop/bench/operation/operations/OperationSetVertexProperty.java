@@ -38,4 +38,9 @@ public class OperationSetVertexProperty extends Operation {
 			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
 		}
 	}
+
+	@Override
+	public boolean isUpdate() {
+		return true;
+	}
 }

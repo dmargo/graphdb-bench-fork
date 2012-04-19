@@ -1,12 +1,14 @@
 package com.tinkerpop.bench.operation;
 
 import com.tinkerpop.bench.Bench;
+import com.tinkerpop.bench.GlobalConfig;
 import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.StatisticsHelper;
 import com.tinkerpop.bench.log.OperationLogWriter;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.factories.WithOpCount;
 import com.tinkerpop.blueprints.pgm.Graph;
+import com.tinkerpop.blueprints.pgm.TransactionalGraph;
 
 import edu.harvard.pass.cpl.CPL;
 import edu.harvard.pass.cpl.CPLObject;
@@ -143,9 +145,31 @@ public abstract class Operation {
 	}
 
 	public final void execute() throws Exception {
+        
+		int previousMaxBufferSize = 0;
+        Graph graph = getGraph();
+        
 		StatisticsHelper.stopMemory();	//XXX multi-threaded???
 		long start = System.nanoTime();
-		onExecute();
+		
+		if (isUpdate() && !isUsingCustomTransactions()) {
+	        if (graph instanceof TransactionalGraph) {
+	            previousMaxBufferSize = ((TransactionalGraph) graph).getMaxBufferSize();
+	            ((TransactionalGraph) graph).setMaxBufferSize(GlobalConfig.transactionBufferSize);
+	        }
+		}
+		
+		try {
+			onExecute();
+		}
+		finally {
+			if (isUpdate() && !isUsingCustomTransactions()) {
+		        if (graph instanceof TransactionalGraph) {
+		        	((TransactionalGraph) graph).setMaxBufferSize(previousMaxBufferSize);
+		        }
+			}
+		}
+		
 		time = System.nanoTime() - start;
 		memory = StatisticsHelper.stopMemory();
 		onFinalize();
@@ -156,4 +180,8 @@ public abstract class Operation {
 	protected abstract void onExecute() throws Exception;
 	
 	protected void onFinalize() throws Exception {};
+	
+	public boolean isUpdate() { return false; }
+	
+	public boolean isUsingCustomTransactions() { return false; }
 }

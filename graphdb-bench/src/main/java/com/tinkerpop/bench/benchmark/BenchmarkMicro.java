@@ -6,9 +6,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import com.tinkerpop.bench.Bench;
 import com.tinkerpop.bench.ConsoleUtils;
+import com.tinkerpop.bench.GlobalConfig;
 import com.tinkerpop.bench.GraphDescriptor;
 import com.tinkerpop.bench.LogUtils;
 import com.tinkerpop.bench.cache.Cache;
@@ -80,6 +82,7 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("  --no-provenance       Disable provenance collection");
 		System.err.println("  --no-warmup           Disable the initial warmup run");
 		System.err.println("  --threads N           Run N copies of the benchmark concurrently");
+		System.err.println("  --tx-buffer N         Set the size of the transaction buffer");
 		System.err.println("");
 		System.err.println("Options to select a database (select one):");
 		System.err.println("  --bdb                 Berkeley DB, using massive indexing");
@@ -102,11 +105,8 @@ public class BenchmarkMicro extends Benchmark {
 										" based on the given model");
 		System.err.println("  --get                 \"Get\" microbenchmarks");
 		System.err.println("  --get-k               \"Get\" k-hops microbenchmarks");
-		System.err.println("  --ingest              Ingest a file to the database "+
+		System.err.println("  --ingest [FILE]       Ingest a file to the database "+
 										" (implies --delete-graph)");
-		System.err.println("");
-		System.err.println("Ingest options:");
-		System.err.println("  --file, -f FILE   Select the file to ingest");
 		System.err.println("");
 		System.err.println("Benchmark options:");
 		System.err.println("  --k-hops K            Set the number of k-hops");
@@ -197,6 +197,7 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("no-provenance");
 		parser.accepts("no-warmup");
 		parser.accepts("threads").withRequiredArg().ofType(Integer.class);
+		parser.accepts("tx-buffer").withRequiredArg().ofType(Integer.class);
 		
 		
 		// Databases
@@ -231,13 +232,13 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("generate").withRequiredArg().ofType(String.class);
 		parser.accepts("get");
 		parser.accepts("get-k");
-		parser.accepts("ingest");
+		parser.accepts("ingest").withOptionalArg().ofType(String.class);
 		
 		
 		// Ingest modifiers
 		
 		parser.accepts("f").withRequiredArg().ofType(String.class);
-		parser.accepts("file").withRequiredArg().ofType(String.class);
+		parser.accepts("file").withRequiredArg().ofType(String.class);	/* deprecated */
 		
 		
 		// Benchmark modifiers
@@ -265,6 +266,12 @@ public class BenchmarkMicro extends Benchmark {
 			return;
 		}
 		
+		List<String> nonOptionArguments = options.nonOptionArguments();
+		if (!nonOptionArguments.isEmpty()) {
+			ConsoleUtils.error("Invalid options (please use --help for a list): " + nonOptionArguments);
+			return;
+		}
+		
 		
 		// Handle the options
 		
@@ -276,6 +283,11 @@ public class BenchmarkMicro extends Benchmark {
 		String ingestFile = DEFAULT_INGEST_FILE;		
 		if (options.has("f") || options.has("file")) {
 			ingestFile = options.valueOf(options.has("f") ? "f" : "file").toString();
+		}
+		if (options.has("ingest")) {
+			if (options.hasArgument("ingest")) {
+				ingestFile = options.valueOf("ingest").toString();
+			}
 		}
 		
 		boolean warmup = true;
@@ -292,6 +304,14 @@ public class BenchmarkMicro extends Benchmark {
 			numThreads = (Integer) options.valueOf("threads");
 			if (numThreads < 1) {
 				ConsoleUtils.error("Invalid number of threads -- must be at least 1");
+				return;
+			}
+		}
+		
+		if (options.has("tx-buffer")) {
+			GlobalConfig.transactionBufferSize = (Integer) options.valueOf("tx-buffer");
+			if (GlobalConfig.transactionBufferSize < 1) {
+				ConsoleUtils.error("Invalid size of the transaction buffer -- must be at least 1");
 				return;
 			}
 		}
@@ -691,13 +711,17 @@ public class BenchmarkMicro extends Benchmark {
 				}
 			}
 			
-			// SHORTEST PATH (Djikstra's algorithm)
+			// SHORTEST PATH (Dijkstra's algorithm)
 			if (options.has("dijkstra")) {
 				operationFactories.add(new OperationFactoryRandomVertexPair(
 						OperationGetShortestPath.class, opCount / 2));
             }
 
-			if (options.has("djikstra-property")) {	
+			if (options.has("dijkstra-property")) {	
+				if (numThreads != 1) {
+					throw new UnsupportedOperationException("Operation \"dijkstra-property\" "
+							+"is not supported in the multi-threaded mode");
+				}
 				operationFactories.add(new OperationFactoryRandomVertexPair(
 						OperationGetShortestPathProperty.class, opCount / 2));
 			}
@@ -716,6 +740,11 @@ public class BenchmarkMicro extends Benchmark {
 			
 			// ADD/SET microbenchmarks
 			if (options.has("add")) {
+				if (numThreads != 1 && GlobalConfig.transactionBufferSize != 1) {
+					throw new UnsupportedOperationException("Set property operations inside \"add\" "
+							+"are not supported in the multi-threaded mode with tx-buffer > 1");
+				}
+				
 				operationFactories.add(new OperationFactoryGeneric(
 						OperationAddManyVertices.class, 1,
 						new Integer[] { opCount }));

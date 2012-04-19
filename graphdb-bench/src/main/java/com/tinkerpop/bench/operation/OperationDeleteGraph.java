@@ -19,4 +19,8 @@ public class OperationDeleteGraph extends Operation {
 		}
 	}
 
+	@Override
+	public boolean isUpdate() {
+		return true;
+	}
 }

@@ -7,9 +7,16 @@ import os
 from collections import defaultdict
 
 
+##############################################################################
+## Main function                                                            ##
+##############################################################################
+
 def main(filename):
+    operations = set()
+    
     for line in open(filename, 'r'):
         _,name,_,args,time,result,_,_ = line.split(';')
+        operations.add(name)
 
         if name == 'OperationGetFirstNeighbor':
             op_get_first_neighbor(time, result)
@@ -27,20 +34,86 @@ def main(filename):
             op_get_shortest_path(time, result)
         elif name == 'OperationGetShortestPathProperty':
             op_get_shortest_path_property(time, result)
+        elif name == 'OperationGlobalClusteringCoefficient':
+            op_global_clustering_coefficient(time, result)
+        elif name == 'OperationNetworkAverageClusteringCoefficient':
+            op_network_average_clustering_coefficient(time, result)
 
     dirname,_ = os.path.splitext(filename)
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
 
-    print_get_first_neighbor(dirname + '/get_first_neighbor')
-    print_get_random_neighbor(dirname + '/get_random_neighbor')
-    print_get_all_neighbors(dirname + '/get_all_neighbors')
-    print_get_k_first_neighbors(dirname + '/get_k_first_neighbors')
-    print_get_k_random_neighbors(dirname + '/get_k_random_neighbors')
-    print_get_k_hop_neighbors(dirname + '/get_k_hop_neighbors')
-    #print_get_shortest_path(dirname + '/get_shortest_path')
-    #print_get_shortest_path_property(dirname + '/get_shortest_path_property')
+    if 'OperationGetFirstNeighbor' in operations:
+        print_get_first_neighbor(dirname + '/get_first_neighbor')
+    if 'OperationGetRandomNeighbor' in operations:
+        print_get_random_neighbor(dirname + '/get_random_neighbor')
+    if 'OperationGetAllNeighbors' in operations:
+        print_get_all_neighbors(dirname + '/get_all_neighbors')
+    if 'OperationGetKFirstNeighbors' in operations:
+        print_get_k_first_neighbors(dirname + '/get_k_first_neighbors')
+    if 'OperationGetKRandomNeighbors' in operations:
+        print_get_k_random_neighbors(dirname + '/get_k_random_neighbors')
+    if 'OperationGetKHopNeighbors' in operations:
+        print_get_k_hop_neighbors(dirname + '/get_k_hop_neighbors')
+    if 'OperationGetShortestPath' in operations:
+        print_get_shortest_path(dirname + '/get_shortest_path')
+    if 'OperationGetShortestPathProperty' in operations:
+        print_get_shortest_path_property(dirname + '/get_shortest_path_property')
+    if 'OperationGlobalClusteringCoefficient' in operations:
+        print_global_clustering_coefficient(dirname + '/global_clustering_coefficient')
+    if 'OperationNetworkAverageClusteringCoefficient' in operations:
+        print_network_average_clustering_coefficient(dirname + '/network_average_clustering_coefficient')
 
+
+
+##############################################################################
+## Helpers and Utilities                                                    ##
+##############################################################################
+
+def key_value_pairs_to_dict(string, skip=0, with_count=True, separator=':', separator_kv='='):
+    result = dict()
+    kv_pairs = string.split(separator)
+    for kv in kv_pairs:
+        if skip > 0:
+            skip -= 1
+            continue
+        k, v = kv.split(separator_kv)
+        if '.' in v:
+            result[k] = float(v)
+        else:
+            result[k] = int(v)
+        if with_count:
+            result[k + "##COUNT"] = 1
+    return result
+
+
+def add_dict(d1, d2):
+    for k in d2.keys():
+        if k in d1.keys():
+            d1[k] += d2[k]
+        else:
+            d1[k] = d2[k]
+
+
+def avg_dict_item(d, key):
+    if key not in d.keys(): return 0
+    if key + "##COUNT" not in d.keys(): return 0
+    count = int(d[key + "##COUNT"])
+    if count == 0: return 0
+    return float(d[key]) / float(count)
+
+
+def safe_div(a, b):
+    if b == 0:
+        return 0
+    else:
+        return a / b
+
+
+
+##############################################################################
+## Call-back and print functions for each operator                          ##
+##############################################################################
 
 op_get_first_neighbor_sum = 0.0
 op_get_first_neighbor_total = 0.0
@@ -339,6 +412,75 @@ def op_get_shortest_path_property(time, result):
 def print_get_shortest_path_property(filename):
     return
 
+
+op_global_clustering_coefficient_list = []
+op_global_clustering_coefficient_sum = dict()
+
+def op_global_clustering_coefficient(time, result):
+    r = float(result.split(':')[0])
+    d = key_value_pairs_to_dict(result, 1)
+    d['time'] = time
+    d['time##COUNT'] = 1
+    add_dict(op_global_clustering_coefficient_sum, d)
+    op_global_clustering_coefficient_list.append([r, float(time), d])
+    return
+
+def print_global_clustering_coefficient(filename):
+    f = open(filename, 'w')
+    d_sum = op_global_clustering_coefficient_sum 
+
+    f.write('mean\n')
+    f.write('%f\n' % avg_dict_item(d_sum, "time"))
+
+    f.write('time;result;get_inout_vertex_count;get_vertices_next_count;get_inout_edge_count;node_count\n')
+    for (r, time, d) in op_global_clustering_coefficient_list:
+        f.write('%f;'  % time)
+        f.write('%f;'  % r)
+        f.write('%d;'  % (d['getInVertex'] + d['getOutVertex']))
+        f.write('%d;'  %  d['getVerticesNext'])
+        f.write('%d;'  % (d['getInEdges'] + d['getOutEdges']))
+        f.write('%d\n' %  d['uniqueVertices'])
+
+    f.close()
+    return
+
+
+op_network_average_clustering_coefficient_list = []
+op_network_average_clustering_coefficient_sum = dict()
+
+def op_network_average_clustering_coefficient(time, result):
+    r = float(result.split(':')[0])
+    d = key_value_pairs_to_dict(result, 1)
+    d['time'] = time
+    d['time##COUNT'] = 1
+    add_dict(op_network_average_clustering_coefficient_sum, d)
+    op_network_average_clustering_coefficient_list.append([r, float(time), d])
+    return
+
+def print_network_average_clustering_coefficient(filename):
+    f = open(filename, 'w')
+    d_sum = op_network_average_clustering_coefficient_sum
+
+    f.write('mean\n')
+    f.write('%f\n' % avg_dict_item(d_sum, "time"))
+
+    f.write('time;result;get_inout_vertex_count;get_vertices_next_count;get_inout_edge_count;node_count\n')
+    for (r, time, d) in op_global_clustering_coefficient_list:
+        f.write('%f;'  % time)
+        f.write('%f;'  % r)
+        f.write('%d;'  % (d['getInVertex'] + d['getOutVertex']))
+        f.write('%d;'  %  d['getVerticesNext'])
+        f.write('%d;'  % (d['getInEdges'] + d['getOutEdges']))
+        f.write('%d\n' %  d['uniqueVertices'])
+
+    f.close()
+    return
+
+
+
+##############################################################################
+## The script startup                                                       ##
+##############################################################################
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

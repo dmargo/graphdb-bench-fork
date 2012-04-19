@@ -3,8 +3,10 @@ package com.tinkerpop.bench.operation.operations;
 import java.io.File;
 import java.io.FileInputStream;
 
+import com.tinkerpop.bench.GlobalConfig;
 import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.operation.Operation;
+import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.util.graphml.GraphMLReader;
 
 import edu.harvard.pass.cpl.CPL;
@@ -16,7 +18,6 @@ import edu.harvard.pass.cpl.CPLFile;
 public class OperationLoadGraphML extends Operation {
 
 	private String graphmlPath = null;
-	private final int TRANSACTION_BUFFER = 1000;
 
 	// args
 	// -> 0 graphmlDir
@@ -27,9 +28,10 @@ public class OperationLoadGraphML extends Operation {
 
 	@Override
 	protected void onExecute() throws Exception {
+		Graph graph = getGraph();
 		try {
-			GraphMLReader.inputGraph(getGraph(), new FileInputStream(
-					graphmlPath), TRANSACTION_BUFFER, null, null, null);
+			GraphMLReader.inputGraph(graph, new FileInputStream(
+					graphmlPath), GlobalConfig.transactionBufferSize, null, null, null);
 			Cache.getInstance(getGraph()).invalidate();
 			setResult("DONE");
 		} catch (Exception e) {
@@ -43,5 +45,15 @@ public class OperationLoadGraphML extends Operation {
 			getCPLObject().dataFlowFrom(CPLFile.lookupOrCreate(new File(graphmlPath)));
 			getGraphDescriptor().getCPLObject().dataFlowFrom(getCPLObject());
 		}
+	}
+
+	@Override
+	public boolean isUpdate() {
+		return true;
+	}
+	
+	@Override
+	public boolean isUsingCustomTransactions() {
+		return true;
 	}
 }

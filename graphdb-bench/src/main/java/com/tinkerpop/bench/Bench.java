@@ -56,5 +56,4 @@ public class Bench {
 			ConsoleUtils.warn("Could not load log4j.properties");
 		}
 	}
-
 }

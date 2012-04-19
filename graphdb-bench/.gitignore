@@ -2,6 +2,7 @@
 *.edgelist
 #*.graphml
 *.pyc
+*.swp
 *~
 target/
 bin/

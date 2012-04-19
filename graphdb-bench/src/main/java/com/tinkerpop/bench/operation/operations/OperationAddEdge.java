@@ -41,4 +41,9 @@ public class OperationAddEdge extends Operation {
 			getGraphDescriptor().getCPLObject().dataFlowFrom(obj);
 		}
 	}
+
+	@Override
+	public boolean isUpdate() {
+		return true;
+	}
 }

@@ -122,4 +122,9 @@ public class OperationGetShortestPathProperty extends Operation {
 			throw e;
 		}
 	}
+
+	@Override
+	public boolean isUpdate() {
+		return true;
+	}
 }

@@ -38,6 +38,7 @@ class OperationInfo:
 def main():
     databases = os.listdir("Micro-2k-incremental/")
     databases = remove_from_list(databases, "hollow")
+    databases.sort()
     
     
     # Load the data
@@ -105,6 +106,9 @@ def main():
                     print operations_x
                     sys.exit(1)
     operations = remove_from_list(operations, "OperationLoadOrGrow")
+    operations = remove_from_list(operations, "OperationOpenGraph")
+    operations = remove_from_list(operations, "OperationShutdownGraph")
+    operations = remove_from_list(operations, "OperationDoGC")
 
     
     # Make sure the directory exists
@@ -221,9 +225,9 @@ def main():
         f.write("\n")
 
         f.write("plot\\\n")
-        f.write(("  '<sed \"1,1d\" base-%s.csv' using 2:xtic(1) title 'base' lc 0, \\\n")
+        f.write(("  '<sed \"1,1d\" base-%s.csv' using 2:xtic(1) title 'base' lc 3, \\\n")
                     % (operation))
-        f.write(("  '<sed \"1,1d\" base-%s.csv' using 3:xtic(1) title 'incremental' lc 3\n")
+        f.write(("  '<sed \"1,1d\" base-%s.csv' using 3:xtic(1) title 'incremental' lc 1\n")
                     % (operation))
         f.close()
         

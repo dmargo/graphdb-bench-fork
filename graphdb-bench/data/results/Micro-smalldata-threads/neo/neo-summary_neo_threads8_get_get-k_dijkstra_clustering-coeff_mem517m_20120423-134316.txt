@@ -1,0 +1,17 @@
+operation                                       neo-mean (ms)   neo-stdev (ms)  neo-min (ms)    neo-max (ms)    
+OperationOpenGraph                                     45.841            5.102        37.147          57.867    
+OperationGetManyVertices                                0.895            1.694         0.089           5.361    
+OperationShutdownGraph                                393.502           54.247       343.874         501.399    
+OperationDoGC                                        3512.917            4.501      3504.122        3520.415    
+OperationGetManyVertexProperties                        2.738            3.043         0.236           9.722    
+OperationGetManyEdges                                   1.566            1.893         0.284           5.996    
+OperationGetManyEdgeProperties                         47.618           15.305        25.683          81.204    
+OperationGetFirstNeighbor                               0.023            0.063         0.005           5.078    
+OperationGetRandomNeighbor                              0.014            0.037         0.002           2.769    
+OperationGetAllNeighbors                                0.015            0.188         0.002          13.674    
+OperationGetKFirstNeighbors                             0.014            0.026         0.002           0.584    
+OperationGetKRandomNeighbors                            0.017            0.029         0.003           0.684    
+OperationGetKHopNeighbors                               0.043            0.162         0.003           8.308    
+OperationGetShortestPath                                1.209            3.728         0.002          43.626    
+OperationGlobalClusteringCoefficient                  127.375            6.825       119.389         140.201    
+OperationNetworkAverageClusteringCoefficient           47.138            9.445        30.182          61.778    

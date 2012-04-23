@@ -1,0 +1,6 @@
+operation;dex-mean;dex-stdev;dex-min;dex-max;
+OperationOpenGraph;775601.0;13541.0;762060.0;789142.0;
+OperationDeleteGraph;2653125.0;0.0;2653125.0;2653125.0;
+OperationShutdownGraph;1676637.5;1673621.5;3016.0;3350259.0;
+OperationDoGC;3.405687959E9;2304485.0;3.403383474E9;3.407992444E9;
+OperationLoadGraphML-barabasi_1000_5000;2.76794695E8;0.0;2.76794695E8;2.76794695E8;

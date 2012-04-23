@@ -14,16 +14,22 @@ public class OperationFactoryRandomVertex extends OperationFactoryBase implement
 	private int opCount;
 	private Object[] args;
 	private ArrayList<Object> vertexSamples = null;
+	private String tag = null;
 	
 	public OperationFactoryRandomVertex(Class<?> opType, int opCount) {
-		this(opType, opCount, new Object[] {});
+		this(opType, opCount, new Object[] {}, "");
 	}
 	
 	public OperationFactoryRandomVertex(Class<?> opType, int opCount, Object[] args) {
+		this(opType, opCount, args, "");
+	}
+	
+	public OperationFactoryRandomVertex(Class<?> opType, int opCount, Object[] args, String tag) {
 		super();
 		this.opType = opType;
 		this.opCount = opCount;
 		this.args = args;
+		this.tag = tag;
 	}
 
 	@Override
@@ -42,7 +48,7 @@ public class OperationFactoryRandomVertex extends OperationFactoryBase implement
 		Object[] myArgs = new Object[1 + args.length];
 		myArgs[0] = vertexSamples.remove(0);
 		System.arraycopy(args, 0, myArgs, 1, args.length);
-		return new OperationArgs(myArgs, opType);
+		return new OperationArgs(myArgs, opType, tag);
 	}
 	
 	/**

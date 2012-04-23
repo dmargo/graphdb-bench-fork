@@ -71,60 +71,63 @@ def main():
     operations = None
     for d in databases:
         for s in threads:
-                operations_x = data[d][s].keys()
-                operations_x = remove_from_list(operations_x, "OperationDeleteGraph")
-                operations_x = replace_in_list_startswith(operations_x, \
-                                  "OperationLoadGraphML", "OperationLoadOrGrow")
-                operations_x = replace_in_list_startswith(operations_x, \
-                                  "OperationGenerateGraph", "OperationLoadOrGrow")
-                operations_x.sort()
-                if operations is None:
-                    operations = operations_x
-                else:
-                    if operations != operations_x:
-                        print "Error: The operation sets need to match"
-                        print operations
-                        print operations_x
-                        sys.exit(1)
-        operations = remove_from_list(operations, "OperationLoadOrGrow")
+            operations_x = data[d][s].keys()
+            operations_x = remove_from_list(operations_x, "OperationDeleteGraph")
+            operations_x = replace_in_list_startswith(operations_x, \
+                              "OperationLoadGraphML", "OperationLoadOrGrow")
+            operations_x = replace_in_list_startswith(operations_x, \
+                              "OperationGenerateGraph", "OperationLoadOrGrow")
+            operations_x.sort()
+            if operations is None:
+                operations = operations_x
+            else:
+                if operations != operations_x:
+                    print "Error: The operation sets need to match"
+                    print operations
+                    print operations_x
+                    sys.exit(1)
+    operations = remove_from_list(operations, "OperationLoadOrGrow")
+    operations = remove_from_list(operations, "OperationOpenGraph")
+    operations = remove_from_list(operations, "OperationShutdownGraph")
+    operations = remove_from_list(operations, "OperationDoGC")
 
+    
+    # Make sure the directory exists
+    
+    result_dir = "results-threads/"
+    if not os.path.isdir(result_dir):
+        os.makedirs(result_dir)
+    
+    
+    # Write out the results - one result file per operation
+    
+    csv_header = ["threads"]
+    csv_header.extend(databases)
+    
+    for operation in operations:
         
-        # Make sure the directory exists
+        csv_data = []
+        csv_data.append(csv_header)
         
-        result_dir = "results-threads/"
-        if not os.path.isdir(result_dir):
-            os.makedirs(result_dir)
-        
-        
-        # Write out the results - one result file per operation
-        
-        csv_header = ["threads"]
-        csv_header.extend(databases)
-        
-        for operation in operations:
+        for t in threads:
+            row = [str(t)]
+            for d in databases:
+                info = data[d][t][operation]
+                row.append("%f" % (info.mean / (1000.0 * 1000.0))) # us ---> ms
+            csv_data.append(row)
             
-            csv_data = []
-            csv_data.append(csv_header)
-            
-            for t in threads:
-                row = [str(t)]
-                for d in databases:
-                    info = data[d][t][operation]
-                    row.append("%f" % (info.mean / (1000.0 * 1000.0))) # us ---> ms
-                csv_data.append(row)
-                
-            write_csv(os.path.join(result_dir, operation) + ".csv", csv_data, ";")
-        
-        
-        # Write out the plot files and generate the plots
-        
-        print "Generating plots:"
-        
-        for operation in operations:
-            print "  %s" % operation
+        write_csv(os.path.join(result_dir, operation) + ".csv", csv_data, ";")
+    
+    
+    # Write out the plot files and generate the plots
+    
+    print "Generating plots:"
+    
+    for operation in operations:
+        print "  %s" % operation
 
-            plt_name = os.path.join(result_dir, operation) + ".plt"
-            f = open(plt_name, "w")
+        plt_name = os.path.join(result_dir, operation) + ".plt"
+        f = open(plt_name, "w")
         
         f.write("set autoscale\n")
         f.write("unset log\n")

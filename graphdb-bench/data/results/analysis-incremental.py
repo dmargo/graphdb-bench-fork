@@ -5,8 +5,6 @@ import os.path
 import re
 import sys
 
-from collections import defaultdict
-
 global re_is_summary_file
 re_is_summary_file = re.compile(r"[a-z]+-summary_.*\.csv")
 
@@ -106,6 +104,7 @@ def main():
                     print operations
                     print operations_x
                     sys.exit(1)
+    operations = remove_from_list(operations, "OperationLoadOrGrow")
 
     
     # Make sure the directory exists

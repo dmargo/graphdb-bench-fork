@@ -1,0 +1,19 @@
+operation                                       sql-mean (ms)   sql-stdev (ms)  sql-min (ms)    sql-max (ms)    
+OperationOpenGraph                                     19.505           44.494         7.892         246.268    
+OperationDeleteGraph                                   20.694            0.000        20.694          20.694    
+OperationShutdownGraph                                  0.504            0.403         0.002           1.637    
+OperationDoGC                                        3521.020            6.224      3498.472        3531.279    
+OperationLoadGraphML-barabasi_1000_5000              3215.215            0.000      3215.215        3215.215    
+OperationGetManyVertices                               98.928            0.000        98.928          98.928    
+OperationGetManyVertexProperties                      185.585            0.000       185.585         185.585    
+OperationGetManyEdges                                 216.121            0.000       216.121         216.121    
+OperationGetManyEdgeProperties                        221.232            0.000       221.232         221.232    
+OperationGetFirstNeighbor                               0.255            0.098         0.058           0.576    
+OperationGetRandomNeighbor                              0.145            0.068         0.055           0.505    
+OperationGetAllNeighbors                                0.559            0.800         0.041          11.670    
+OperationGetKFirstNeighbors                             0.342            0.265         0.042           1.488    
+OperationGetKRandomNeighbors                            0.278            0.223         0.051           1.260    
+OperationGetKHopNeighbors                              14.943           59.234         0.054         631.051    
+OperationGetShortestPath                                7.725           16.988         0.852         126.946    
+OperationGlobalClusteringCoefficient                14710.263            0.000     14710.263       14710.263    
+OperationNetworkAverageClusteringCoefficient         3235.096            0.000      3235.096        3235.096    

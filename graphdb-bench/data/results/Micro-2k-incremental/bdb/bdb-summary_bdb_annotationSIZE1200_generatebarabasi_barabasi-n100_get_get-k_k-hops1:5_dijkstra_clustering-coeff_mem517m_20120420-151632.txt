@@ -1,0 +1,18 @@
+operation                                       bdb-mean (ms)   bdb-stdev (ms)  bdb-min (ms)    bdb-max (ms)    
+OperationOpenGraph                                      1.594            0.186         1.024           1.860    
+OperationGenerateGraph                                509.190            0.000       509.190         509.190    
+OperationShutdownGraph                                 17.902           39.168         0.821         209.442    
+OperationDoGC                                        3464.726            5.430      3456.547        3474.905    
+OperationGetManyVertices                               17.778            0.000        17.778          17.778    
+OperationGetManyVertexProperties                       16.646            0.000        16.646          16.646    
+OperationGetManyEdges                                  16.971            0.000        16.971          16.971    
+OperationGetManyEdgeProperties                         19.647            0.000        19.647          19.647    
+OperationGetFirstNeighbor                               0.043            0.016         0.012           0.106    
+OperationGetRandomNeighbor                              0.103            0.129         0.010           1.975    
+OperationGetAllNeighbors                                0.154            0.219         0.009           2.664    
+OperationGetKFirstNeighbors                             0.080            0.052         0.009           0.263    
+OperationGetKRandomNeighbors                            0.189            0.949         0.009          65.266    
+OperationGetKHopNeighbors                               5.607           18.087         0.009         149.808    
+OperationGetShortestPath                               13.180           26.099         0.003         137.906    
+OperationGlobalClusteringCoefficient                 4266.522            0.000      4266.522        4266.522    
+OperationNetworkAverageClusteringCoefficient         1059.014            0.000      1059.014        1059.014    

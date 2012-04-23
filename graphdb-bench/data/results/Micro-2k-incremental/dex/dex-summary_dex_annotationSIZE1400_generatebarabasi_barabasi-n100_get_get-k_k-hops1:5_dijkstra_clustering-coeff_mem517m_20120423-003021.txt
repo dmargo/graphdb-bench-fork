@@ -1,0 +1,18 @@
+operation                                       dex-mean (ms)   dex-stdev (ms)  dex-min (ms)    dex-max (ms)    
+OperationOpenGraph                                      0.922            0.632         0.573           4.050    
+OperationGenerateGraph                                251.255            0.000       251.255         251.255    
+OperationShutdownGraph                               3333.857        11370.539         0.274       57072.145    
+OperationDoGC                                        3420.439            5.283      3411.148        3435.923    
+OperationGetManyVertices                                0.722            0.000         0.722           0.722    
+OperationGetManyVertexProperties                        2.794            0.000         2.794           2.794    
+OperationGetManyEdges                                   1.126            0.000         1.126           1.126    
+OperationGetManyEdgeProperties                          2.042            0.000         2.042           2.042    
+OperationGetFirstNeighbor                               0.028            0.011         0.019           0.308    
+OperationGetRandomNeighbor                              0.047            0.024         0.017           0.366    
+OperationGetAllNeighbors                                0.040            0.023         0.020           0.368    
+OperationGetKFirstNeighbors                             0.051            0.028         0.016           0.424    
+OperationGetKRandomNeighbors                            0.042            0.023         0.017           0.395    
+OperationGetKHopNeighbors                               1.070            2.923         0.017          43.389    
+OperationGetShortestPath                                4.772            7.427         0.002          33.038    
+OperationGlobalClusteringCoefficient                  400.286            0.000       400.286         400.286    
+OperationNetworkAverageClusteringCoefficient          144.018            0.000       144.018         144.018    

@@ -1,0 +1,18 @@
+operation                                       dup-mean (ms)   dup-stdev (ms)  dup-min (ms)    dup-max (ms)    
+OperationOpenGraph                                      1.132            0.323         0.724           2.430    
+OperationGenerateGraph                                345.042            0.000       345.042         345.042    
+OperationShutdownGraph                                  5.334           23.704         0.087         123.798    
+OperationDoGC                                        3460.244            7.326      3448.964        3477.976    
+OperationGetManyVertices                                1.562            0.000         1.562           1.562    
+OperationGetManyVertexProperties                       16.664            0.000        16.664          16.664    
+OperationGetManyEdges                                   6.311            0.000         6.311           6.311    
+OperationGetManyEdgeProperties                         20.893            0.000        20.893          20.893    
+OperationGetFirstNeighbor                               0.023            0.007         0.011           0.080    
+OperationGetRandomNeighbor                              0.030            0.015         0.009           0.319    
+OperationGetAllNeighbors                                0.039            0.035         0.010           0.680    
+OperationGetKFirstNeighbors                             0.034            0.018         0.008           0.116    
+OperationGetKRandomNeighbors                            0.042            0.035         0.009           0.533    
+OperationGetKHopNeighbors                               1.383            3.221         0.009          18.414    
+OperationGetShortestPath                                6.222            8.270         0.002          31.009    
+OperationGlobalClusteringCoefficient                  629.519            0.000       629.519         629.519    
+OperationNetworkAverageClusteringCoefficient          216.094            0.000       216.094         216.094    

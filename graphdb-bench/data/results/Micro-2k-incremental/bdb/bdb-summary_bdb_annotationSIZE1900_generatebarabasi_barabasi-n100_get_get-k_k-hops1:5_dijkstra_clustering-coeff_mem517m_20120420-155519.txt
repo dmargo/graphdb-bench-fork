@@ -1,0 +1,18 @@
+operation                                       bdb-mean (ms)   bdb-stdev (ms)  bdb-min (ms)    bdb-max (ms)    
+OperationOpenGraph                                      1.643            0.322         1.008           3.123    
+OperationGenerateGraph                                722.915            0.000       722.915         722.915    
+OperationShutdownGraph                                 18.193           37.002         0.866         163.126    
+OperationDoGC                                        3463.400            5.725      3451.797        3474.103    
+OperationGetManyVertices                               13.617            0.000        13.617          13.617    
+OperationGetManyVertexProperties                       16.479            0.000        16.479          16.479    
+OperationGetManyEdges                                  16.902            0.000        16.902          16.902    
+OperationGetManyEdgeProperties                         18.762            0.000        18.762          18.762    
+OperationGetFirstNeighbor                               0.046            0.013         0.012           0.116    
+OperationGetRandomNeighbor                              0.101            0.094         0.009           1.600    
+OperationGetAllNeighbors                                0.155            0.159         0.009           1.489    
+OperationGetKFirstNeighbors                             0.095            0.066         0.008           1.193    
+OperationGetKRandomNeighbors                            0.205            0.269         0.009           5.758    
+OperationGetKHopNeighbors                              11.647           26.974         0.010         147.995    
+OperationGetShortestPath                               38.488           48.841         0.011         155.923    
+OperationGlobalClusteringCoefficient                 5794.759            0.000      5794.759        5794.759    
+OperationNetworkAverageClusteringCoefficient         1991.736            0.000      1991.736        1991.736    

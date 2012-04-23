@@ -1,0 +1,18 @@
+operation                                       sql-mean (ms)   sql-stdev (ms)  sql-min (ms)    sql-max (ms)    
+OperationOpenGraph                                     11.396            1.298         7.932          13.839    
+OperationGenerateGraph                               2347.321            0.000      2347.321        2347.321    
+OperationShutdownGraph                                  0.554            0.481         0.178           2.056    
+OperationDoGC                                        3498.078            6.201      3485.223        3515.102    
+OperationGetManyVertices                              130.359            0.000       130.359         130.359    
+OperationGetManyVertexProperties                      199.832            0.000       199.832         199.832    
+OperationGetManyEdges                                 154.181            0.000       154.181         154.181    
+OperationGetManyEdgeProperties                        231.318            0.000       231.318         231.318    
+OperationGetFirstNeighbor                               0.335            0.117         0.061           0.627    
+OperationGetRandomNeighbor                              0.298            0.116         0.059           0.693    
+OperationGetAllNeighbors                                0.633            0.681         0.056          16.341    
+OperationGetKFirstNeighbors                             0.477            0.468         0.056          16.470    
+OperationGetKRandomNeighbors                            0.476            0.278         0.058           2.273    
+OperationGetKHopNeighbors                              73.624          140.874         0.041         680.284    
+OperationGetShortestPath                               59.982           56.843         0.871         150.205    
+OperationGlobalClusteringCoefficient                33736.967            0.000     33736.967       33736.967    
+OperationNetworkAverageClusteringCoefficient        14201.213            0.000     14201.213       14201.213    

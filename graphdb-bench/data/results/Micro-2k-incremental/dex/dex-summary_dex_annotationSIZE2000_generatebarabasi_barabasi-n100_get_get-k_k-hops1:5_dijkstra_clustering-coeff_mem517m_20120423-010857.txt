@@ -1,0 +1,18 @@
+operation                                       dex-mean (ms)   dex-stdev (ms)  dex-min (ms)    dex-max (ms)    
+OperationOpenGraph                                      0.799            0.114         0.597           1.180    
+OperationGenerateGraph                                246.073            0.000       246.073         246.073    
+OperationShutdownGraph                               5029.268        16151.012         0.275       77969.129    
+OperationDoGC                                        3421.467            8.475      3405.372        3440.876    
+OperationGetManyVertices                                0.750            0.000         0.750           0.750    
+OperationGetManyVertexProperties                        1.941            0.000         1.941           1.941    
+OperationGetManyEdges                                   0.893            0.000         0.893           0.893    
+OperationGetManyEdgeProperties                          1.819            0.000         1.819           1.819    
+OperationGetFirstNeighbor                               0.047            0.017         0.020           0.403    
+OperationGetRandomNeighbor                              0.066            0.018         0.017           0.218    
+OperationGetAllNeighbors                                0.048            0.029         0.017           0.392    
+OperationGetKFirstNeighbors                             0.050            0.030         0.017           0.527    
+OperationGetKRandomNeighbors                            0.055            0.037         0.017           0.643    
+OperationGetKHopNeighbors                               1.532            3.518         0.017          41.802    
+OperationGetShortestPath                                8.686            9.574         0.002          35.124    
+OperationGlobalClusteringCoefficient                  564.368            0.000       564.368         564.368    
+OperationNetworkAverageClusteringCoefficient          201.972            0.000       201.972         201.972    

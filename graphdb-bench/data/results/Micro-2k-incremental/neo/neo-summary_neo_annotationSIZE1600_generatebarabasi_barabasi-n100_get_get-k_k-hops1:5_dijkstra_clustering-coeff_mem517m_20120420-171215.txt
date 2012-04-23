@@ -1,0 +1,18 @@
+operation                                       neo-mean (ms)   neo-stdev (ms)  neo-min (ms)    neo-max (ms)    
+OperationOpenGraph                                     46.321            5.228        36.329          62.470    
+OperationGenerateGraph                                586.084            0.000       586.084         586.084    
+OperationShutdownGraph                                426.509           19.737       359.211         463.865    
+OperationDoGC                                        3599.162            9.332      3583.426        3635.421    
+OperationGetManyVertices                                0.715            0.000         0.715           0.715    
+OperationGetManyVertexProperties                       18.820            0.000        18.820          18.820    
+OperationGetManyEdges                                   0.783            0.000         0.783           0.783    
+OperationGetManyEdgeProperties                         14.911            0.000        14.911          14.911    
+OperationGetFirstNeighbor                               0.025            0.016         0.004           0.158    
+OperationGetRandomNeighbor                              0.037            0.028         0.002           0.443    
+OperationGetAllNeighbors                                0.036            0.030         0.002           0.642    
+OperationGetKFirstNeighbors                             0.031            0.029         0.002           0.354    
+OperationGetKRandomNeighbors                            0.035            0.034         0.003           0.462    
+OperationGetKHopNeighbors                               0.181            0.496         0.003          17.523    
+OperationGetShortestPath                                2.885            4.240         0.004          24.136    
+OperationGlobalClusteringCoefficient                  118.000            0.000       118.000         118.000    
+OperationNetworkAverageClusteringCoefficient           42.444            0.000        42.444          42.444    

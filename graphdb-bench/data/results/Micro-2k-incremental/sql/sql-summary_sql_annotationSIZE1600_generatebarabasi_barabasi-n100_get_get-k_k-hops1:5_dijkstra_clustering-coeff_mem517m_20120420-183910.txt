@@ -1,0 +1,18 @@
+operation                                       sql-mean (ms)   sql-stdev (ms)  sql-min (ms)    sql-max (ms)    
+OperationOpenGraph                                     11.035            1.074         7.795          12.251    
+OperationGenerateGraph                               2039.117            0.000      2039.117        2039.117    
+OperationShutdownGraph                                  0.570            0.471         0.188           1.816    
+OperationDoGC                                        3506.197           16.306      3486.281        3566.539    
+OperationGetManyVertices                              100.344            0.000       100.344         100.344    
+OperationGetManyVertexProperties                      141.394            0.000       141.394         141.394    
+OperationGetManyEdges                                 220.120            0.000       220.120         220.120    
+OperationGetManyEdgeProperties                         95.264            0.000        95.264          95.264    
+OperationGetFirstNeighbor                               0.167            0.046         0.049           0.468    
+OperationGetRandomNeighbor                              0.304            0.109         0.062           0.891    
+OperationGetAllNeighbors                                0.649            0.512         0.072           5.378    
+OperationGetKFirstNeighbors                             0.453            0.563         0.043          25.601    
+OperationGetKRandomNeighbors                            0.435            0.263         0.051           2.683    
+OperationGetKHopNeighbors                              58.543          125.083         0.054         668.203    
+OperationGetShortestPath                               43.286           51.081         0.874         133.504    
+OperationGlobalClusteringCoefficient                26660.863            0.000     26660.863       26660.863    
+OperationNetworkAverageClusteringCoefficient         9927.834            0.000      9927.834        9927.834    

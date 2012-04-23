@@ -1,0 +1,18 @@
+operation                                       dex-mean (ms)   dex-stdev (ms)  dex-min (ms)    dex-max (ms)    
+OperationOpenGraph                                      0.766            0.125         0.566           1.161    
+OperationGenerateGraph                                228.392            0.000       228.392         228.392    
+OperationShutdownGraph                               3170.397        11251.414         0.289       57133.829    
+OperationDoGC                                        3418.623            8.105      3405.968        3438.484    
+OperationGetManyVertices                                0.741            0.000         0.741           0.741    
+OperationGetManyVertexProperties                        2.075            0.000         2.075           2.075    
+OperationGetManyEdges                                   1.004            0.000         1.004           1.004    
+OperationGetManyEdgeProperties                          1.899            0.000         1.899           1.899    
+OperationGetFirstNeighbor                               0.035            0.014         0.020           0.370    
+OperationGetRandomNeighbor                              0.043            0.019         0.017           0.344    
+OperationGetAllNeighbors                                0.051            0.023         0.017           0.255    
+OperationGetKFirstNeighbors                             0.056            0.041         0.016           0.576    
+OperationGetKRandomNeighbors                            0.054            0.026         0.018           0.525    
+OperationGetKHopNeighbors                               1.461            3.533         0.018          53.700    
+OperationGetShortestPath                                6.463            8.768         0.002          35.964    
+OperationGlobalClusteringCoefficient                  454.558            0.000       454.558         454.558    
+OperationNetworkAverageClusteringCoefficient          170.910            0.000       170.910         170.910    

@@ -1,0 +1,18 @@
+operation                                       bdb-mean (ms)   bdb-stdev (ms)  bdb-min (ms)    bdb-max (ms)    
+OperationOpenGraph                                      1.493            0.272         1.001           1.910    
+OperationGenerateGraph                                624.486            0.000       624.486         624.486    
+OperationShutdownGraph                                 19.395           56.676         0.894         302.280    
+OperationDoGC                                        3453.862            9.096      3439.643        3470.117    
+OperationGetManyVertices                               12.988            0.000        12.988          12.988    
+OperationGetManyVertexProperties                       16.381            0.000        16.381          16.381    
+OperationGetManyEdges                                  15.802            0.000        15.802          15.802    
+OperationGetManyEdgeProperties                         17.951            0.000        17.951          17.951    
+OperationGetFirstNeighbor                               0.052            0.020         0.012           0.116    
+OperationGetRandomNeighbor                              0.119            0.159         0.009           3.115    
+OperationGetAllNeighbors                                0.154            0.225         0.009           4.238    
+OperationGetKFirstNeighbors                             0.106            0.091         0.009           1.359    
+OperationGetKRandomNeighbors                            0.189            0.248         0.010           3.520    
+OperationGetKHopNeighbors                               9.257           24.587         0.009         140.756    
+OperationGetShortestPath                               29.580           43.009         0.002         144.382    
+OperationGlobalClusteringCoefficient                 4971.688            0.000      4971.688        4971.688    
+OperationNetworkAverageClusteringCoefficient         1627.109            0.000      1627.109        1627.109    

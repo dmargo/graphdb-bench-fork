@@ -1,0 +1,18 @@
+operation                                       bdb-mean (ms)   bdb-stdev (ms)  bdb-min (ms)    bdb-max (ms)    
+OperationOpenGraph                                      1.640            0.114         1.207           1.932    
+OperationGenerateGraph                                660.894            0.000       660.894         660.894    
+OperationShutdownGraph                                 18.421           36.483         0.862         189.214    
+OperationDoGC                                        3453.666            7.926      3443.167        3478.646    
+OperationGetManyVertices                               13.452            0.000        13.452          13.452    
+OperationGetManyVertexProperties                       16.876            0.000        16.876          16.876    
+OperationGetManyEdges                                  16.485            0.000        16.485          16.485    
+OperationGetManyEdgeProperties                         19.934            0.000        19.934          19.934    
+OperationGetFirstNeighbor                               0.048            0.015         0.012           0.124    
+OperationGetRandomNeighbor                              0.109            0.105         0.009           1.650    
+OperationGetAllNeighbors                                0.183            0.243         0.009           4.089    
+OperationGetKFirstNeighbors                             0.089            0.056         0.009           0.854    
+OperationGetKRandomNeighbors                            0.195            0.252         0.009           3.660    
+OperationGetKHopNeighbors                              11.190           27.097         0.009         148.753    
+OperationGetShortestPath                               36.209           47.736         0.011         192.910    
+OperationGlobalClusteringCoefficient                 5670.687            0.000      5670.687        5670.687    
+OperationNetworkAverageClusteringCoefficient         1899.612            0.000      1899.612        1899.612    

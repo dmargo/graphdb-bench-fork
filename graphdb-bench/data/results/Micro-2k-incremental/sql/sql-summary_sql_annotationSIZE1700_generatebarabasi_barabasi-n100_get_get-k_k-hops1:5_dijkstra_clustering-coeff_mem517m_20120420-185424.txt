@@ -1,0 +1,18 @@
+operation                                       sql-mean (ms)   sql-stdev (ms)  sql-min (ms)    sql-max (ms)    
+OperationOpenGraph                                     11.220            0.664         9.471          12.331    
+OperationGenerateGraph                               2555.266            0.000      2555.266        2555.266    
+OperationShutdownGraph                                  0.581            0.503         0.184           2.046    
+OperationDoGC                                        3499.088            7.667      3484.364        3516.507    
+OperationGetManyVertices                              129.461            0.000       129.461         129.461    
+OperationGetManyVertexProperties                      129.715            0.000       129.715         129.715    
+OperationGetManyEdges                                 173.721            0.000       173.721         173.721    
+OperationGetManyEdgeProperties                        192.799            0.000       192.799         192.799    
+OperationGetFirstNeighbor                               0.269            0.124         0.060           0.622    
+OperationGetRandomNeighbor                              0.298            0.119         0.057           0.871    
+OperationGetAllNeighbors                                0.642            0.477         0.061           6.930    
+OperationGetKFirstNeighbors                             0.493            0.476         0.056          20.105    
+OperationGetKRandomNeighbors                            0.436            0.259         0.056           2.215    
+OperationGetKHopNeighbors                              63.976          130.516         0.056         680.908    
+OperationGetShortestPath                               47.629           53.853         0.876         137.079    
+OperationGlobalClusteringCoefficient                28294.458            0.000     28294.458       28294.458    
+OperationNetworkAverageClusteringCoefficient        11261.654            0.000     11261.654       11261.654    

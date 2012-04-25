@@ -191,6 +191,8 @@ public class BenchmarkMicro extends Benchmark {
 		
 		OptionParser parser = new OptionParser();
 		
+		parser.accepts("annotation").withRequiredArg().ofType(String.class); /* TODO */
+		
 		parser.accepts("d").withRequiredArg().ofType(String.class);
 		parser.accepts("dir").withRequiredArg().ofType(String.class);
 		parser.accepts("help");

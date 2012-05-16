@@ -105,6 +105,7 @@ public class BenchmarkMicro extends Benchmark {
 										" based on the given model");
 		System.err.println("  --get                 \"Get\" microbenchmarks");
 		System.err.println("  --get-k               \"Get\" k-hops microbenchmarks");
+        System.err.println("  --get-property        \"Get\" Object store microbenchmarks");
 		System.err.println("  --ingest [FILE]       Ingest a file to the database "+
 										" (implies --delete-graph)");
 		System.err.println("");
@@ -233,6 +234,7 @@ public class BenchmarkMicro extends Benchmark {
         parser.accepts("dijkstra-property");
 		parser.accepts("generate").withRequiredArg().ofType(String.class);
 		parser.accepts("get");
+        parser.accepts("get-property");
 		parser.accepts("get-k");
 		parser.accepts("ingest").withOptionalArg().ofType(String.class);
 		
@@ -672,17 +674,9 @@ public class BenchmarkMicro extends Benchmark {
 						new Integer[] { opCount }));
 				
 				operationFactories.add(new OperationFactoryGeneric(
-						OperationGetManyVertexProperties.class, 1,
-						new Object[] { PROPERTY_KEY, opCount }));
-				
-				operationFactories.add(new OperationFactoryGeneric(
 						OperationGetManyEdges.class, 1,
 						new Integer[] { opCount }));
 				
-				operationFactories.add(new OperationFactoryGeneric(
-						OperationGetManyEdgeProperties.class, 1,
-						new Object[] { PROPERTY_KEY, opCount }));
-	
 				// GET_NEIGHBORS ops and variants
 				
 				operationFactories.add(new OperationFactoryRandomVertex(
@@ -694,6 +688,17 @@ public class BenchmarkMicro extends Benchmark {
 				operationFactories.add(new OperationFactoryRandomVertex(
 						OperationGetAllNeighbors.class, opCount));
 			}
+
+            // GET-PROPERTY microbenchmarks
+            if (options.has("get-property")) {
+				operationFactories.add(new OperationFactoryGeneric(
+						OperationGetManyVertexProperties.class, 1,
+						new Object[] { PROPERTY_KEY, opCount }));
+
+				operationFactories.add(new OperationFactoryGeneric(
+						OperationGetManyEdgeProperties.class, 1,
+						new Object[] { PROPERTY_KEY, opCount }));
+            }
 			
 			// GET_K_NEIGHBORS ops and variants
 			if (options.has("get-k")) {				

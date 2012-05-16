@@ -54,7 +54,7 @@ public class Cache {
 		this.inDegrees = new ArrayList<int[]>();
 		this.outDegrees = new ArrayList<int[]>();
 		this.nextNodeIndex = 0;
-        this.nextEdgeIndex = 0
+        this.nextEdgeIndex = 0;
 		this.random = new Random();
 		this.hollow = graph instanceof HollowGraph;
 	}

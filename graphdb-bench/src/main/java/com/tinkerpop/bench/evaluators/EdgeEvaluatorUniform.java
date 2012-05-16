@@ -9,7 +9,7 @@ import com.tinkerpop.blueprints.pgm.Edge;
 public class EdgeEvaluatorUniform extends EdgeEvaluator {
 
 	@Override
-	public double evaluate(Edge edge) {
+	public double evaluate(Cache cache, int index) {
 		return 1d;
 	}
 }

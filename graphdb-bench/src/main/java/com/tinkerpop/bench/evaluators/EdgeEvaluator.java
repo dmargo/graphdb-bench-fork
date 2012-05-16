@@ -16,11 +16,16 @@ public abstract class EdgeEvaluator {
 			return total;
 
 		total = 0d;
-		for (Edge edge : db.getEdges())
-			total += evaluate(edge);
+		Cache cache = Cache.getInstance(db);
+		int max = cache.getEdgeIndexRange();
+		
+		for (int index = 0; index < max; index++) {
+			if (cache.getEdgeID(index) == null) continue;
+			total += evaluate(cache, index);
+		}
 
 		return total;
 	}
 
-	public abstract double evaluate(Edge edge);
+	public abstract double evaluate(Cache cache, int index);
 }

@@ -30,10 +30,13 @@ public class Cache {
 	private boolean valid;
 	
 	private ArrayList<Object[]> nodeIDs;
+    private ArrayList<Object[]> edgeIDs;
 	private ArrayList<int[]> inDegrees;
 	private ArrayList<int[]> outDegrees;
 	private Map<Object, Integer> nodeIDtoIndex;
+    private Map<Object, Integer> edgeIDtoIndex;
 	private int nextNodeIndex;
+    private int nextEdgeIndex;
 	
 	
 	/**
@@ -45,10 +48,13 @@ public class Cache {
 		this.graph = graph;
 		this.valid = false;
 		this.nodeIDs = new ArrayList<Object[]>();
+        this.edgeIDs = new ArrayList<Object[]>();
 		this.nodeIDtoIndex = new HashMap<Object, Integer>();
+        this.edgeIDtoIndex = new HashMap<Object, Integer>();
 		this.inDegrees = new ArrayList<int[]>();
 		this.outDegrees = new ArrayList<int[]>();
 		this.nextNodeIndex = 0;
+        this.nextEdgeIndex = 0
 		this.random = new Random();
 		this.hollow = graph instanceof HollowGraph;
 	}
@@ -79,10 +85,13 @@ public class Cache {
 	public void invalidate() {
 		valid = false;
 		nodeIDs.clear();
+        edgeIDs.clear();
 		inDegrees.clear();
 		outDegrees.clear();
 		nodeIDtoIndex.clear();
+        edgeIDtoIndex.clear();
 		nextNodeIndex = 0;
+        nextEdgeIndex = 0;
 	}
 	
 	
@@ -165,8 +174,19 @@ public class Cache {
 	 * @param inID the ID of the "in" vertex
 	 * @param outID the ID of the "out"vertex
 	 */
-	public synchronized void addEdgeByID(Object inID, Object outID) {
+	public synchronized void addEdgeByID(Object eID, Object inID, Object outID) {
 		if (!valid) return;
+		if (eid == null) throw new IllegalArgumentException("id cannot be null");
+
+		int arrayID = nextEdgeIndex / PER_ARRAY;
+		int withinID = nextEdgeIndex % PER_ARRAY;
+		if (arrayID == edgeIDs.size()) {
+			edgeIDs.add(new Object[PER_ARRAY]);
+		}
+		edgeIDs.get(arrayID)[withinID] = id;
+		edgeIDtoIndex.put(id, nextEdgeIndex);
+		nextEdgeIndex++;
+
 		int i = nodeIDtoIndex.get(inID);
 		int o = nodeIDtoIndex.get(outID);
 		inDegrees.get(i / PER_ARRAY)[i % PER_ARRAY]++;
@@ -180,7 +200,7 @@ public class Cache {
 	 * @param edge the edge
 	 */
 	public void addEdge(Edge edge) {
-		addEdgeByID(edge.getInVertex().getId(), edge.getOutVertex().getId());
+		addEdgeByID(edge.getId(), edge.getInVertex().getId(), edge.getOutVertex().getId());
 	}
 	
 	
@@ -216,6 +236,11 @@ public class Cache {
 		if (!valid) rebuild();
 		return nextNodeIndex;
 	}
+
+    public synchronized int getEdgeIndexRange() {
+        if (!valid) rebuild();
+        return nextEdgeIndex;
+    }
 	
 	
 	/**
@@ -304,5 +329,20 @@ public class Cache {
 		rebuild();
 		int i = random.nextInt(nextNodeIndex);
 		return nodeIDs.get(i / PER_ARRAY)[i % PER_ARRAY];
+	}
+
+	/**
+	 * Get an ID of the edge with the given index
+	 * 
+	 * @param index the index
+	 * @return the ID, or null if the edge was deleted
+	 */
+	public synchronized Object getEdgeID(int index) {
+		
+		if (hollow) return new Long(0);
+		if (!valid) rebuild();
+		if (index >= nextEdgeIndex) throw new NoSuchElementException();
+		
+		return edgeIDs.get(index / PER_ARRAY)[index % PER_ARRAY];
 	}
 }

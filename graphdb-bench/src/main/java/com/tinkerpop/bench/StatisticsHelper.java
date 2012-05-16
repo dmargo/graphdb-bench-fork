@@ -90,10 +90,15 @@ public class StatisticsHelper {
 		}
 
 		boolean finished = true;
+		Cache cache = Cache.getInstance(db);
+		int max = cache.getEdgeIndexRange();
 
-		for (Edge currentEdge : db.getEdges()) {
+		for (int index = 0; index < max; index++) {
 
-			double currentVal = evaluator.evaluate(currentEdge);
+			Object id = cache.getEdgeID(index);
+			if (id == null) continue;
+			
+			double currentVal = evaluator.evaluate(cache, index);
 
 			finished = true;
 
@@ -101,7 +106,7 @@ public class StatisticsHelper {
 				if (samples[i] == null) {
 					sampleVals[i] -= currentVal;
 					if (sampleVals[i] <= 0)
-						samples[i] = currentEdge.getId();
+						samples[i] = id;
 					else
 						finished = false;
 				}

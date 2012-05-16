@@ -176,15 +176,15 @@ public class Cache {
 	 */
 	public synchronized void addEdgeByID(Object eID, Object inID, Object outID) {
 		if (!valid) return;
-		if (eid == null) throw new IllegalArgumentException("id cannot be null");
+		if (eID == null) throw new IllegalArgumentException("id cannot be null");
 
 		int arrayID = nextEdgeIndex / PER_ARRAY;
 		int withinID = nextEdgeIndex % PER_ARRAY;
 		if (arrayID == edgeIDs.size()) {
 			edgeIDs.add(new Object[PER_ARRAY]);
 		}
-		edgeIDs.get(arrayID)[withinID] = id;
-		edgeIDtoIndex.put(id, nextEdgeIndex);
+		edgeIDs.get(arrayID)[withinID] = eID;
+		edgeIDtoIndex.put(eID, nextEdgeIndex);
 		nextEdgeIndex++;
 
 		int i = nodeIDtoIndex.get(inID);

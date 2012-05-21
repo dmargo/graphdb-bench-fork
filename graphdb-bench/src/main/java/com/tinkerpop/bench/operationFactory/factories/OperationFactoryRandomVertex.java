@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.tinkerpop.bench.StatisticsHelper;
-import com.tinkerpop.bench.evaluators.EvaluatorUniform;
 import com.tinkerpop.bench.operationFactory.OperationArgs;
 import com.tinkerpop.bench.operationFactory.OperationFactoryBase;
 
@@ -35,7 +34,7 @@ public class OperationFactoryRandomVertex extends OperationFactoryBase implement
 	@Override
 	protected void onInitialize() {
 		vertexSamples = new ArrayList<Object>(Arrays.asList(StatisticsHelper
-				.getSampleVertexIds(getGraph(), new EvaluatorUniform(), opCount)));		
+				.getRandomVertexIds(getGraph(), opCount)));		
 	}
 
 	@Override

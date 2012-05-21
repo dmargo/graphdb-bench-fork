@@ -3,7 +3,6 @@ package com.tinkerpop.bench.operation.operations;
 import java.util.UUID;
 
 import com.tinkerpop.bench.StatisticsHelper;
-import com.tinkerpop.bench.evaluators.EvaluatorUniform;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
@@ -23,10 +22,7 @@ public class OperationSetManyVertexProperties extends Operation {
 		property_key = (String) args[0];
 		
 		opCount = args.length > 1 ? (Integer) args[1] : 1000;
-		Object[] vertexIds = StatisticsHelper.getSampleVertexIds(getGraph(), new EvaluatorUniform(), opCount);
-		vertexSamples = new Vertex[opCount];
-		for (int i = 0; i < opCount; i++)
-			vertexSamples[i] = getGraph().getVertex(vertexIds[i]);
+		vertexSamples = StatisticsHelper.getRandomVertices(getGraph(), opCount);
 		
 		property_value = args.length > 2 ? (String) args[2] : UUID.randomUUID().toString();
 	}

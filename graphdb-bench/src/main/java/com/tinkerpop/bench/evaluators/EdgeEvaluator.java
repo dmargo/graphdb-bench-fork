@@ -1,7 +1,6 @@
 package com.tinkerpop.bench.evaluators;
 
 import com.tinkerpop.bench.cache.Cache;
-import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
 
 /**

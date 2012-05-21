@@ -7,7 +7,7 @@ import com.tinkerpop.bench.evaluators.EdgeEvaluator;
 import com.tinkerpop.bench.evaluators.Evaluator;
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
-//import com.tinkerpop.blueprints.pgm.Vertex;
+import com.tinkerpop.blueprints.pgm.Vertex;
 import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
 
 /**
@@ -19,6 +19,44 @@ public class StatisticsHelper {
 
 	private static Random rand = new Random();
 	private static long memory = -1l;
+	
+	
+	// XXX The following functions will change the contents of the file system and database caches,
+	// so simply speaking, we are in deep trouble when we do benchmarking
+
+	public static Vertex[] getRandomVertices(Graph db, int sampleSize) {	
+		Vertex[] samples = new Vertex[sampleSize];
+		for (int i = 0; i < samples.length; i++) {
+			samples[i] = db.getRandomVertex();
+		}
+		return samples;
+	}
+
+	public static Edge[] getRandomEdges(Graph db, int sampleSize) {	
+		Edge[] samples = new Edge[sampleSize];
+		for (int i = 0; i < samples.length; i++) {
+			samples[i] = db.getRandomEdge();
+		}
+		return samples;
+	}
+
+	public static Object[] getRandomVertexIds(Graph db, int sampleSize) {	
+		Object[] samples = new Object[sampleSize];
+		for (int i = 0; i < samples.length; i++) {
+			samples[i] = db.getRandomVertex().getId();
+		}
+		return samples;
+	}
+
+	public static Object[] getRandomEdgeIds(Graph db, int sampleSize) {	
+		return getSampleEdgeIds(db, new com.tinkerpop.bench.evaluators.EdgeEvaluatorUniform(), sampleSize);
+		
+		/*Object[] samples = new Object[sampleSize];
+		for (int i = 0; i < samples.length; i++) {
+			samples[i] = db.getRandomEdge().getId();
+		}
+		return samples;*/
+	}
 
 	public static Object[] getSampleVertexIds(Graph db, Evaluator evaluator,
 			int sampleSize) {

@@ -1,7 +1,6 @@
 package com.tinkerpop.bench.operation.operations;
 
 import com.tinkerpop.bench.StatisticsHelper;
-import com.tinkerpop.bench.evaluators.EdgeEvaluatorUniform;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Graph;
 
@@ -13,7 +12,7 @@ public class OperationGetManyEdges extends Operation {
 	@Override
 	protected void onInitialize(Object[] args) {
 		opCount = args.length > 0 ? (Integer) args[0] : 1000;
-		edgeSamples = StatisticsHelper.getSampleEdgeIds(getGraph(), new EdgeEvaluatorUniform(), opCount);		
+		edgeSamples = StatisticsHelper.getRandomEdgeIds(getGraph(), opCount);		
 	}
 	
 	@Override

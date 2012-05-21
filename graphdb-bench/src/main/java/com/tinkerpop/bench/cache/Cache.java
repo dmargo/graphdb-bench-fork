@@ -205,6 +205,26 @@ public class Cache {
 	
 	
 	/**
+	 * Replace an edge ID. This is useful, for example, to add a temporary
+	 * edge ID to the cache and then replace it by whatever ID the database
+	 * generates when the edge is added
+	 * 
+	 * @param oldID the old ID
+	 * @param newID the new ID
+	 */
+	public synchronized void replaceEdgeID(Object oldID, Object newID) {
+		if (!valid) return;
+		if (newID == null) throw new IllegalArgumentException("id cannot be null");
+		Integer index = edgeIDtoIndex.remove(oldID);
+		if (index != null) {
+			edgeIDtoIndex.put(newID, index);
+			int arrayID = index / PER_ARRAY;
+			int withinID = index % PER_ARRAY;
+			edgeIDs.get(arrayID)[withinID] = newID;
+		}
+	}
+	
+	/**
 	 * Rebuild the cache
 	 */
 	public synchronized void rebuild() {

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.tinkerpop.bench.StatisticsHelper;
-import com.tinkerpop.bench.evaluators.EdgeEvaluatorUniform;
 import com.tinkerpop.bench.operationFactory.OperationArgs;
 import com.tinkerpop.bench.operationFactory.OperationFactoryBase;
 
@@ -29,7 +28,7 @@ public class OperationFactoryRandomEdge extends OperationFactoryBase implements 
 	@Override
 	protected void onInitialize() {
 		edgeSamples = new ArrayList<Object>(Arrays.asList(StatisticsHelper
-				.getSampleEdgeIds(getGraph(), new EdgeEvaluatorUniform(), opCount)));		
+				.getRandomEdgeIds(getGraph(), opCount)));		
 	}
 
 	@Override

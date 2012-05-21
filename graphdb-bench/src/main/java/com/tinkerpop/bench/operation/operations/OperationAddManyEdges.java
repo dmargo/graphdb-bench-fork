@@ -2,7 +2,6 @@ package com.tinkerpop.bench.operation.operations;
 
 import com.tinkerpop.bench.StatisticsHelper;
 import com.tinkerpop.bench.cache.Cache;
-import com.tinkerpop.bench.evaluators.EvaluatorUniform;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
@@ -22,10 +21,7 @@ public class OperationAddManyEdges extends Operation {
 	@Override
 	protected void onInitialize(Object[] args) {
 		opCount = args.length > 0 ? (Integer) args[0] : 1000;
-		Object[] vertexIds = StatisticsHelper.getSampleVertexIds(getGraph(), new EvaluatorUniform(), 2 * opCount);
-		vertexSamples = new Vertex[2 * opCount];
-		for (int i = 0; i < 2 * opCount; i++)
-			vertexSamples[i] = getGraph().getVertex(vertexIds[i]);
+		vertexSamples = StatisticsHelper.getRandomVertices(getGraph(), opCount * 2);
 		
 		id = null; //args.length > 1 ? args[1] : null;
 		label = ""; //args.length > 2 ? (String) args[2] : "";

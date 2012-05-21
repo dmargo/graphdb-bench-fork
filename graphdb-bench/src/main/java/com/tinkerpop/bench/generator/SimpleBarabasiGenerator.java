@@ -7,6 +7,7 @@ import com.tinkerpop.bench.cache.Cache;
 import com.tinkerpop.bench.evaluators.Evaluator;
 import com.tinkerpop.bench.evaluators.EvaluatorDegree;
 import com.tinkerpop.bench.util.Pair;
+import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
@@ -60,6 +61,7 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 		Object[] newVertices = new Object[n];
 		@SuppressWarnings({ "rawtypes" })
 		Pair[] newEdges = new Pair[n * m];
+		TemporaryObject[] newEdgeIDs = new TemporaryObject[n * m];
 		
 		
 		// Schedule an initial vertex to be created if the graph is empty
@@ -100,8 +102,11 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 			
 			for (Object o : otherVertices) {
 				Pair<Object, Object> e = new Pair<Object, Object>(v, o);
-				newEdges[edge_i++] = e;
-				c.addEdgeByID(v, o);
+				TemporaryObject t = new TemporaryObject(edge_i);
+				newEdges[edge_i] = e;
+				newEdgeIDs[edge_i] = t;
+				c.addEdgeByID(t, v, o);
+				edge_i++;
 			}
 			
 			
@@ -174,7 +179,8 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 			Object a = newEdges[i].getFirst();
 			Object b = newEdges[i].getSecond();
 			
-			graph.addEdge(null, (Vertex) a, (Vertex) b, "");
+			Edge e = graph.addEdge(null, (Vertex) a, (Vertex) b, "");
+			c.replaceEdgeID(newEdgeIDs[i], e.getId());
 			
 			if ((i & 127) == 0 || i == newEdges.length-1) {
 				ConsoleUtils.printProgressIndicator(i+1, newEdges.length, "Pass 4/4");

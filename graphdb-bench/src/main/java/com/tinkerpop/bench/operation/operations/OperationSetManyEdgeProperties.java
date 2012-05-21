@@ -23,7 +23,7 @@ public class OperationSetManyEdgeProperties extends Operation {
 		property_key = (String) args[0];
 		
 		opCount = args.length > 1 ? (Integer) args[1] : 1000;
-		Object[] edgeIds = StatisticsHelper.getSampleEdgeIds(getGraph(), new EdgeEvaluatorUniform(), opCount);
+		Object[] edgeIds = StatisticsHelper.getRandomEdgeIds(getGraph(), opCount);
 		edgeSamples = new Edge[opCount];
 		for (int i = 0; i < opCount; i++)
 			edgeSamples[i] = getGraph().getEdge(edgeIds[i]);

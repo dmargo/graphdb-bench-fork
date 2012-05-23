@@ -1,8 +1,11 @@
 package com.tinkerpop.bench;
 
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import com.tinkerpop.blueprints.pgm.Edge;
+import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
 public class GraphUtils {
@@ -47,6 +50,40 @@ public class GraphUtils {
 		
 		int K = neighbors.size();
 		return K <= 1 ? 0 : (triangles / (double) (K * (K-1)));
+	}
+	
+	
+	/**
+	 * Dump the sorted lists of vertex and edge IDs to the given output
+	 * 
+	 * @param out the print stream
+	 * @param graph the graph
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static void printSortedIdLists(PrintStream out, Graph graph) {
+		
+		ArrayList<Comparable> v = new ArrayList<Comparable>();
+		ArrayList<Comparable> e = new ArrayList<Comparable>();
+		for (Vertex vertex : graph.getVertices()) v.add((Comparable) vertex.getId());
+		for (Edge edge : graph.getEdges()) e.add((Comparable) edge.getId());
+		java.util.Collections.sort(v);
+		java.util.Collections.sort(e);
+		
+		out.print("\n===== Vertices =====\n");
+		int i = 1;
+		for (Comparable c : v) {
+			out.print("" + c + "\t");
+			if (i++ % 20 == 0) out.print("\n");
+		}
+		if ((i-1) % 20 != 0) out.print("\n");
+		
+		out.print("\n===== Edges =====\n");
+		i = 1;
+		for (Comparable c : e) {
+			System.err.print("" + c + "\t");
+			if (i++ % 20 == 0) out.print("\n");
+		}
+		if ((i-1) % 20 != 0) out.print("\n");
 	}
 	
 	

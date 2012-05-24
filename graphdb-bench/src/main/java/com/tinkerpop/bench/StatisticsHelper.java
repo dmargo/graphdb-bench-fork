@@ -49,13 +49,13 @@ public class StatisticsHelper {
 	}
 
 	public static Object[] getRandomEdgeIds(Graph db, int sampleSize) {	
-		return getSampleEdgeIds(db, new com.tinkerpop.bench.evaluators.EdgeEvaluatorUniform(), sampleSize);
-		
-		/*Object[] samples = new Object[sampleSize];
+		// Slower alternative:
+		//   return getSampleEdgeIds(db, new com.tinkerpop.bench.evaluators.EdgeEvaluatorUniform(), sampleSize);
+		Object[] samples = new Object[sampleSize];
 		for (int i = 0; i < samples.length; i++) {
 			samples[i] = db.getRandomEdge().getId();
 		}
-		return samples;*/
+		return samples;
 	}
 
 	public static Object[] getSampleVertexIds(Graph db, Evaluator evaluator,

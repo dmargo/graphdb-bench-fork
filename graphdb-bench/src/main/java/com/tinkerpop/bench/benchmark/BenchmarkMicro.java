@@ -109,15 +109,17 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("  --ingest [FILE]       Ingest a file to the database "+
 										" (implies --delete-graph)");
 		System.err.println("");
-		System.err.println("Benchmark options:");
+		System.err.println("Benchmark and workload options:");
 		System.err.println("  --k-hops K            Set the number of k-hops");
 		System.err.println("  --k-hops K1:K2        Set a range of k-hops");
 		System.err.println("  --op-count N          Set the number of operations");
+		System.err.println("  --warmup-ingest FILE  Set a different file for ingest for" +
+										" the warmup database");
 		System.err.println("  --warmup-op-count N   Set the number of warmup operations");
 		System.err.println("");
 		System.err.println("Options for model \"Barabasi\":");
 		System.err.println("  --barabasi-n N        The number of vertices");
-		System.err.println("  --barabasi-m M        The number of outgoing edges "+
+		System.err.println("  --barabasi-m M        The number of incoming edges "+
 										" generated for each vertex");
 	}
 	
@@ -245,11 +247,12 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("file").withRequiredArg().ofType(String.class);	/* deprecated */
 		
 		
-		// Benchmark modifiers
+		// Benchmark and workload modifiers
 		
 		parser.accepts("k-hops").withRequiredArg().ofType(String.class);
 		parser.accepts("op-count").withRequiredArg().ofType(Integer.class);
 		parser.accepts("warmup-op-count").withRequiredArg().ofType(Integer.class);
+		parser.accepts("warmup-ingest").withRequiredArg().ofType(String.class);
 		
 		
 		// Generator modifiers
@@ -284,7 +287,7 @@ public class BenchmarkMicro extends Benchmark {
 			return;
 		}
 		
-		String ingestFile = DEFAULT_INGEST_FILE;		
+		String ingestFile = DEFAULT_INGEST_FILE;
 		if (options.has("f") || options.has("file")) {
 			ingestFile = options.valueOf(options.has("f") ? "f" : "file").toString();
 		}
@@ -292,6 +295,11 @@ public class BenchmarkMicro extends Benchmark {
 			if (options.hasArgument("ingest")) {
 				ingestFile = options.valueOf("ingest").toString();
 			}
+		}
+		
+		String warmupIngestFile = ingestFile;
+		if (options.has("warmup-ingest")) {
+			warmupIngestFile = options.valueOf("warmup-ingest").toString();
 		}
 		
 		boolean warmup = true;
@@ -488,9 +496,26 @@ public class BenchmarkMicro extends Benchmark {
 					ingestFile = dirGraphML + ingestFile;
 				}
 			}
+			if (!(new File(warmupIngestFile)).exists()) {
+				String dirGraphML = getProperty(Bench.DATASETS_DIRECTORY);
+				if (dirGraphML == null) {
+					ConsoleUtils.warn("Property \"" + Bench.DATASETS_DIRECTORY + "\" is not set.");
+					ConsoleUtils.error("File \"" + warmupIngestFile + "\" does not exist.");
+					return;
+				}
+				if (!dirGraphML.endsWith("/")) dirGraphML += "/";
+				if (!(new File(dirGraphML + warmupIngestFile)).exists()) {
+					ConsoleUtils.error("File \"" + warmupIngestFile + "\" does not exist.");
+					return;
+				}
+				else {
+					warmupIngestFile = dirGraphML + warmupIngestFile;
+				}
+			}
 		}
 		else {
 			ingestFile = null;
+			warmupIngestFile = null;
 		}
 		
 		
@@ -499,10 +524,11 @@ public class BenchmarkMicro extends Benchmark {
 		 */
 		
 		String[] graphmlFiles = new String[] { ingestFile };
+		String[] warmupGraphmlFiles = new String[] { warmupIngestFile };
 		GraphGenerator[] graphGenerators = new GraphGenerator[] { graphGenerator };
 		
 		Benchmark warmupBenchmark = new BenchmarkMicro(
-				graphmlFiles, graphGenerators, options, warmupOpCount, kHops);
+				warmupGraphmlFiles, graphGenerators, options, warmupOpCount, kHops);
 		
 		Benchmark benchmark = new BenchmarkMicro(
 				graphmlFiles, graphGenerators, options, opCount, kHops);

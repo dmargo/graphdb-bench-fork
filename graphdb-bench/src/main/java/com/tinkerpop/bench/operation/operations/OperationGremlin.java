@@ -36,4 +36,8 @@ public class OperationGremlin extends Operation {
 		}
 	}
 
+	@Override
+	public boolean isUpdate() {
+		return true;	// Well, actually it's maybe -- we do not know
+	}
 }

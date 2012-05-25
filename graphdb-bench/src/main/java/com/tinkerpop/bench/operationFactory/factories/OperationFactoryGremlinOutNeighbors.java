@@ -65,4 +65,8 @@ public class OperationFactoryGremlinOutNeighbors extends OperationFactoryBase {
 		return new OperationArgs(args, OperationGremlin.class, tagLine);
 	}
 
+	@Override
+	public boolean isUpdate() {
+		return true;	// Well, actually it's maybe -- we do not know
+	}
 }

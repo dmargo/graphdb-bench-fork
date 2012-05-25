@@ -90,7 +90,7 @@ public class ConsoleUtils {
 	 * @param max the maximum value
 	 * @param extra extra text to display before the percentages
 	 */
-	public static void printProgressIndicator(int value, int max, String extra) {
+	public static void printProgressIndicator(long value, long max, String extra) {
 		if (value > max) value = max;
 		long t = System.currentTimeMillis();
 		if (t < lastProgressDraw + 100 && value != max) return;
@@ -137,7 +137,7 @@ public class ConsoleUtils {
 	 * @param value the position
 	 * @param max the maximum value
 	 */
-	public static void printProgressIndicator(int value, int max) {
+	public static void printProgressIndicator(long value, long max) {
 		printProgressIndicator(value, max, null);
 	}
 }

@@ -12,11 +12,13 @@ public class OperationFactoryRandomVertexPair extends OperationFactoryBase imple
 	private Class<?> opType = null;
 	private int opCount;
 	private ArrayList<Object> vertexSamples = null;
+	private boolean update;
 	
 	public OperationFactoryRandomVertexPair(Class<?> opType, int opCount) {
 		super();
 		this.opType = opType;
 		this.opCount = opCount;
+		this.update = isUpdateOperation(opType);
 	}
 
 	@Override
@@ -55,5 +57,16 @@ public class OperationFactoryRandomVertexPair extends OperationFactoryBase imple
 	@Override
 	public int getExecutedOpCount() {
 		return opCount - vertexSamples.size() / 2;
+	}
+	
+	/**
+	 * Determine whether any of the operations that the factory creates will perform
+	 * any update operations on the database
+	 * 
+	 * @return true if at least one of the operations will perform an update
+	 */
+	@Override
+	public boolean isUpdate() {
+		return update;
 	}
 }

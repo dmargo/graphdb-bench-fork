@@ -2,7 +2,9 @@ package com.tinkerpop.bench;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
@@ -18,7 +20,9 @@ import com.tinkerpop.bench.operation.OperationShutdownGraph;
 import com.tinkerpop.bench.operationFactory.OperationFactory;
 import com.tinkerpop.bench.operationFactory.OperationFactoryGeneric;
 import com.tinkerpop.bench.operationFactory.OperationFactoryLog;
-import com.tinkerpop.bench.operationFactory.factories.WithOpCount;
+import com.tinkerpop.blueprints.pgm.Edge;
+import com.tinkerpop.blueprints.pgm.Graph;
+import com.tinkerpop.blueprints.pgm.Vertex;
 
 import edu.harvard.pass.cpl.CPL;
 
@@ -158,6 +162,11 @@ public class BenchRunner {
 			gcFactory.initialize(graphDescriptor, operationId);
 			
 			
+			// Open the graph
+			
+			openGraph();
+			
+			
 			// Initialize the barrier concurrency primitive
 			
 			barrier = new CyclicBarrier(numThreads, new ResetTask());
@@ -217,8 +226,14 @@ public class BenchRunner {
 		/// The operation factories
 		private Collection<OperationFactory> operationFactories = null;
 		
+		/// The instantiated operation factories
+		private List<InstantiatedOperationFactory> instantiatedOperationFactories = null;
+		
 		/// The current factory
 		private OperationFactory currentFactory = null;
+		
+		/// Whether the worker is in the initialization stage
+		private boolean initializing = true;
 		
 		
 		/**
@@ -230,6 +245,7 @@ public class BenchRunner {
 		public Worker(int id, Collection<OperationFactory> operationFactories) {
 			this.id = id;
 			this.operationFactories = operationFactories;
+			this.instantiatedOperationFactories = new ArrayList<BenchRunner.InstantiatedOperationFactory>();
 		}
 		
 		
@@ -251,6 +267,16 @@ public class BenchRunner {
 		public OperationFactory getCurrentOperationFactory() {
 			return currentFactory;
 		}
+		
+		
+		/**
+		 * Return whether the worker is initializing the operations
+		 * 
+		 * @return true if the worker is initializing the operations
+		 */
+		public boolean isInitalizingOperations() {
+			return initializing;
+		}
 
 
 		/**
@@ -261,39 +287,141 @@ public class BenchRunner {
 			boolean main = id == 0;
 			
 			try {
-				String lastOperationFactoryName = "";
+				
+				// Instantiate operation factories
+				
+				int longestFactoryName = 0;
+				int longestOperationName = 0;
+				@SuppressWarnings("unused") int totalOperations = 0;
+				int maxOperationID = 0;
 				for (OperationFactory operationFactory : operationFactories) {
-					currentFactory = operationFactory;
-
-					String factoryName = operationFactory.getClass().getSimpleName();
-					if (!factoryName.equals(lastOperationFactoryName)) {
-						if (main) ConsoleUtils.header(factoryName);
-						lastOperationFactoryName = factoryName;
+					InstantiatedOperationFactory f = new InstantiatedOperationFactory(operationFactory);
+					instantiatedOperationFactories.add(f);
+					longestFactoryName = Math.max(longestFactoryName, f.getFactory().getClass().getSimpleName().length());
+					for (Operation operation : f.getOperations()) {
+						longestOperationName = Math.max(longestOperationName, operation.getName().length());
+						maxOperationID = Math.max(maxOperationID, operation.getId());
+						totalOperations++;
+					}
+				}
+				int longestFactoryStrID = ("" + instantiatedOperationFactories.size()).length();
+				@SuppressWarnings("unused") int longestOperatoinStrID = ("" + maxOperationID).length();
+				
+				
+				// Run
+				
+				for (int factory_i = 0; factory_i < instantiatedOperationFactories.size(); factory_i++) {
+					InstantiatedOperationFactory operationFactory = instantiatedOperationFactories.get(factory_i);
+					currentFactory = operationFactory.getFactory();
+					boolean hasUpdates = operationFactory.isUpdate();
+					String factoryName = currentFactory.getClass().getSimpleName();
+					
+					
+					// Initialize the operations for this factory and all subsequent factories that
+					// do not perform any updates
+					
+					if (!operationFactory.isInitialized()) {
+						initializing = true;
+						
+						boolean polluteCache = false;
+						for (int i = factory_i; i < instantiatedOperationFactories.size(); i++) {
+							InstantiatedOperationFactory f = instantiatedOperationFactories.get(i);
+							
+							Class<?> c = f.getFactory().getClass();
+							String name = c.getSimpleName();
+							if (main) {
+								System.out.printf("\r[%-" + longestFactoryName + "s %"+ longestFactoryStrID + "d]"
+										+ " Initializing", name, i+1);
+								System.out.flush();
+							}
+							
+							f.initialize();
+							
+							for (Operation op : f.getOperations()) {
+								if (!op.getClass().equals(com.tinkerpop.bench.operation.OperationDeleteGraph.class)
+										&& !op.getClass().equals(com.tinkerpop.bench.operation.operations.OperationLoadGraphML.class)) {
+									polluteCache = true;
+								}
+							}
+							
+							if (main) System.out.println();
+							if (f.isUpdate()) break;
+						}
+						
+						
+						// Barrier + GC
+						
+						barrier.await();
+						
+						
+						// Pollute cache
+						
+						if (main && polluteCache) {
+							System.out.print("\rPolluting cache with a sequential scan");
+							System.out.flush();
+							
+							Graph g = graphDescriptor.getGraph();
+							long numVertices = g.countVertices();
+							long numEdges = g.countEdges();
+							long objects = 0;
+							
+							for (@SuppressWarnings("unused") Vertex v : g.getVertices()) {
+								objects++;
+								if ((objects & 0xfff) == 0) System.gc();
+								ConsoleUtils.printProgressIndicator(objects, numVertices + numEdges);
+							}
+							
+							for (@SuppressWarnings("unused") Edge e : g.getEdges()) {
+								objects++;
+								if ((objects & 0xfff) == 0) System.gc();
+								ConsoleUtils.printProgressIndicator(objects, numVertices + numEdges);
+							}
+							
+							ConsoleUtils.printProgressIndicator(numVertices + numEdges, numVertices + numEdges);
+							System.out.println();
+						}
 					}
 					
 					
-					// Barrier + reset/open the graph
+					// Barrier + GC
 					
+					initializing = false;
 					barrier.await();
-					
-					
-					// Initialize the operation factory
-
-					operationFactory.initialize(graphDescriptor, operationId);
 
 					
 					// Run the operations
 
-					for (Operation operation : operationFactory) {
-
-						operation.setLogWriter(logWriter);
-						operation.initialize(graphDescriptor);
+					List<Operation> operations = operationFactory.getOperations();
+					String lastOperationName = "";
+					for (int operation_i = 0; operation_i < operations.size(); operation_i++) {
+						Operation operation = operations.get(operation_i);
+						
+						if (operation.isUpdate() && !hasUpdates) {
+							throw new IllegalStateException("Found an update operation in a factory " +
+										"that claims that there are no update operations");
+						}
 
 						if (main) {
-							System.out.printf("\r\tOperation %d, %s",
-									operation.getId(),
-									operation.getName());
-							System.out.flush();
+							if (!operation.getName().equals(lastOperationName)) {
+								lastOperationName = operation.getName();
+								if (operation_i == 0) {
+									System.out.printf("\r[%-" + longestFactoryName + "s %" + longestFactoryStrID + "d] " +
+											"Running %s%s",
+											factoryName,
+											factory_i+1,
+											operation.getName(),
+											operation.isUpdate() ? " (update)" : "");
+								}
+								else {
+									System.out.printf("\r %-" + longestFactoryName + "s %" + longestFactoryStrID + "s  " +
+											"Running %s%s",
+											" ",
+											" ",
+											operation.getName(),
+											operation.isUpdate() ? " (update)" : "");									
+								}
+								System.out.flush();
+							}
 						}
 						
 						if (CPL.isAttached()) {
@@ -316,11 +444,8 @@ public class BenchRunner {
 							logWriter.getCPLObject().dataFlowFrom(operation.getCPLObject());
 						}
 						
-						if (main && operationFactory instanceof WithOpCount) {
-							WithOpCount w = (WithOpCount) operationFactory;
-							if (w.getOpCount() > 1) {
-								ConsoleUtils.printProgressIndicator(w.getExecutedOpCount(), w.getOpCount());
-							}
+						if (main && operations.size() > 1) {
+							ConsoleUtils.printProgressIndicator(operation_i + 1, operations.size());
 						}
 					}
 					
@@ -361,9 +486,11 @@ public class BenchRunner {
 			// Get the current operation factory
 			
 			OperationFactory currentFactory = null;
+			boolean initalizing = false;
 			for (Worker w : workers) {
 				if (w.getWorkerID() == 0) {
 					currentFactory = w.getCurrentOperationFactory();
+					initalizing = w.isInitalizingOperations();
 					break;
 				}
 			}
@@ -380,23 +507,119 @@ public class BenchRunner {
 					throw new IllegalStateException("Inconsistent operation factories "
 							+ "between worker threads 0 and " + w.getWorkerID());
 				}
+				if (initalizing != w.isInitalizingOperations()) {
+					throw new IllegalStateException("Inconsistent worker stages "
+							+ "between worker threads 0 and " + w.getWorkerID());
+				}
 			}
 			
 			
-			// Flush the cache by closing and opening the graph
+			// Run the garbage collector
 			
 			if (!(currentFactory instanceof OperationFactoryLog)) {
 				try {
-					closeGraph();
-					openGraph();
+					Operation gcOperation = gcFactory.next();
+					gcOperation.setLogWriter(logWriter);
+					gcOperation.initialize(graphDescriptor);
+					gcOperation.execute();
+					logWriter.logOperation(gcOperation);
 				}
 				catch (RuntimeException e) {
 					throw e;
 				}
 				catch (Exception e) {
-					throw new RuntimeException("Graph reset / cache flush failed", e);
+					throw new RuntimeException("Garbage collection failed", e);
 				}
 			}
+		}
+	}
+	
+	
+	/**
+	 * A collection of instantiated operations from a single factory
+	 */
+	private class InstantiatedOperationFactory {
+		
+		private OperationFactory factory;
+		private ArrayList<Operation> operations;
+		private boolean update;
+		private boolean initialized;
+		
+		
+		/**
+		 * Create an instance of class InstantiatedOperationFactory
+		 * 
+		 * @param factory the factory
+		 */
+		public InstantiatedOperationFactory(OperationFactory factory) {
+			this.factory = factory;
+			this.update = factory.isUpdate();
+			this.initialized = false;
+			this.operations = new ArrayList<Operation>();
+			
+			
+			// Initialize the operation factory and instantiate the operations
+
+			factory.initialize(graphDescriptor, operationId);
+			for (Operation operation : factory) {
+				operations.add(operation);
+				if (operation.isUpdate() && !update) {
+					throw new IllegalStateException("Found an update operation in a factory " +
+								"that claims that there are no update operations");
+				}
+			}
+		}
+		
+		
+		/**
+		 * Get the factory
+		 * 
+		 * @return the original factory
+		 */
+		public OperationFactory getFactory() {
+			return factory;
+		}
+		
+		
+		/**
+		 * Return true if any of the operations can perform an update
+		 * 
+		 * @return true if any operation can perform an update
+		 */
+		public boolean isUpdate() {
+			return update;
+		}
+		
+		
+		/**
+		 * Initialize all operations
+		 */
+		public void initialize() {
+			for (Operation operation : operations) {
+				operation.setLogWriter(logWriter);
+				operation.initialize(graphDescriptor);
+			}
+			initialized = true;
+		}
+		
+		
+		/**
+		 * Return true if the operations are initialized
+		 * 
+		 * @return true if the operations are initialized
+		 */
+		public boolean isInitialized() {
+			return initialized;
+		}
+		
+		
+		/**
+		 * Return a collection of operations
+		 * 
+		 * @return a collection of operations
+		 */
+		public List<Operation> getOperations() {
+			return operations;
 		}
 	}
 }

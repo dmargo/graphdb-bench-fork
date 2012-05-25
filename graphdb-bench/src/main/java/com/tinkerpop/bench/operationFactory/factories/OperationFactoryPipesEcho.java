@@ -19,6 +19,7 @@ public class OperationFactoryPipesEcho extends OperationFactoryBase {
 	private Class<?> echoType = null;
 	private String tag = null;
 	private ArrayList<Object> vertexSamples = null;
+	private boolean update;
 
 	public OperationFactoryPipesEcho(int opCount, String propertyKey,
 			int echoLength, Class<?> echoType) {
@@ -32,6 +33,7 @@ public class OperationFactoryPipesEcho extends OperationFactoryBase {
 		this.echoLength = echoLength;
 		this.echoType = echoType;
 		this.tag = tag;
+		this.update = isUpdateOperation(echoType);
 	}
 
 	@Override
@@ -69,5 +71,10 @@ public class OperationFactoryPipesEcho extends OperationFactoryBase {
 				Integer.toString(echoLength) };
 
 		return new OperationArgs(args, echoType, tagLine);
+	}
+
+	@Override
+	public boolean isUpdate() {
+		return update;
 	}
 }

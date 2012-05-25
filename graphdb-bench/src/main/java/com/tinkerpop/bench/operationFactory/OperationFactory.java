@@ -153,4 +153,29 @@ public abstract class OperationFactory implements Iterator<Operation>,
 
 		return operation;
 	}
+	
+	
+	/**
+	 * Determine whether the given operation class will perform an update, assuming
+	 * that the operation does not need to be initialized to provide this information
+	 * 
+	 * @param operationType the operation type (class)
+	 * @return true if it will perform an update, or false otherwise
+	 */
+	public static boolean isUpdateOperation(Class<?> operationType) {
+		try {
+			return ((Operation) operationType.getConstructors()[0].newInstance(new Object[] {})).isUpdate();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	
+	/**
+	 * Determine whether any of the operations that the factory creates will perform
+	 * any update operations on the database
+	 * 
+	 * @return true if at least one of the operations will perform an update
+	 */
+	public abstract boolean isUpdate();
 }

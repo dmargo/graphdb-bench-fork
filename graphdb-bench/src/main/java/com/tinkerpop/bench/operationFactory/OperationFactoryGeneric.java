@@ -13,6 +13,7 @@ public class OperationFactoryGeneric extends OperationFactoryBase implements Wit
 	private int remainingCount = -1;
 	private Object[] args = null;
 	private String tag = null;
+	private boolean update;
 
 	public OperationFactoryGeneric(Class<?> operationType) {
 		this(operationType, -1, new Object[] {});
@@ -34,6 +35,7 @@ public class OperationFactoryGeneric extends OperationFactoryBase implements Wit
 		this.remainingCount = opCount;
 		this.args = args;
 		this.tag = tag;
+		this.update = isUpdateOperation(operationType);
 	}
 
 	@Override
@@ -70,5 +72,16 @@ public class OperationFactoryGeneric extends OperationFactoryBase implements Wit
 	@Override
 	public int getExecutedOpCount() {
 		return opCount - remainingCount;
+	}
+	
+	/**
+	 * Determine whether any of the operations that the factory creates will perform
+	 * any update operations on the database
+	 * 
+	 * @return true if at least one of the operations will perform an update
+	 */
+	@Override
+	public boolean isUpdate() {
+		return update;
 	}
 }

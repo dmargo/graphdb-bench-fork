@@ -14,6 +14,7 @@ import com.tinkerpop.blueprints.pgm.impls.hollow.HollowGraph;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Alex Averbuch (alex.averbuch@gmail.com)
  * @author Martin Neumann (m.neumann.1980@gmail.com)
+ * @author Peter Macko (pmacko@eecs.harvard.edu)
  */
 public class StatisticsHelper {
 
@@ -21,9 +22,28 @@ public class StatisticsHelper {
 	private static long memory = -1l;
 	
 	
-	// XXX The following functions will change the contents of the file system and database caches,
-	// so simply speaking, we are in deep trouble when we do benchmarking
+	// Note: The following functions will change the contents of the file system and database caches,
+	// so we need to be careful when we do benchmarking
 
+		
+	/**
+	 * Probability distributions that can be used for picking random vertices
+	 */
+	public enum VertexDistribution {
+		UNIFORM,
+		IN_DEGREE,
+		OUT_DEGREE,
+		DEGREE
+	}
+	
+	
+	/**
+	 * Randomly pick vertices from the database using uniform distribution with replacement.
+	 * 
+	 * @param db the graph database
+	 * @param sampleSize the number of samples to return
+	 * @return an array of vertices
+	 */
 	public static Vertex[] getRandomVertices(Graph db, int sampleSize) {	
 		Vertex[] samples = new Vertex[sampleSize];
 		for (int i = 0; i < samples.length; i++) {
@@ -32,6 +52,14 @@ public class StatisticsHelper {
 		return samples;
 	}
 
+	
+	/**
+	 * Randomly pick edges from the database using uniform distribution with replacement.
+	 * 
+	 * @param db the graph database
+	 * @param sampleSize the number of samples to return
+	 * @return an array of edges
+	 */
 	public static Edge[] getRandomEdges(Graph db, int sampleSize) {	
 		Edge[] samples = new Edge[sampleSize];
 		for (int i = 0; i < samples.length; i++) {
@@ -40,6 +68,14 @@ public class StatisticsHelper {
 		return samples;
 	}
 
+	
+	/**
+	 * Randomly pick vertex IDs from the database using uniform distribution with replacement.
+	 * 
+	 * @param db the graph database
+	 * @param sampleSize the number of samples to return
+	 * @return an array of vertex IDs
+	 */
 	public static Object[] getRandomVertexIds(Graph db, int sampleSize) {	
 		Object[] samples = new Object[sampleSize];
 		for (int i = 0; i < samples.length; i++) {
@@ -48,6 +84,14 @@ public class StatisticsHelper {
 		return samples;
 	}
 
+	
+	/**
+	 * Randomly pick edge IDs from the database using uniform distribution with replacement.
+	 * 
+	 * @param db the graph database
+	 * @param sampleSize the number of samples to return
+	 * @return an array of edge IDs
+	 */
 	public static Object[] getRandomEdgeIds(Graph db, int sampleSize) {	
 		// Slower alternative:
 		//   return getSampleEdgeIds(db, new com.tinkerpop.bench.evaluators.EdgeEvaluatorUniform(), sampleSize);
@@ -57,7 +101,83 @@ public class StatisticsHelper {
 		}
 		return samples;
 	}
+	
+	
+	/**
+	 * Randomly pick vertices from the database with replacement.
+	 * 
+	 * @param db the graph database
+	 * @param sampleSize the number of samples to return
+	 * @param distribution the probability distribution to use
+	 * @return an array of vertices
+	 */
+	public static Vertex[] getRandomVertices(Graph db, int sampleSize, VertexDistribution distribution) {
+		
+		Edge[] edges;
+		Vertex[] samples;
+		
+		
+		switch (distribution) {
+		
+		case UNIFORM:
+			return getRandomVertices(db, sampleSize);
+		
+		case IN_DEGREE:
+			edges = getRandomEdges(db, sampleSize);
+			samples = new Vertex[sampleSize];
+			for (int i = 0; i < sampleSize; i++) {
+				samples[i] = edges[i].getInVertex();
+			}
+			return samples;
+			
+		case OUT_DEGREE:
+			edges = getRandomEdges(db, sampleSize);
+			samples = new Vertex[sampleSize];
+			for (int i = 0; i < sampleSize; i++) {
+				samples[i] = edges[i].getOutVertex();
+			}
+			return samples;
+			
+		case DEGREE:
+			edges = getRandomEdges(db, sampleSize);
+			samples = new Vertex[sampleSize];
+			for (int i = 0; i < sampleSize; i++) {
+				samples[i] = rand.nextBoolean() ? edges[i].getInVertex() : edges[i].getOutVertex();
+			}
+			return samples;
+			
+		default:
+			throw new IllegalArgumentException("Unknown distribution");
+		}
+	}
+	
+	
+	/**
+	 * Randomly pick vertex IDs from the database with replacement.
+	 * 
+	 * @param db the graph database
+	 * @param sampleSize the number of samples to return
+	 * @param distribution the probability distribution to use
+	 * @return an array of vertex IDs
+	 */
+	public static Object[] getRandomVertexIds(Graph db, int sampleSize, VertexDistribution distribution) {
+		Vertex[] vertices = getRandomVertices(db, sampleSize, distribution);
+		Object[] samples = new Object[sampleSize];
+		for (int i = 0; i < sampleSize; i++) samples[i] = vertices[i].getId();
+		return samples;
+	}
 
+	
+	/**
+	 * Randomly pick vertex IDs from the database without replacement using
+	 * a distribution specified by the given evaluator function.
+	 * 
+	 * @param db the graph database
+	 * @param evaluator the vertex evaluator function
+	 * @param sampleSize the number of samples to return
+	 * @return an array of vertices
+	 */
+	@Deprecated
 	public static Object[] getSampleVertexIds(Graph db, Evaluator evaluator,
 			int sampleSize) {
 
@@ -114,6 +234,17 @@ public class StatisticsHelper {
 		return samples;
 	}
 	
+
+	/**
+	 * Randomly pick edge IDs from the database without replacement using
+	 * a distribution specified by the given evaluator function.
+	 * 
+	 * @param db the graph database
+	 * @param evaluator the edge evaluator function
+	 * @param sampleSize the number of samples to return
+	 * @return an array of vertices
+	 */
+	@Deprecated
 	public static Object[] getSampleEdgeIds(Graph db, EdgeEvaluator evaluator,
 			int sampleSize) {
 
@@ -157,6 +288,13 @@ public class StatisticsHelper {
 		return samples;
 	}
 	
+
+	
+	/**
+	 * A "stopwatch" for memory usage
+	 * 
+	 * @return the memory usage
+	 */
 	public static long stopMemory() {
 		final Runtime rt = Runtime.getRuntime();
 		if (memory == -1) {

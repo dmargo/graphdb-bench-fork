@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.tinkerpop.bench.StatisticsHelper;
-import com.tinkerpop.bench.evaluators.EvaluatorOutDegree;
 import com.tinkerpop.bench.operation.operations.OperationGremlin;
 import com.tinkerpop.bench.operationFactory.OperationArgs;
 import com.tinkerpop.bench.operationFactory.OperationFactoryBase;
@@ -33,9 +32,9 @@ public class OperationFactoryGremlinOutNeighbors extends OperationFactoryBase {
 
 	@Override
 	public void onInitialize() {
-		vertexSamples = new ArrayList<Object>(Arrays.asList(StatisticsHelper
-				.getSampleVertexIds(getGraph(), new EvaluatorOutDegree(),
-						opCount)));
+		vertexSamples = new ArrayList<Object>(Arrays.asList(
+				StatisticsHelper.getRandomVertexIds(getGraph(), opCount,
+						StatisticsHelper.VertexDistribution.OUT_DEGREE)));
 	}
 
 	@Override

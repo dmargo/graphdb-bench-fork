@@ -2,10 +2,7 @@ package com.tinkerpop.bench.generator;
 
 import com.tinkerpop.bench.Bench;
 import com.tinkerpop.bench.ConsoleUtils;
-import com.tinkerpop.bench.StatisticsHelper;
 import com.tinkerpop.bench.cache.Cache;
-import com.tinkerpop.bench.evaluators.Evaluator;
-import com.tinkerpop.bench.evaluators.EvaluatorDegree;
 import com.tinkerpop.bench.util.Pair;
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
@@ -57,11 +54,18 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 		
 		int n = N;
 		int m = M;
+		int zeroAppeal = 8;
 		
 		Object[] newVertices = new Object[n];
 		@SuppressWarnings({ "rawtypes" })
 		Pair[] newEdges = new Pair[n * m];
 		TemporaryObject[] newEdgeIDs = new TemporaryObject[n * m];
+		
+		
+		// Get the number of existing vertices and edges
+		
+		long numVertices = graph.countVertices();
+		long numEdges = graph.countEdges();
 		
 		
 		// Schedule an initial vertex to be created if the graph is empty
@@ -87,11 +91,42 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 		int edge_i = 0;
 		for (int i = empty ? 1 : 0; i < n; i++) {
 			
-			// Get an array of vertices to connect to
+			// Get an array of m vertices to connect to, weigh by degree + zero appeal
 			
-			Evaluator evaluator = new EvaluatorDegree(1, 8);
-			otherVertices = StatisticsHelper
-					.getSampleVertexIds(graph, evaluator, m);
+			// Original code:
+			// Evaluator evaluator = new EvaluatorDegree(1, 8);
+			// otherVertices = StatisticsHelper
+			// 		.getSampleVertexIds(graph, evaluator, m);
+			
+			for (int j = 0; j < m; j++) {
+				
+				// Account for the zero-appeal parameter
+				
+				long zeroAppealPts = (numVertices + i) * zeroAppeal;
+				long totalPts = zeroAppealPts + 2 * numEdges + 2 * edge_i;
+				long r = (long) (Math.random() * totalPts);
+				
+				if (r < zeroAppealPts) {
+					if (r < i * zeroAppeal) {
+						otherVertices[j] = newVertices[(int) (r / zeroAppeal)];
+					}
+					else {
+						otherVertices[j] = graph.getRandomVertex().getId();
+					}
+				}
+				else {
+					if (r - zeroAppealPts < 2 * edge_i) {
+						long x = r - zeroAppealPts;
+						@SuppressWarnings("unchecked")
+						Pair<Object, Object> p = newEdges[(int) (x / 2)];
+						otherVertices[j] = (x & 1) == 0 ? p.getFirst() : p.getSecond();
+					}
+					else {
+						Edge e = graph.getRandomEdge();
+						otherVertices[j] = ((r & 1) == 0 ? e.getInVertex() : e.getOutVertex()).getId();
+					}
+				}
+			}
 			
 			
 			// Create the new vertex and the appropriate edges
@@ -101,7 +136,7 @@ public class SimpleBarabasiGenerator extends GraphGenerator {
 			c.addVertexID(v);
 			
 			for (Object o : otherVertices) {
-				Pair<Object, Object> e = new Pair<Object, Object>(v, o);
+				Pair<Object, Object> e = new Pair<Object, Object>(o /* out/source */, v /* in/target */);
 				TemporaryObject t = new TemporaryObject(edge_i);
 				newEdges[edge_i] = e;
 				newEdgeIDs[edge_i] = t;

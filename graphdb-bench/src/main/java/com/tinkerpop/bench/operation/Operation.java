@@ -148,6 +148,12 @@ public abstract class Operation {
         
 		int previousMaxBufferSize = 0;
         Graph graph = getGraph();
+        if (graph == null && !(this instanceof OperationDeleteGraph
+           		|| this instanceof OperationOpenGraph
+           		|| this instanceof OperationShutdownGraph
+        		|| this instanceof OperationDoGC)) {
+        	throw new IllegalStateException("The graph is null");
+        }
         
 		StatisticsHelper.stopMemory();	//XXX multi-threaded???
 		long start = System.nanoTime();

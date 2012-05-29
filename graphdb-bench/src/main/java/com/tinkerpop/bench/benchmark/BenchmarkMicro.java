@@ -611,14 +611,27 @@ public class BenchmarkMicro extends Benchmark {
 		if (warmup) {
 			ConsoleUtils.sectionHeader("Warmup Run");
 			graphDescriptor = new GraphDescriptor(dbClass, warmupDbDir, warmupDbPath);
-			warmupBenchmark.runBenchmark(graphDescriptor, warmupLogFile, numThreads);
-			//resultFiles.put(dbShortName + "-warmup", warmupLogFile);
+			try {
+				warmupBenchmark.runBenchmark(graphDescriptor, warmupLogFile, numThreads);
+			}
+			catch (Throwable t) {
+				ConsoleUtils.error(t.getMessage());
+				t.printStackTrace(System.err);
+				System.exit(1);
+			}
 			Cache.dropAll();
 		}
 		
 		ConsoleUtils.sectionHeader("Benchmark Run");
 		graphDescriptor = new GraphDescriptor(dbClass, dbDir, dbPath);
-		benchmark.runBenchmark(graphDescriptor, logFile, numThreads);
+		try {
+			benchmark.runBenchmark(graphDescriptor, logFile, numThreads);
+		}
+		catch (Throwable t) {
+			ConsoleUtils.error(t.getMessage());
+			t.printStackTrace(System.err);
+			System.exit(1);
+		}
 		resultFiles.put(dbShortName, logFile);
 		
 		

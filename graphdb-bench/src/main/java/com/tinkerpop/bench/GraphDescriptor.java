@@ -100,13 +100,13 @@ public class GraphDescriptor {
 			if (true == getPersistent()) {
 				deleteDir(graphDir);
 			}
-			
-			try {
-				openGraph();
-			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+		}
+		
+		try {
+			openGraph();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		
 		recreateCPLObject();

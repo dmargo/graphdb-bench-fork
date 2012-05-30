@@ -77,49 +77,51 @@ public class BenchmarkMicro extends Benchmark {
 		System.err.println("Usage: runBenchmarkSuite.sh OPTIONS");
 		System.err.println("");
 		System.err.println("General options:");
-		System.err.println("  --dir, -d DIR         Set the database and results directory");
-		System.err.println("  --help                Print this help message");
-		System.err.println("  --no-provenance       Disable provenance collection");
-		System.err.println("  --no-warmup           Disable the initial warmup run");
-		System.err.println("  --threads N           Run N copies of the benchmark concurrently");
-		System.err.println("  --tx-buffer N         Set the size of the transaction buffer");
+		System.err.println("  --dir, -d DIR           Set the database and results directory");
+		System.err.println("  --help                  Print this help message");
+		System.err.println("  --no-provenance         Disable provenance collection");
+		System.err.println("  --no-warmup             Disable the initial warmup run");
+		System.err.println("  --single-db-connection  Use a single, shared database connection " +
+										"for all threads");
+		System.err.println("  --threads N             Run N copies of the benchmark concurrently");
+		System.err.println("  --tx-buffer N           Set the size of the transaction buffer");
 		System.err.println("");
 		System.err.println("Options to select a database (select one):");
-		System.err.println("  --bdb                 Berkeley DB, using massive indexing");
-		System.err.println("  --dex                 DEX");
-		System.err.println("  --dup                 Berkeley DB, duplicates "+
+		System.err.println("  --bdb                   Berkeley DB, using massive indexing");
+		System.err.println("  --dex                   DEX");
+		System.err.println("  --dup                   Berkeley DB, duplicates "+
 										"on edge lookups and properties");
-		System.err.println("  --hollow              The hollow implementation with no "+
+		System.err.println("  --hollow                The hollow implementation with no "+
 										"backing database");
-		System.err.println("  --neo                 neo4j");
-		System.err.println("  --rdf                 Sesame RDF");
-		System.err.println("  --sql [ADDR]          MySQL");
+		System.err.println("  --neo                   neo4j");
+		System.err.println("  --rdf                   Sesame RDF");
+		System.err.println("  --sql [ADDR]            MySQL");
 		System.err.println("");
 		System.err.println("Options to select a workload (select multiple):");
-		System.err.println("  --add                 Adding nodes and edges to the database");
-		System.err.println("  --clustering-coeff    Compute the clustering coefficients");
-		System.err.println("  --delete-graph        Delete the entire graph");
-		System.err.println("  --dijkstra            Dijkstra's shortest path algorithm");
-        System.err.println("  --dijkstra-property   Shortest paths with in-DB marking.");
-		System.err.println("  --generate MODEL      Generate (or grow) the graph "+
+		System.err.println("  --add                   Adding nodes and edges to the database");
+		System.err.println("  --clustering-coeff      Compute the clustering coefficients");
+		System.err.println("  --delete-graph          Delete the entire graph");
+		System.err.println("  --dijkstra              Dijkstra's shortest path algorithm");
+        System.err.println("  --dijkstra-property     Shortest paths with in-DB marking.");
+		System.err.println("  --generate MODEL        Generate (or grow) the graph "+
 										" based on the given model");
-		System.err.println("  --get                 \"Get\" microbenchmarks");
-		System.err.println("  --get-k               \"Get\" k-hops microbenchmarks");
-        System.err.println("  --get-property        \"Get\" Object store microbenchmarks");
-		System.err.println("  --ingest [FILE]       Ingest a file to the database "+
+		System.err.println("  --get                   \"Get\" microbenchmarks");
+		System.err.println("  --get-k                 \"Get\" k-hops microbenchmarks");
+        System.err.println("  --get-property          \"Get\" Object store microbenchmarks");
+		System.err.println("  --ingest [FILE]         Ingest a file to the database "+
 										" (implies --delete-graph)");
 		System.err.println("");
 		System.err.println("Benchmark and workload options:");
-		System.err.println("  --k-hops K            Set the number of k-hops");
-		System.err.println("  --k-hops K1:K2        Set a range of k-hops");
-		System.err.println("  --op-count N          Set the number of operations");
-		System.err.println("  --warmup-ingest FILE  Set a different file for ingest for" +
+		System.err.println("  --k-hops K              Set the number of k-hops");
+		System.err.println("  --k-hops K1:K2          Set a range of k-hops");
+		System.err.println("  --op-count N            Set the number of operations");
+		System.err.println("  --warmup-ingest FILE    Set a different file for ingest for" +
 										" the warmup database");
-		System.err.println("  --warmup-op-count N   Set the number of warmup operations");
+		System.err.println("  --warmup-op-count N     Set the number of warmup operations");
 		System.err.println("");
 		System.err.println("Options for model \"Barabasi\":");
-		System.err.println("  --barabasi-n N        The number of vertices");
-		System.err.println("  --barabasi-m M        The number of incoming edges "+
+		System.err.println("  --barabasi-n N          The number of vertices");
+		System.err.println("  --barabasi-m M          The number of incoming edges "+
 										" generated for each vertex");
 	}
 	
@@ -201,6 +203,7 @@ public class BenchmarkMicro extends Benchmark {
 		parser.accepts("help");
 		parser.accepts("no-provenance");
 		parser.accepts("no-warmup");
+		parser.accepts("single-db-connection");
 		parser.accepts("threads").withRequiredArg().ofType(Integer.class);
 		parser.accepts("tx-buffer").withRequiredArg().ofType(Integer.class);
 		
@@ -310,6 +313,10 @@ public class BenchmarkMicro extends Benchmark {
 		boolean provenance = true;
 		if (options.has("no-provenance")) {
 			provenance = false;
+		}
+		
+		if (options.has("single-db-connection")) {
+			GlobalConfig.oneDbConnectionPerThread = false;
 		}
 		
 		if (options.has("threads")) {

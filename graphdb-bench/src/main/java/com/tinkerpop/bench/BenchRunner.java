@@ -48,9 +48,6 @@ public class BenchRunner {
 	/// The number of threads
 	private int numThreads;
 	
-	/// Whether the graph is open
-	private boolean graphOpen = false;
-	
 	/// Shared operation factories
 	private OperationFactory openFactory;
 	private OperationFactory shutdownFactory;
@@ -100,12 +97,8 @@ public class BenchRunner {
 	 * 
 	 * @throws Exception 
 	 */
-	protected synchronized void openGraph() throws Exception {
+	protected void openGraph() throws Exception {
 		
-		if (graphOpen) return;
-		graphOpen = true;
-		
-		// Flush cache: open/close before/after each factory
 		Operation openOperation = openFactory.next();
 		openOperation.setLogWriter(logWriter);
 		openOperation.initialize(graphDescriptor);
@@ -119,12 +112,8 @@ public class BenchRunner {
 	 * 
 	 * @throws Exception 
 	 */
-	protected synchronized void closeGraph() throws Exception {
+	protected void closeGraph() throws Exception {
 		
-		if (!graphOpen) return;
-		graphOpen = false;
-		
-		// Flush cache: open/close before/after each factory
 		Operation shutdownOperation = shutdownFactory.next();
 		shutdownOperation.setLogWriter(logWriter);
 		shutdownOperation.initialize(graphDescriptor);
@@ -153,7 +142,6 @@ public class BenchRunner {
 		}
 		
 		operationId = new AtomicInteger(-1);
-		graphOpen = false;
 		
 		try {
 			
@@ -164,7 +152,7 @@ public class BenchRunner {
 			
 			// Open the graph
 			
-			openGraph();
+			if (!GlobalConfig.oneDbConnectionPerThread) openGraph();
 			
 			
 			// Initialize the barrier concurrency primitive
@@ -205,7 +193,7 @@ public class BenchRunner {
 			
 			// Finalize
 			
-			closeGraph();
+			if (!GlobalConfig.oneDbConnectionPerThread) closeGraph();
 			graphDescriptor.shutdownGraph();
 			logWriter.close();
 		}
@@ -288,6 +276,11 @@ public class BenchRunner {
 			
 			try {
 				
+				// Open the graph
+				
+				if (GlobalConfig.oneDbConnectionPerThread) openGraph();
+				
+
 				// Instantiate operation factories
 				
 				int longestFactoryName = 0;
@@ -356,9 +349,9 @@ public class BenchRunner {
 						
 						// Pollute cache
 						
-						if (main && polluteCache) {
-							System.out.print("\rPolluting cache with a sequential scan");
-							System.out.flush();
+						if ((main || GlobalConfig.oneDbConnectionPerThread) && polluteCache) {
+							if (main) System.out.print("\rPolluting cache with a sequential scan");
+							if (main) System.out.flush();
 							
 							Graph g = graphDescriptor.getGraph();
 							long numVertices = g.countVertices();
@@ -367,18 +360,18 @@ public class BenchRunner {
 							
 							for (@SuppressWarnings("unused") Vertex v : g.getVertices()) {
 								objects++;
-								if ((objects & 0xfff) == 0) System.gc();
-								ConsoleUtils.printProgressIndicator(objects, numVertices + numEdges);
+								if (main) if ((objects & 0xfff) == 0) System.gc();
+								if (main) ConsoleUtils.printProgressIndicator(objects, numVertices + numEdges);
 							}
 							
 							for (@SuppressWarnings("unused") Edge e : g.getEdges()) {
 								objects++;
-								if ((objects & 0xfff) == 0) System.gc();
-								ConsoleUtils.printProgressIndicator(objects, numVertices + numEdges);
+								if (main) if ((objects & 0xfff) == 0) System.gc();
+								if (main) ConsoleUtils.printProgressIndicator(objects, numVertices + numEdges);
 							}
 							
-							ConsoleUtils.printProgressIndicator(numVertices + numEdges, numVertices + numEdges);
-							System.out.println();
+							if (main) ConsoleUtils.printProgressIndicator(numVertices + numEdges, numVertices + numEdges);
+							if (main) System.out.println();
 						}
 					}
 					
@@ -454,6 +447,11 @@ public class BenchRunner {
 					
 					if (main) System.out.println();
 				}
+				
+				
+				// Close the graph
+				
+				if (GlobalConfig.oneDbConnectionPerThread) closeGraph();
 			}
 			catch (RuntimeException e) {
 				throw e;

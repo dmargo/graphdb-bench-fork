@@ -38,4 +38,9 @@ public final class OperationFactoryLog extends OperationFactory {
 			throw new RuntimeException("Error in loadOperation", e.getCause());
 		}
 	}
+	
+	@Override
+	public boolean isUpdate() {
+		return false;
+	}
 }

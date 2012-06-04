@@ -171,10 +171,10 @@ public class Cache {
 	/**
 	 * Add an edge
 	 * 
-	 * @param inID the ID of the "in" vertex
 	 * @param outID the ID of the "out"vertex
+	 * @param inID the ID of the "in" vertex
 	 */
-	public synchronized void addEdgeByID(Object eID, Object inID, Object outID) {
+	public synchronized void addEdgeByID(Object eID, Object outID, Object inID) {
 		if (!valid) return;
 		if (eID == null) throw new IllegalArgumentException("id cannot be null");
 

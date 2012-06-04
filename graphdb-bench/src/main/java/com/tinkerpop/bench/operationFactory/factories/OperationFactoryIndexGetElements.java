@@ -76,4 +76,8 @@ public class OperationFactoryIndexGetElements extends OperationFactoryBase {
 		return new OperationArgs(args, OperationIndexGetElements.class, tagLine);
 	}
 
+	@Override
+	public boolean isUpdate() {
+		return false;
+	}
 }

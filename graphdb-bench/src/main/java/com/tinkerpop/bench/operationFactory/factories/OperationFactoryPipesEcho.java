@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.tinkerpop.bench.StatisticsHelper;
-import com.tinkerpop.bench.evaluators.EvaluatorOutDegree;
 import com.tinkerpop.bench.operationFactory.OperationArgs;
 import com.tinkerpop.bench.operationFactory.OperationFactoryBase;
 import com.tinkerpop.blueprints.pgm.Vertex;
@@ -20,6 +19,7 @@ public class OperationFactoryPipesEcho extends OperationFactoryBase {
 	private Class<?> echoType = null;
 	private String tag = null;
 	private ArrayList<Object> vertexSamples = null;
+	private boolean update;
 
 	public OperationFactoryPipesEcho(int opCount, String propertyKey,
 			int echoLength, Class<?> echoType) {
@@ -33,13 +33,14 @@ public class OperationFactoryPipesEcho extends OperationFactoryBase {
 		this.echoLength = echoLength;
 		this.echoType = echoType;
 		this.tag = tag;
+		this.update = isUpdateOperation(echoType);
 	}
 
 	@Override
 	public void onInitialize() {
-		vertexSamples = new ArrayList<Object>(Arrays.asList(StatisticsHelper
-				.getSampleVertexIds(getGraph(), new EvaluatorOutDegree(),
-						opCount)));
+		vertexSamples = new ArrayList<Object>(Arrays.asList(
+				StatisticsHelper.getRandomVertexIds(getGraph(), opCount,
+						StatisticsHelper.VertexDistribution.OUT_DEGREE)));
 	}
 
 	@Override
@@ -70,5 +71,10 @@ public class OperationFactoryPipesEcho extends OperationFactoryBase {
 				Integer.toString(echoLength) };
 
 		return new OperationArgs(args, echoType, tagLine);
+	}
+
+	@Override
+	public boolean isUpdate() {
+		return update;
 	}
 }

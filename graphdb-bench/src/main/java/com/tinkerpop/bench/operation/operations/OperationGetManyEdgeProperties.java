@@ -1,7 +1,6 @@
 package com.tinkerpop.bench.operation.operations;
 
 import com.tinkerpop.bench.StatisticsHelper;
-import com.tinkerpop.bench.evaluators.EdgeEvaluatorUniform;
 import com.tinkerpop.bench.operation.Operation;
 import com.tinkerpop.blueprints.pgm.Edge;
 
@@ -17,10 +16,7 @@ public class OperationGetManyEdgeProperties extends Operation {
 		property_key = (String) args[0];
 		
 		opCount = args.length > 1 ? (Integer) args[1] : 1000;
-		Object[] edgeIds = StatisticsHelper.getRandomEdgeIds(getGraph(), opCount);
-		edgeSamples = new Edge[opCount];
-		for (int i = 0; i < opCount; i++)
-			edgeSamples[i] = getGraph().getEdge(edgeIds[i]);
+		edgeSamples = StatisticsHelper.getRandomEdges(getGraph(), opCount);
 	}
 	
 	@Override

@@ -14,6 +14,7 @@ public class OperationFactoryRandomVertex extends OperationFactoryBase implement
 	private Object[] args;
 	private ArrayList<Object> vertexSamples = null;
 	private String tag = null;
+	private boolean update;
 	
 	public OperationFactoryRandomVertex(Class<?> opType, int opCount) {
 		this(opType, opCount, new Object[] {}, "");
@@ -29,6 +30,7 @@ public class OperationFactoryRandomVertex extends OperationFactoryBase implement
 		this.opCount = opCount;
 		this.args = args;
 		this.tag = tag;
+		this.update = isUpdateOperation(opType);
 	}
 
 	@Override
@@ -68,5 +70,16 @@ public class OperationFactoryRandomVertex extends OperationFactoryBase implement
 	@Override
 	public int getExecutedOpCount() {
 		return opCount - vertexSamples.size();
+	}
+	
+	/**
+	 * Determine whether any of the operations that the factory creates will perform
+	 * any update operations on the database
+	 * 
+	 * @return true if at least one of the operations will perform an update
+	 */
+	@Override
+	public boolean isUpdate() {
+		return update;
 	}
 }

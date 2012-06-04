@@ -13,6 +13,7 @@ public class OperationFactoryRandomEdge extends OperationFactoryBase implements 
 	private int opCount;
 	private Object[] args;
 	private ArrayList<Object> edgeSamples = null;
+	private boolean update;
 	
 	public OperationFactoryRandomEdge(Class<?> opType, int opCount) {
 		this(opType, opCount, new Object[] {});
@@ -23,6 +24,7 @@ public class OperationFactoryRandomEdge extends OperationFactoryBase implements 
 		this.opType = opType;
 		this.opCount = opCount;
 		this.args = args;
+		this.update = isUpdateOperation(opType);
 	}
 
 	@Override
@@ -62,5 +64,16 @@ public class OperationFactoryRandomEdge extends OperationFactoryBase implements 
 	@Override
 	public int getExecutedOpCount() {
 		return opCount - edgeSamples.size();
+	}
+	
+	/**
+	 * Determine whether any of the operations that the factory creates will perform
+	 * any update operations on the database
+	 * 
+	 * @return true if at least one of the operations will perform an update
+	 */
+	@Override
+	public boolean isUpdate() {
+		return update;
 	}
 }

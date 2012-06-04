@@ -1,6 +1,7 @@
 package com.tinkerpop.bench;
 
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 
 import com.tinkerpop.blueprints.pgm.Graph;
 //import com.tinkerpop.blueprints.pgm.impls.dex.DexGraph;
@@ -15,7 +16,10 @@ public class GraphDescriptor {
 	private String graphDir = null;
 	private String graphPath = null;
 	private Graph graph = null;
+	private ThreadLocal<Graph> threadLocalGraphs = new ThreadLocal<Graph>();
+	private HashMap<Long, Graph> graphsMap = new HashMap<Long, Graph>();
 	private CPLObject cplObject = null;
+	private boolean threadLocal = GlobalConfig.oneDbConnectionPerThread;
 
 	public GraphDescriptor(Class<?> graphType) {
 		this(graphType, null, null);
@@ -43,7 +47,7 @@ public class GraphDescriptor {
 	}
 
 	public Graph getGraph() {
-		return graph;
+		return threadLocal ? threadLocalGraphs.get() : graph;
 	}
 
 	public boolean getPersistent() {
@@ -60,8 +64,9 @@ public class GraphDescriptor {
 	//
 
 	public Graph openGraph() throws Exception {
-		if (null != graph)
-			return graph;
+		
+		Graph g = getGraph();
+		if (null != g) return g;
 		
 		Object[] args = (null == graphPath) ? new Object[] {}
 				: new Object[] { graphPath };
@@ -71,35 +76,71 @@ public class GraphDescriptor {
 				graphType.getName()).getConstructor(String.class);
 
 		try {
-			graph = (Graph) graphConstructor.newInstance(args);
+			g = (Graph) graphConstructor.newInstance(args);
 		} catch (Exception e) {
 			throw e;
 		}
+		
+		synchronized (this) {
+			if (graph == null) graph = g;
+		}
+		
+		if (threadLocal) {
+			threadLocalGraphs.set(g);
+			graphsMap.put(Thread.currentThread().getId(), g);
+		}
 
 		//if (TransactionalGraph.class.isAssignableFrom(graphType))
-		//	((TransactionalGraph) graph).setTransactionMode(TransactionalGraph.Mode.AUTOMATIC);
+		//	((TransactionalGraph) g).setTransactionMode(TransactionalGraph.Mode.AUTOMATIC);
 
-		return graph;
+		return g;
+	}
+	
+	private void setGraphToNull() {
+		if (threadLocal) {
+			threadLocalGraphs.remove();
+			graphsMap.remove(Thread.currentThread().getId());
+			synchronized (this) {
+				if (graphsMap.isEmpty())
+					graph = null;
+				else
+					graph = graphsMap.values().iterator().next();
+			}
+		}
+		else {
+			graph = null;
+		}		
 	}
 
 	public void shutdownGraph() {
-		if (null != graph) {
-			graph.shutdown();
-			graph = null;
+		Graph g = getGraph();
+		if (null != g) {
+			g.shutdown();
+			setGraphToNull();
 		}
 	}
 
-	public void deleteGraph() {
-		//XXX dmargo: Again, total kludge but the API is just not uniform.
+	public synchronized void deleteGraph() {
+		
+		// XXX Must be single-threaded!!!
+		
 		if (graphType == SqlGraph.class) {
 			((SqlGraph) graph).delete();
-			graph = null;
-		} else {
+			setGraphToNull();
+		}
+		else {
 			shutdownGraph();
 			
 			if (true == getPersistent()) {
 				deleteDir(graphDir);
 			}
+		}
+		
+		try {
+			openGraph();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		
 		recreateCPLObject();
